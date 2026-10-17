@@ -1,0 +1,29 @@
+# Atualizações de versão do Dependabot. Os PRs vão para a develop e passam pelo CI.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    target-branch: develop
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      npm-minor-e-patch:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: docker
+    directory: "/docker"
+    target-branch: develop
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "chore(deps)"
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    target-branch: develop
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "chore(deps)"

@@ -1,0 +1,28 @@
+.wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table th {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}

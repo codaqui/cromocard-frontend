@@ -1,0 +1,57 @@
+name: CI
+
+# Roda em todo push (qualquer branch) e em todo pull request.
+on:
+  push:
+  pull_request:
+
+# Se chegar um commit novo no mesmo PR, cancela a execução antiga.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "24"
+
+jobs:
+  quality:
+    name: Formatação, lint, tipos, testes e build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Formatação
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Checagem de tipos
+        run: npm run typecheck
+
+      - name: Testes
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+  docker:
+    name: Build da imagem
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build da imagem cromocard-web
+        run: docker build -f docker/Dockerfile -t cromocard-web:${{ github.sha }} .
