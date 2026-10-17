@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+*.log
+*.tsbuildinfo
+
+# Variáveis de ambiente: nunca versionar valores reais.
+# O .env.example (valores fictícios) é a única exceção.
+.env
+.env.*
+*.env
+!.env.example
