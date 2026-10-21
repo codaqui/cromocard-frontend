@@ -8,6 +8,18 @@ import { paths } from '@/routes/paths';
 
 import styles from './AdminLayout.module.css';
 
+const backofficeMenu = [
+  { to: paths.backoffice.dashboard, label: 'Dashboard' },
+  { to: paths.backoffice.users, label: 'Usuários' },
+  { to: paths.backoffice.notifications, label: 'Notificação' },
+  { to: paths.backoffice.catalog, label: 'Catálogo' },
+  { to: paths.backoffice.communities, label: 'Comunidades' },
+  { to: paths.backoffice.reports, label: 'Relatórios' },
+  { to: paths.backoffice.requests, label: 'Solicitações' },
+  { to: paths.backoffice.auditLogs, label: 'Logs' },
+  { to: paths.backoffice.settings, label: 'Configurações' },
+];
+
 export function AdminLayout() {
   const { signOut } = useAuth();
 
@@ -21,7 +33,11 @@ export function AdminLayout() {
       </Header>
       <div className={styles.body}>
         <nav className={styles.sidebar} aria-label="Menu do backoffice">
-          <NavItem to={paths.backoffice.users}>Usuários</NavItem>
+          {backofficeMenu.map(({ to, label }) => (
+            <NavItem key={to} to={to}>
+              {label}
+            </NavItem>
+          ))}
         </nav>
         <main className={styles.content}>
           <Outlet />

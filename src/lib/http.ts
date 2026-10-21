@@ -54,6 +54,16 @@ export const api = {
     return response.data.data;
   },
 
+  async put<T>(url: string, body: unknown): Promise<T> {
+    const response = await http.put<ApiResponse<T>>(url, body);
+    return response.data.data;
+  },
+
+  async postForm<T>(url: string, form: FormData, params?: object): Promise<T> {
+    const response = await http.postForm<ApiResponse<T>>(url, form, { params });
+    return response.data.data;
+  },
+
   async delete(url: string): Promise<void> {
     await http.delete(url);
   },
