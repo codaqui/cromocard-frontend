@@ -9,6 +9,16 @@
   --color-border: #e2e8f0;
   --color-text: #0f172a;
   --color-text-muted: #64748b;
+  --color-overlay: rgb(15 23 42 / 0.5);
+
+  --color-success: #15803d;
+  --color-success-soft: #dcfce7;
+  --color-warning: #b45309;
+  --color-warning-soft: #fef3c7;
+  --color-danger-soft: #fee2e2;
+  --color-info: #1d4ed8;
+  --color-info-soft: #dbeafe;
+  --color-neutral-soft: #f1f5f9;
 
   --font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-size-sm: 0.875rem;
@@ -27,4 +37,9 @@
   --radius-md: 0.75rem;
 
   --shadow-sm: 0 1px 2px rgb(15 23 42 / 0.08);
+  --shadow-md: 0 4px 12px rgb(15 23 42 / 0.12);
+  --shadow-lg: 0 12px 32px rgb(15 23 42 / 0.2);
+
+  --z-overlay: 100;
+  --z-toast: 200;
 }
