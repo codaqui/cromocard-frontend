@@ -1,0 +1,30 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-6);
+}
+
+.page > * {
+  align-self: stretch;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.title {
+  font-size: var(--font-size-xl);
+}
+
+.notice {
+  color: var(--color-text-muted);
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-4);
+}

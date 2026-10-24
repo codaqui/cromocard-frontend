@@ -5,6 +5,7 @@ export const paths = {
   profile: '/profile',
   backoffice: {
     root: '/backoffice',
+    dashboard: '/backoffice/dashboard',
     users: '/backoffice/users',
   },
 } as const;
