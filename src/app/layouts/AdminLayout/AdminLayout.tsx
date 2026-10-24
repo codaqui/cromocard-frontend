@@ -7,6 +7,22 @@ import { useAuth } from '@/hooks/useAuth';
 import { paths } from '@/routes/paths';
 
 import styles from './AdminLayout.module.css';
+import { adminMenu } from './adminMenu';
+
+function AdminMenu() {
+  return (
+    <nav className={styles.sidebar} aria-labelledby="admin-menu-title">
+      <h2 id="admin-menu-title" className={styles.menuTitle}>
+        Módulos oficiais
+      </h2>
+      {adminMenu.map((item) => (
+        <NavItem key={item.to} to={item.to}>
+          {item.label}
+        </NavItem>
+      ))}
+    </nav>
+  );
+}
 
 export function AdminLayout() {
   const { signOut } = useAuth();
@@ -20,9 +36,7 @@ export function AdminLayout() {
         </Button>
       </Header>
       <div className={styles.body}>
-        <nav className={styles.sidebar} aria-label="Menu do backoffice">
-          <NavItem to={paths.backoffice.users}>Usuários</NavItem>
-        </nav>
+        <AdminMenu />
         <main className={styles.content}>
           <Outlet />
         </main>

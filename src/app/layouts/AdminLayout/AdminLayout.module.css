@@ -28,6 +28,15 @@
   background: var(--color-surface);
 }
 
+.menuTitle {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+}
+
 .content {
   flex: 1;
   min-width: 0;
@@ -41,7 +50,10 @@
 
   .sidebar {
     flex-direction: row;
+    align-items: center;
     width: auto;
+    overflow-x: auto;
+    white-space: nowrap;
     border-right: none;
     border-bottom: 1px solid var(--color-border);
   }
