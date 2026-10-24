@@ -1,0 +1,14 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.message {
+  color: var(--color-text);
+}
+
+.error {
+  font-size: var(--font-size-sm);
+  color: var(--color-danger);
+}
