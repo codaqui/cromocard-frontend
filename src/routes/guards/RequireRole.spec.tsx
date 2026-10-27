@@ -6,7 +6,7 @@ import { paths } from '@/routes/paths';
 import { renderWithProviders } from '@/test/renderWithProviders';
 
 const routes = [
-  { path: paths.home, element: <p>Início</p> },
+  { path: paths.login, element: <p>Login</p> },
   { path: paths.profile, element: <p>Perfil</p> },
   {
     element: <RequireRole role="ADMIN" />,
@@ -25,7 +25,7 @@ describe('RequireRole', () => {
     expect(await screen.findByText('Usuários do backoffice')).toBeInTheDocument();
   });
 
-  it('manda o cliente para a área dele', async () => {
+  it('CA18: manda o cliente que abre /backoffice para a home dele', async () => {
     const router = renderWithProviders({
       routes,
       initialPath: paths.backoffice.users,
@@ -36,9 +36,19 @@ describe('RequireRole', () => {
     expect(router.state.location.pathname).toBe(paths.profile);
   });
 
-  it('manda quem não está logado para o início', async () => {
-    renderWithProviders({ routes, initialPath: paths.backoffice.users });
+  it('CA18: manda o visitante para o login, guardando a página pedida', async () => {
+    const router = renderWithProviders({ routes, initialPath: `${paths.backoffice.users}?page=2` });
 
-    expect(await screen.findByText('Início')).toBeInTheDocument();
+    expect(await screen.findByText('Login')).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe(paths.login);
+    expect(new URLSearchParams(router.state.location.search).get('redirect')).toBe(
+      `${paths.backoffice.users}?page=2`,
+    );
+  });
+
+  it('espera a sessão ser restaurada antes de decidir', () => {
+    renderWithProviders({ routes, initialPath: paths.backoffice.users, isRestoringSession: true });
+
+    expect(screen.getByRole('status')).toHaveTextContent('Carregando sessão…');
   });
 });

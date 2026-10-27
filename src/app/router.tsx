@@ -8,6 +8,7 @@ import { catalogBackofficeRoutes } from '@/features/catalog';
 import { communityBackofficeRoutes } from '@/features/community';
 import { notificationsBackofficeRoutes } from '@/features/notifications';
 import { usersBackofficeRoutes, usersRoutes } from '@/features/users';
+import { RedirectIfAuthenticated } from '@/routes/guards/RedirectIfAuthenticated';
 import { RequireAuth } from '@/routes/guards/RequireAuth';
 import { RequireRole } from '@/routes/guards/RequireRole';
 import { paths } from '@/routes/paths';
@@ -21,7 +22,7 @@ export const router = createBrowserRouter([
   {
     errorElement: <ErrorState />,
     children: [
-      ...authRoutes,
+      { element: <RedirectIfAuthenticated />, children: authRoutes },
       {
         element: <PublicLayout />,
         children: [
