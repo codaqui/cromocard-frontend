@@ -1,3 +1,4 @@
+import type { ChangeEvent } from 'react';
 import { Link } from 'react-router';
 
 import { Button } from '@/components/Button/Button';
@@ -57,16 +58,25 @@ interface LoginFormProps {
   isSubmitting: boolean;
   apiError: ApiError | null;
   onSubmit: (input: LoginInput) => void;
+  onRememberMeChange?: (rememberMe: boolean) => void;
 }
 
-export function LoginForm({ isSubmitting, apiError, onSubmit }: LoginFormProps) {
+export function LoginForm({
+  isSubmitting,
+  apiError,
+  onSubmit,
+  onRememberMeChange,
+}: LoginFormProps) {
   const { register, errors, submit } = useLoginForm(onSubmit, apiError);
+  const rememberMe = register('rememberMe', {
+    onChange: (event: ChangeEvent<HTMLInputElement>) => onRememberMeChange?.(event.target.checked),
+  });
 
   return (
     <form className={styles.form} noValidate onSubmit={submit}>
       <EmailField register={register} errors={errors} />
       <PasswordField register={register} errors={errors} />
-      <Checkbox label="Lembrar de mim por 30 dias" {...register('rememberMe')} />
+      <Checkbox label="Lembrar de mim por 30 dias" {...rememberMe} />
       <FormError error={apiError} />
       <Button type="submit" disabled={isSubmitting} className={styles.submit}>
         {isSubmitting ? 'Entrando…' : 'Entrar na Plataforma'}
