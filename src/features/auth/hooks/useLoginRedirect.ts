@@ -1,21 +1,14 @@
-import { useNavigate, useSearchParams } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 
-import { homePathByRole } from '@/routes/paths';
+import { pathAfterLogin } from '@/routes/guards/loginRedirect';
 
 import type { SessionUser } from '../auth.types';
 
-export const REDIRECT_PARAM = 'redirect';
-
-function isInternalPath(path: string | null): path is string {
-  return Boolean(path?.startsWith('/') && !path.startsWith('//'));
-}
-
 export function useLoginRedirect() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const { search } = useLocation();
 
   return ({ role }: Pick<SessionUser, 'role'>) => {
-    const requested = searchParams.get(REDIRECT_PARAM);
-    void navigate(isInternalPath(requested) ? requested : homePathByRole[role], { replace: true });
+    void navigate(pathAfterLogin(search, role), { replace: true });
   };
 }

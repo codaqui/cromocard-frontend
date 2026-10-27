@@ -8,6 +8,7 @@ import { renderWithProviders } from '@/test/renderWithProviders';
 const routes = [
   { path: paths.profile, element: <p>Perfil</p> },
   { path: paths.backoffice.dashboard, element: <p>Dashboard</p> },
+  { path: paths.backoffice.users, element: <p>Usuários</p> },
   {
     element: <RedirectIfAuthenticated />,
     children: [{ path: paths.login, element: <p>Login</p> }],
@@ -25,5 +26,15 @@ describe('RedirectIfAuthenticated', () => {
     renderWithProviders({ routes, initialPath: paths.login, user: { id: '1', role: 'ADMIN' } });
 
     expect(await screen.findByText('Dashboard')).toBeInTheDocument();
+  });
+
+  it('respeita a página pedida antes do login quando a sessão chega', async () => {
+    renderWithProviders({
+      routes,
+      initialPath: `${paths.login}?redirect=${encodeURIComponent(paths.backoffice.users)}`,
+      user: { id: '1', role: 'ADMIN' },
+    });
+
+    expect(await screen.findByText('Usuários')).toBeInTheDocument();
   });
 });

@@ -1,14 +1,16 @@
-import { Navigate, Outlet } from 'react-router';
+import { Navigate, Outlet, useLocation } from 'react-router';
 
 import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { useAuth } from '@/hooks/useAuth';
-import { homePathByRole } from '@/routes/paths';
+
+import { pathAfterLogin } from './loginRedirect';
 
 export function RedirectIfAuthenticated() {
   const { user, isRestoringSession } = useAuth();
+  const { search } = useLocation();
 
   if (isRestoringSession) return <LoadingState message="Carregando sessão…" />;
-  if (user) return <Navigate to={homePathByRole[user.role]} replace />;
+  if (user) return <Navigate to={pathAfterLogin(search, user.role)} replace />;
 
   return <Outlet />;
 }
