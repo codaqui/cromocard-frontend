@@ -1,23 +1,27 @@
 .tabs {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
 }
 
 .list {
   display: flex;
   gap: var(--space-1);
-  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-2) var(--space-2) 0;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  background: var(--color-surface-sunken);
   overflow-x: auto;
 }
 
 .tab {
-  padding: var(--space-2) var(--space-4);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
   border: none;
-  border-bottom: 2px solid transparent;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   background: transparent;
-  color: var(--color-text-muted);
-  font-weight: 600;
+  color: var(--color-label);
+  font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
 }
@@ -27,6 +31,26 @@
 }
 
 .active {
-  border-bottom-color: var(--color-primary);
+  background: var(--color-surface);
   color: var(--color-primary);
+}
+
+.count {
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-high);
+  color: var(--color-label);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+}
+
+.active .count {
+  background: var(--color-info-soft);
+  color: var(--color-primary);
+}
+
+.panel {
+  padding: var(--space-4);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  background: var(--color-surface);
 }

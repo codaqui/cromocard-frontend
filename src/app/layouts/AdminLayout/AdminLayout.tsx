@@ -16,7 +16,7 @@ function AdminMenu() {
         Módulos oficiais
       </h2>
       {adminMenu.map((item) => (
-        <NavItem key={item.to} to={item.to}>
+        <NavItem key={item.to} to={item.to} icon={item.icon}>
           {item.label}
         </NavItem>
       ))}
@@ -28,9 +28,9 @@ export function AdminLayout() {
   const { signOut } = useAuth();
 
   return (
-    <div className={styles.shell}>
+    <div className={styles.shell} data-theme="backoffice">
       <Header homePath={paths.backoffice.root}>
-        <span className={styles.badge}>BackOffice</span>
+        <span className={styles.role}>Administrador</span>
         <Button variant="secondary" onClick={signOut}>
           Sair
         </Button>

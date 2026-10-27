@@ -13,16 +13,20 @@
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
+  font-size: var(--font-size-sm);
   font-weight: 500;
 }
 
 .success {
-  background: var(--color-success-soft);
+  background:
+    linear-gradient(var(--color-success-soft), var(--color-success-soft)),
+    var(--color-surface-raised);
   color: var(--color-success);
 }
 
 .danger {
-  background: var(--color-danger-soft);
+  background:
+    linear-gradient(var(--color-danger-soft), var(--color-danger-soft)), var(--color-surface-raised);
   color: var(--color-danger);
 }
 

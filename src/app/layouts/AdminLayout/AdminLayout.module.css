@@ -4,13 +4,12 @@
   min-height: 100vh;
 }
 
-.badge {
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-sm);
-  background: var(--color-background);
-  font-size: var(--font-size-sm);
+.role {
+  font-size: var(--font-size-xs);
   font-weight: 600;
-  color: var(--color-text-muted);
+  letter-spacing: var(--letter-spacing-caps);
+  text-transform: uppercase;
+  color: var(--color-info);
 }
 
 .body {
@@ -22,25 +21,25 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  width: 14rem;
-  padding: var(--space-4);
-  border-right: 1px solid var(--color-border);
-  background: var(--color-surface);
+  width: var(--size-sidebar);
+  flex-shrink: 0;
+  padding: var(--space-4) var(--space-2);
+  background: var(--color-sidebar);
 }
 
 .menuTitle {
-  padding: var(--space-2) var(--space-3);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--color-text-muted);
+  letter-spacing: var(--letter-spacing-caps);
+  color: var(--color-label);
 }
 
 .content {
   flex: 1;
   min-width: 0;
-  padding: var(--space-6) var(--space-4);
+  padding: var(--space-6) var(--space-5);
 }
 
 @media (max-width: 48rem) {
@@ -54,7 +53,5 @@
     width: auto;
     overflow-x: auto;
     white-space: nowrap;
-    border-right: none;
-    border-bottom: 1px solid var(--color-border);
   }
 }

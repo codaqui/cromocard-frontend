@@ -32,14 +32,20 @@ const sellerColumns: DataTableColumn<SampleSeller>[] = [
 ];
 
 const sampleTabs = [
-  { id: 'sellers', label: 'Vendedores recentes' },
-  { id: 'empty', label: 'Sem registros' },
+  { id: 'sellers', label: 'Vendedores recentes', count: sampleSellers.length },
+  { id: 'empty', label: 'Sem registros', count: 0 },
 ];
 
 function KpiSample() {
   return (
     <div className={styles.kpis}>
-      <KpiCard label="Usuários ativos" value="—" hint="Exemplo" />
+      <KpiCard
+        label="Usuários ativos"
+        value="—"
+        unit="ativos"
+        hint="Exemplo"
+        trend={{ label: '+0%' }}
+      />
       <KpiCard label="Cartas cadastradas" value="—" hint="Exemplo" />
       <KpiCard label="Novos cadastros" value="—" hint="Exemplo" />
     </div>
@@ -66,12 +72,12 @@ function ToastSample() {
   const [message, setMessage] = useState<string | null>(null);
 
   return (
-    <>
+    <div className={styles.actions}>
       <Button variant="secondary" onClick={() => setMessage('Aviso de exemplo')}>
         Mostrar aviso
       </Button>
       <Toast message={message} onDismiss={() => setMessage(null)} />
-    </>
+    </div>
   );
 }
 

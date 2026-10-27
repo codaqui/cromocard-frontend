@@ -7,6 +7,7 @@ import styles from './Tabs.module.css';
 export interface TabItem {
   id: string;
   label: ReactNode;
+  count?: number;
 }
 
 interface TabsProps {
@@ -47,6 +48,12 @@ function TabButton({ item, tabId, panelId, active, onSelect }: TabButtonProps) {
       onClick={() => onSelect(item.id)}
     >
       {item.label}
+      {item.count !== undefined && (
+        <>
+          {' '}
+          <span className={styles.count}>{item.count}</span>
+        </>
+      )}
     </button>
   );
 }
@@ -70,6 +77,20 @@ function keyboardNavigation({ items, activeId, onChange, tabIdOf }: KeyboardNavi
   };
 }
 
+interface TabPanelProps {
+  id: string;
+  labelledBy: string;
+  children: ReactNode;
+}
+
+function TabPanel({ id, labelledBy, children }: TabPanelProps) {
+  return (
+    <div id={id} role="tabpanel" aria-labelledby={labelledBy} tabIndex={0} className={styles.panel}>
+      {children}
+    </div>
+  );
+}
+
 export function Tabs({ label, items, activeId, onChange, children }: TabsProps) {
   const baseId = useId();
   const panelId = `${baseId}-panel`;
@@ -90,9 +111,9 @@ export function Tabs({ label, items, activeId, onChange, children }: TabsProps) 
           />
         ))}
       </div>
-      <div id={panelId} role="tabpanel" aria-labelledby={tabIdOf(activeId)} tabIndex={0}>
+      <TabPanel id={panelId} labelledBy={tabIdOf(activeId)}>
         {children}
-      </div>
+      </TabPanel>
     </div>
   );
 }

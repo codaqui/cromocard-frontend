@@ -19,4 +19,19 @@ describe('KpiCard', () => {
       /^Cartas cadastradas42$/,
     );
   });
+
+  it('mostra a unidade e a tendência', () => {
+    render(
+      <KpiCard
+        label="Total de usuários"
+        value="48.920"
+        unit="ativos"
+        trend={{ label: '+12,4%', tone: 'success' }}
+      />,
+    );
+
+    const card = screen.getByRole('region', { name: 'Total de usuários' });
+    expect(card).toHaveTextContent('48.920 ativos');
+    expect(screen.getByText('+12,4%')).toHaveAttribute('data-tone', 'success');
+  });
 });

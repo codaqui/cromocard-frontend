@@ -57,4 +57,19 @@ describe('Tabs', () => {
     await userEvent.keyboard('{Home}');
     expect(screen.getByRole('tab', { name: 'Cartas' })).toHaveAttribute('aria-selected', 'true');
   });
+
+  it('mostra o contador ao lado do rótulo da aba', () => {
+    render(
+      <Tabs
+        label="Solicitações"
+        items={[{ id: 'cards', label: 'Cartas', count: 3 }]}
+        activeId="cards"
+        onChange={() => undefined}
+      >
+        conteúdo
+      </Tabs>,
+    );
+
+    expect(screen.getByRole('tab', { name: 'Cartas 3' })).toBeInTheDocument();
+  });
 });
