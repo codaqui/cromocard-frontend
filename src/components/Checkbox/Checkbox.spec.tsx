@@ -52,4 +52,12 @@ describe('Checkbox', () => {
       'Confirme para continuar',
     );
   });
+
+  it('liga a dica à caixa de seleção', () => {
+    render(<Checkbox label="Categoria padrão" hint="Aparece no menu da Home" />);
+
+    expect(screen.getByRole('checkbox', { name: 'Categoria padrão' })).toHaveAccessibleDescription(
+      'Aparece no menu da Home',
+    );
+  });
 });

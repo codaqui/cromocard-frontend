@@ -11,13 +11,15 @@ interface FormFieldProps {
   children: ReactNode;
 }
 
-export function FormField({ inputId, label, hint, error, children }: FormFieldProps) {
+interface FieldMessagesProps {
+  inputId: string;
+  hint?: string;
+  error?: string;
+}
+
+export function FieldMessages({ inputId, hint, error }: FieldMessagesProps) {
   return (
-    <div className={styles.field}>
-      <label htmlFor={inputId} className={styles.label}>
-        {label}
-      </label>
-      {children}
+    <>
       {hint && (
         <span id={hintIdOf(inputId)} className={styles.hint}>
           {hint}
@@ -28,6 +30,18 @@ export function FormField({ inputId, label, hint, error, children }: FormFieldPr
           {error}
         </span>
       )}
+    </>
+  );
+}
+
+export function FormField({ inputId, label, hint, error, children }: FormFieldProps) {
+  return (
+    <div className={styles.field}>
+      <label htmlFor={inputId} className={styles.label}>
+        {label}
+      </label>
+      {children}
+      <FieldMessages inputId={inputId} hint={hint} error={error} />
     </div>
   );
 }

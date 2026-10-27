@@ -25,6 +25,6 @@
 
 .kpis {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(var(--size-card-min), 1fr));
   gap: var(--space-4);
 }

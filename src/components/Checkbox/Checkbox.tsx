@@ -1,16 +1,19 @@
 import { type ComponentProps, useId } from 'react';
 
+import { describedByOf } from '@/components/FormField/field-ids';
+import { FieldMessages } from '@/components/FormField/FormField';
+
 import styles from './Checkbox.module.css';
 
 interface CheckboxProps extends Omit<ComponentProps<'input'>, 'type'> {
   label: string;
+  hint?: string;
   error?: string;
 }
 
-export function Checkbox({ label, error, id, ...inputProps }: CheckboxProps) {
+export function Checkbox({ label, hint, error, id, ...inputProps }: CheckboxProps) {
   const generatedId = useId();
   const checkboxId = id ?? generatedId;
-  const errorId = `${checkboxId}-error`;
 
   return (
     <div className={styles.field}>
@@ -20,16 +23,12 @@ export function Checkbox({ label, error, id, ...inputProps }: CheckboxProps) {
           type="checkbox"
           className={styles.checkbox}
           aria-invalid={Boolean(error)}
-          aria-describedby={error ? errorId : undefined}
+          aria-describedby={describedByOf(checkboxId, { hint, error })}
           {...inputProps}
         />
         {label}
       </label>
-      {error && (
-        <span id={errorId} className={styles.error}>
-          {error}
-        </span>
-      )}
+      <FieldMessages inputId={checkboxId} hint={hint} error={error} />
     </div>
   );
 }

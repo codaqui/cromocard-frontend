@@ -50,4 +50,19 @@ describe('PeriodFilter', () => {
       'true',
     );
   });
+
+  it('acompanha o período definido por quem usa o filtro', () => {
+    const { rerender } = render(
+      <PeriodFilter value={{ from: '2026-10-01', to: '2026-10-15' }} onChange={vi.fn()} />,
+    );
+    expect(screen.getByRole('button', { name: 'Personalizado' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+
+    rerender(<PeriodFilter value={{ preset: '7d' }} onChange={vi.fn()} />);
+
+    expect(screen.getByRole('button', { name: '7 dias' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.queryByLabelText('De')).not.toBeInTheDocument();
+  });
 });

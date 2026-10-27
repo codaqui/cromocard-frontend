@@ -16,7 +16,7 @@ describe('Toast', () => {
   });
 
   it('anuncia o erro como alerta', () => {
-    render(<Toast tone="error" message="Não foi possível enviar" onDismiss={vi.fn()} />);
+    render(<Toast tone="danger" message="Não foi possível enviar" onDismiss={vi.fn()} />);
 
     expect(screen.getByRole('alert')).toHaveTextContent('Não foi possível enviar');
   });
@@ -37,7 +37,13 @@ describe('Toast', () => {
     expect(onDismiss).toHaveBeenCalledOnce();
   });
 
-  it('fecha pelo botão e não mostra nada sem mensagem', async () => {
+  it('mantém a região de aviso montada e vazia sem mensagem', () => {
+    render(<Toast message={null} onDismiss={vi.fn()} />);
+
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+  });
+
+  it('fecha pelo botão e esvazia a região sem mensagem', async () => {
     const onDismiss = vi.fn();
     const { rerender } = render(<Toast message="Salvo" onDismiss={onDismiss} />);
 
@@ -45,6 +51,6 @@ describe('Toast', () => {
     expect(onDismiss).toHaveBeenCalledOnce();
 
     rerender(<Toast message={null} onDismiss={onDismiss} />);
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
   });
 });

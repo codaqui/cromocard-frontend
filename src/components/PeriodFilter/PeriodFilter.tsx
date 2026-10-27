@@ -116,11 +116,12 @@ function PresetGroup({
 }
 
 export function PeriodFilter({ value, onChange }: PeriodFilterProps) {
-  const [isCustomOpen, setIsCustomOpen] = useState(isDateRange(value));
+  const [isCustomRequested, setIsCustomRequested] = useState(false);
+  const isCustomOpen = isCustomRequested || isDateRange(value);
   const activePreset = !isCustomOpen && !isDateRange(value) ? value.preset : undefined;
 
   const selectPreset = (preset: PeriodPreset) => {
-    setIsCustomOpen(false);
+    setIsCustomRequested(false);
     onChange({ preset });
   };
 
@@ -130,7 +131,7 @@ export function PeriodFilter({ value, onChange }: PeriodFilterProps) {
         activePreset={activePreset}
         isCustomOpen={isCustomOpen}
         onSelectPreset={selectPreset}
-        onOpenCustom={() => setIsCustomOpen(true)}
+        onOpenCustom={() => setIsCustomRequested(true)}
       />
       {isCustomOpen && (
         <CustomRange initial={isDateRange(value) ? value : undefined} onApply={onChange} />

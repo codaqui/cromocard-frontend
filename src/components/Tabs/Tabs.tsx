@@ -6,7 +6,7 @@ import styles from './Tabs.module.css';
 
 export interface TabItem {
   id: string;
-  label: string;
+  label: ReactNode;
 }
 
 interface TabsProps {
@@ -51,14 +51,14 @@ function TabButton({ item, tabId, panelId, active, onSelect }: TabButtonProps) {
   );
 }
 
-interface ArrowKeyNavigationOptions {
+interface KeyboardNavigationOptions {
   items: TabItem[];
   activeId: string;
   onChange: (id: string) => void;
-  tabId: (id: string) => string;
+  tabIdOf: (id: string) => string;
 }
 
-function arrowKeyNavigation({ items, activeId, onChange, tabId }: ArrowKeyNavigationOptions) {
+function keyboardNavigation({ items, activeId, onChange, tabIdOf }: KeyboardNavigationOptions) {
   const activeIndex = items.findIndex((item) => item.id === activeId);
 
   return (event: KeyboardEvent<HTMLDivElement>) => {
@@ -66,15 +66,15 @@ function arrowKeyNavigation({ items, activeId, onChange, tabId }: ArrowKeyNaviga
     if (!target) return;
     event.preventDefault();
     onChange(target.id);
-    document.getElementById(tabId(target.id))?.focus();
+    document.getElementById(tabIdOf(target.id))?.focus();
   };
 }
 
 export function Tabs({ label, items, activeId, onChange, children }: TabsProps) {
   const baseId = useId();
   const panelId = `${baseId}-panel`;
-  const tabId = (id: string) => `${baseId}-tab-${id}`;
-  const moveFocus = arrowKeyNavigation({ items, activeId, onChange, tabId });
+  const tabIdOf = (id: string) => `${baseId}-tab-${id}`;
+  const moveFocus = keyboardNavigation({ items, activeId, onChange, tabIdOf });
 
   return (
     <div className={styles.tabs}>
@@ -83,14 +83,14 @@ export function Tabs({ label, items, activeId, onChange, children }: TabsProps) 
           <TabButton
             key={item.id}
             item={item}
-            tabId={tabId(item.id)}
+            tabId={tabIdOf(item.id)}
             panelId={panelId}
             active={item.id === activeId}
             onSelect={onChange}
           />
         ))}
       </div>
-      <div id={panelId} role="tabpanel" aria-labelledby={tabId(activeId)} tabIndex={0}>
+      <div id={panelId} role="tabpanel" aria-labelledby={tabIdOf(activeId)} tabIndex={0}>
         {children}
       </div>
     </div>

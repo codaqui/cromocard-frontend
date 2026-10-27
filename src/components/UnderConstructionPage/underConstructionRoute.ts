@@ -1,8 +1,6 @@
 import { createElement } from 'react';
 import type { RouteObject } from 'react-router';
 
-import { UnderConstructionPage } from '@/components/UnderConstructionPage/UnderConstructionPage';
-
 interface UnderConstructionRouteOptions {
   path: string;
   title: string;
@@ -14,5 +12,11 @@ export function underConstructionRoute({
   title,
   story,
 }: UnderConstructionRouteOptions): RouteObject {
-  return { path, element: createElement(UnderConstructionPage, { title, story }) };
+  return {
+    path,
+    lazy: async () => {
+      const { UnderConstructionPage } = await import('./UnderConstructionPage');
+      return { element: createElement(UnderConstructionPage, { title, story }) };
+    },
+  };
 }

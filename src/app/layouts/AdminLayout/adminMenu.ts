@@ -1,6 +1,11 @@
 import { paths } from '@/routes/paths';
 
-export const adminMenu = [
+interface AdminMenuItem {
+  to: string;
+  label: string;
+}
+
+export const adminMenu: AdminMenuItem[] = [
   { to: paths.backoffice.dashboard, label: 'Dashboard' },
   { to: paths.backoffice.users, label: 'Usuários' },
   { to: paths.backoffice.notifications, label: 'Notificação' },
