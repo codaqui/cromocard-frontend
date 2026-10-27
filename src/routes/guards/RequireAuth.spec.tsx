@@ -6,6 +6,7 @@ import { paths } from '@/routes/paths';
 import { renderWithProviders } from '@/test/renderWithProviders';
 
 const routes = [
+  { path: paths.home, element: <p>Área pública</p> },
   { path: paths.login, element: <p>Login</p> },
   { element: <RequireAuth />, children: [{ path: paths.profile, element: <p>Perfil</p> }] },
 ];
@@ -32,5 +33,11 @@ describe('RequireAuth', () => {
     renderWithProviders({ routes, initialPath: paths.profile, isRestoringSession: true });
 
     expect(screen.getByRole('status')).toHaveTextContent('Carregando sessão…');
+  });
+
+  it('CA15: quem clicou em Sair volta para a área pública, sem passar pelo login', async () => {
+    renderWithProviders({ routes, initialPath: paths.profile, hasSignedOut: true });
+
+    expect(await screen.findByText('Área pública')).toBeInTheDocument();
   });
 });

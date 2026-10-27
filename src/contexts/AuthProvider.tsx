@@ -46,23 +46,40 @@ function useSessionRestore(storeAccessToken: (token: string | null) => void) {
   return { isRestoringSession, clearSession };
 }
 
-export function AuthProvider({ children }: AuthProviderProps) {
-  const [accessToken, storeAccessToken] = useAccessToken();
-  const { isRestoringSession, clearSession } = useSessionRestore(storeAccessToken);
+function useSignInOut(storeAccessToken: (token: string) => void, clearSession: () => void) {
+  const [hasSignedOut, setHasSignedOut] = useState(false);
+
+  const signIn = useCallback(
+    (token: string) => {
+      setHasSignedOut(false);
+      storeAccessToken(token);
+    },
+    [storeAccessToken],
+  );
 
   const signOut = useCallback(() => {
     void authApi.logout().catch(() => undefined);
+    setHasSignedOut(true);
     clearSession();
   }, [clearSession]);
+
+  return { hasSignedOut, signIn, signOut };
+}
+
+export function AuthProvider({ children }: AuthProviderProps) {
+  const [accessToken, storeAccessToken] = useAccessToken();
+  const { isRestoringSession, clearSession } = useSessionRestore(storeAccessToken);
+  const { hasSignedOut, signIn, signOut } = useSignInOut(storeAccessToken, clearSession);
 
   const value = useMemo(
     () => ({
       user: accessToken ? decodeAccessToken(accessToken) : null,
       isRestoringSession,
-      signIn: storeAccessToken,
+      hasSignedOut,
+      signIn,
       signOut,
     }),
-    [accessToken, isRestoringSession, storeAccessToken, signOut],
+    [accessToken, isRestoringSession, hasSignedOut, signIn, signOut],
   );
 
   return <AuthContext value={value}>{children}</AuthContext>;

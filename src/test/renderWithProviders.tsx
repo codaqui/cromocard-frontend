@@ -12,6 +12,7 @@ interface RenderWithProvidersOptions {
   initialPath: string;
   user?: AuthenticatedUser | null;
   isRestoringSession?: boolean;
+  hasSignedOut?: boolean;
   signOut?: () => void;
 }
 
@@ -20,6 +21,7 @@ export function renderWithProviders({
   initialPath,
   user = null,
   isRestoringSession = false,
+  hasSignedOut = false,
   signOut = vi.fn(),
 }: RenderWithProvidersOptions) {
   const router = createMemoryRouter(routes, { initialEntries: [initialPath] });
@@ -27,7 +29,7 @@ export function renderWithProviders({
 
   render(
     <QueryClientProvider client={queryClient}>
-      <AuthContext value={{ user, isRestoringSession, signIn: vi.fn(), signOut }}>
+      <AuthContext value={{ user, isRestoringSession, hasSignedOut, signIn: vi.fn(), signOut }}>
         <RouterProvider router={router} />
       </AuthContext>
     </QueryClientProvider>,
