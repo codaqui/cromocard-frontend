@@ -152,6 +152,7 @@
   --gradient-primary: linear-gradient(90deg, #2563eb 0%, #168bff 50%, #06b6d4 100%);
   --shadow-primary: 0 0 24px rgb(23 140 255 / 0.45);
   --shadow-soft: 0 0 16px rgb(23 140 255 / 0.12);
+  --blur-showcase: 2rem;
 
   --font-family: 'Plus Jakarta Sans Variable', 'Inter', system-ui, sans-serif;
   --font-size-xs: 0.75rem;

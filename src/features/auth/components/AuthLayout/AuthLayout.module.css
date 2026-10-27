@@ -38,7 +38,30 @@
   }
 
   .showcase {
+    position: relative;
     display: block;
-    background: url('/images/auth/cards-panel.webp') center / cover no-repeat;
+    overflow: hidden;
+    background: var(--color-background);
+  }
+
+  .showcase::before,
+  .showcase::after {
+    content: '';
+    position: absolute;
+    background-image: url('/images/auth/cards-panel.webp');
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  .showcase::before {
+    inset: calc(var(--space-8) * -2);
+    background-size: cover;
+    filter: blur(var(--blur-showcase)) brightness(0.7);
+  }
+
+  .showcase::after {
+    inset: 0;
+    background-size: contain;
+    mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
   }
 }
