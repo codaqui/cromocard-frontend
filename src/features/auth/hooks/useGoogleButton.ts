@@ -8,6 +8,7 @@ const buttonOptions: GoogleButtonOptions = {
   text: 'continue_with',
   shape: 'rectangular',
   locale: 'pt-BR',
+  width: 400,
 };
 
 export function useGoogleButton(

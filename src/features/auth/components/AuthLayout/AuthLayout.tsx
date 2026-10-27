@@ -11,11 +11,7 @@ export function AuthLayout() {
         </main>
         <footer className={styles.footer}>© 2026 CromoCard</footer>
       </div>
-      <aside className={styles.brand} aria-hidden="true">
-        <span className={styles.logo}>
-          CROMO<span className={styles.logoAccent}>CARD</span>
-        </span>
-      </aside>
+      <aside className={styles.showcase} aria-hidden="true" />
     </div>
   );
 }

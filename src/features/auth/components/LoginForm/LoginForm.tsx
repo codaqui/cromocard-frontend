@@ -1,8 +1,9 @@
-import type { ChangeEvent } from 'react';
+import { type ChangeEvent, useState } from 'react';
 import { Link } from 'react-router';
 
 import { Button } from '@/components/Button/Button';
 import { Checkbox } from '@/components/Checkbox/Checkbox';
+import { Icon } from '@/components/Icon/Icon';
 import { TextField } from '@/components/TextField/TextField';
 import type { ApiError } from '@/lib/api-error';
 import { paths } from '@/routes/paths';
@@ -17,6 +18,7 @@ function EmailField({ register, errors }: Pick<LoginFields, 'register' | 'errors
   return (
     <TextField
       label="E-mail"
+      icon="mail"
       type="email"
       autoComplete="email"
       placeholder="seu.email@exemplo.com"
@@ -26,12 +28,38 @@ function EmailField({ register, errors }: Pick<LoginFields, 'register' | 'errors
   );
 }
 
+function PasswordVisibilityToggle({
+  visible,
+  onToggle,
+}: {
+  visible: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      className={styles.visibilityToggle}
+      aria-label={visible ? 'Esconder senha' : 'Mostrar senha'}
+      aria-pressed={visible}
+      onClick={onToggle}
+    >
+      <Icon name={visible ? 'visibilityOff' : 'visibility'} size={20} />
+    </button>
+  );
+}
+
 function PasswordField({ register, errors }: Pick<LoginFields, 'register' | 'errors'>) {
+  const [visible, setVisible] = useState(false);
+
   return (
     <div className={styles.passwordField}>
       <TextField
         label="Senha"
-        type="password"
+        icon="lock"
+        endAdornment={
+          <PasswordVisibilityToggle visible={visible} onToggle={() => setVisible(!visible)} />
+        }
+        type={visible ? 'text' : 'password'}
         autoComplete="current-password"
         placeholder="••••••••••••"
         error={errors.password?.message}
@@ -76,10 +104,13 @@ export function LoginForm({
     <form className={styles.form} noValidate onSubmit={submit}>
       <EmailField register={register} errors={errors} />
       <PasswordField register={register} errors={errors} />
-      <Checkbox label="Lembrar de mim por 30 dias" {...rememberMe} />
+      <div className={styles.remember}>
+        <Checkbox label="Lembrar de mim por 30 dias" {...rememberMe} />
+      </div>
       <FormError error={apiError} />
       <Button type="submit" disabled={isSubmitting} className={styles.submit}>
         {isSubmitting ? 'Entrando…' : 'Entrar na Plataforma'}
+        {!isSubmitting && <Icon name="arrowForward" size={20} />}
       </Button>
     </form>
   );

@@ -2,19 +2,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-5);
 }
 
 .divider {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
   width: 100%;
   margin: 0;
-  color: var(--color-text-muted);
-  font-size: var(--font-size-xs);
-  letter-spacing: var(--letter-spacing-caps);
-  text-transform: uppercase;
 }
 
 .divider::before,
@@ -24,10 +19,18 @@
   border-top: 1px solid var(--color-border);
 }
 
+.dividerLabel {
+  padding: var(--space-1) var(--space-3);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--letter-spacing-caps);
+  text-transform: uppercase;
+}
+
 .button {
-  display: flex;
-  justify-content: center;
-  min-height: var(--size-control);
+  position: relative;
+  width: min(100%, 25rem);
 }
 
 .button[aria-disabled='true'] {
@@ -35,8 +38,40 @@
   pointer-events: none;
 }
 
-.unavailable,
-.terms {
+.face {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: 2.875rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.button:hover .face {
+  border-color: var(--color-text-muted);
+}
+
+.button:focus-within .face {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.officialButton {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.note {
   margin: 0;
   color: var(--color-text-muted);
   font-size: var(--font-size-xs);

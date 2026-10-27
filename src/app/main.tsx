@@ -1,3 +1,4 @@
+import '@fontsource-variable/plus-jakarta-sans';
 import '@/styles/reset.css';
 import '@/styles/tokens.css';
 import '@/styles/globals.css';
