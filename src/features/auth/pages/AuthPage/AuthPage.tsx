@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react';
-import { NavLink } from 'react-router';
+import { Link, NavLink } from 'react-router';
 
 import { paths } from '@/routes/paths';
 import { cn } from '@/utils/cn';
 
 import { type AuthTab, authTabLabels } from '../../auth.labels';
+import { LoginPanel } from '../../components/LoginPanel/LoginPanel';
 import styles from './AuthPage.module.css';
 
 interface AuthPanel {
@@ -20,7 +21,14 @@ const panels: Record<AuthTab, AuthPanel> = {
     title: 'Faça login na sua conta',
     description:
       'Bem-vindo de volta! Entre para negociar, catalogar e gerenciar seus cards graduados e colecionáveis raros com custódia garantida.',
-    content: null,
+    content: (
+      <>
+        <LoginPanel />
+        <p className={styles.switch}>
+          Não possui uma conta ainda? <Link to={paths.register}>Cadastrar gratuitamente</Link>
+        </p>
+      </>
+    ),
   },
   register: {
     title: 'Crie sua conta',

@@ -1,0 +1,38 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.passwordField {
+  position: relative;
+}
+
+.forgotLink {
+  position: absolute;
+  top: 0;
+  right: 0;
+  color: var(--color-primary);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.forgotLink:hover {
+  text-decoration: underline;
+}
+
+.error {
+  margin: 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+}
+
+.submit {
+  width: 100%;
+  min-height: 3.25rem;
+  box-shadow: var(--shadow-primary);
+}
