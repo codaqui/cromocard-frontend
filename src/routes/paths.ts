@@ -2,6 +2,9 @@ import type { UserRole } from '@/types/authenticated-user';
 
 export const paths = {
   home: '/',
+  login: '/login',
+  register: '/cadastro',
+  forgotPassword: '/esqueci-senha',
   profile: '/profile',
   backoffice: {
     root: '/backoffice',

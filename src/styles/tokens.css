@@ -75,7 +75,8 @@
   --z-toast: 200;
 }
 
-[data-theme='backoffice'] {
+[data-theme='backoffice'],
+[data-theme='auth'] {
   --color-primary: #3291ff;
   --color-primary-hover: #2577d5;
   --color-primary-contrast: #002a55;
