@@ -76,4 +76,53 @@ describe('ConfirmDialog', () => {
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
+
+  it('abre como alertdialog descrito pela mensagem', () => {
+    render(<ConfirmDialog {...baseProps} onConfirm={vi.fn()} onCancel={vi.fn()} />);
+
+    expect(
+      screen.getByRole('alertdialog', { name: 'Suspender usuário' }),
+    ).toHaveAccessibleDescription(baseProps.message);
+  });
+
+  it('não fecha por Esc nem pelo × enquanto confirma', async () => {
+    const onCancel = vi.fn();
+    render(<ConfirmDialog {...baseProps} isConfirming onConfirm={vi.fn()} onCancel={onCancel} />);
+
+    await userEvent.keyboard('{Escape}');
+
+    expect(screen.getByRole('button', { name: 'Fechar' })).toBeDisabled();
+    expect(onCancel).not.toHaveBeenCalled();
+  });
+
+  it('limita o motivo a 500 caracteres no campo', () => {
+    render(<ConfirmDialog {...baseProps} requireReason onConfirm={vi.fn()} onCancel={vi.fn()} />);
+
+    expect(screen.getByLabelText('Motivo')).toHaveAttribute('maxlength', '500');
+  });
+
+  it('só confirma quando o texto digitado confere', async () => {
+    const onConfirm = vi.fn();
+    render(
+      <ConfirmDialog
+        {...baseProps}
+        title="Excluir usuário"
+        confirmLabel="Excluir"
+        confirmationText="Ana Colecionadora"
+        onConfirm={onConfirm}
+        onCancel={vi.fn()}
+      />,
+    );
+    const confirmation = screen.getByLabelText('Digite "Ana Colecionadora" para confirmar');
+
+    await userEvent.type(confirmation, 'Ana');
+    await userEvent.click(screen.getByRole('button', { name: 'Excluir' }));
+    expect(await screen.findByText('O texto digitado não confere')).toBeInTheDocument();
+    expect(onConfirm).not.toHaveBeenCalled();
+
+    await userEvent.clear(confirmation);
+    await userEvent.type(confirmation, 'Ana Colecionadora');
+    await userEvent.click(screen.getByRole('button', { name: 'Excluir' }));
+    expect(onConfirm).toHaveBeenCalledWith(undefined);
+  });
 });

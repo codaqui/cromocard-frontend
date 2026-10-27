@@ -40,6 +40,11 @@
   --shadow-md: 0 4px 12px rgb(15 23 42 / 0.12);
   --shadow-lg: 0 12px 32px rgb(15 23 42 / 0.2);
 
+  --size-dialog: 32rem;
+  --size-drawer: 28rem;
+  --size-toast: 24rem;
+  --size-card-min: 12rem;
+
   --z-overlay: 100;
   --z-toast: 200;
 }

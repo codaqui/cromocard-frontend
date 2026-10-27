@@ -11,11 +11,16 @@ export interface OverlayDialogProps {
   onClose: () => void;
   children: ReactNode;
   footer?: ReactNode;
+  dismissible?: boolean;
+  role?: 'dialog' | 'alertdialog';
+  descriptionId?: string;
 }
 
 interface OverlayDialogWithPlacementProps extends OverlayDialogProps {
   placement: 'center' | 'right';
 }
+
+const keepOpen = () => undefined;
 
 const closeOnBackdropClick = (onClose: () => void) => (event: MouseEvent) =>
   event.target === event.currentTarget && onClose();
@@ -23,16 +28,23 @@ const closeOnBackdropClick = (onClose: () => void) => (event: MouseEvent) =>
 interface DialogHeaderProps {
   titleId: string;
   title: string;
+  dismissible: boolean;
   onClose: () => void;
 }
 
-function DialogHeader({ titleId, title, onClose }: DialogHeaderProps) {
+function DialogHeader({ titleId, title, dismissible, onClose }: DialogHeaderProps) {
   return (
     <header className={styles.header}>
       <h2 id={titleId} className={styles.title}>
         {title}
       </h2>
-      <button type="button" className={styles.close} aria-label="Fechar" onClick={onClose}>
+      <button
+        type="button"
+        className={styles.close}
+        aria-label="Fechar"
+        disabled={!dismissible}
+        onClick={onClose}
+      >
         ×
       </button>
     </header>
@@ -42,27 +54,23 @@ function DialogHeader({ titleId, title, onClose }: DialogHeaderProps) {
 interface DialogPanelProps extends Omit<OverlayDialogWithPlacementProps, 'open'> {
   ref: Ref<HTMLDivElement>;
   titleId: string;
+  dismissible: boolean;
 }
 
-function DialogPanel({
-  ref,
-  titleId,
-  placement,
-  title,
-  onClose,
-  children,
-  footer,
-}: DialogPanelProps) {
+function DialogPanel({ ref, titleId, placement, role = 'dialog', ...content }: DialogPanelProps) {
+  const { title, dismissible, onClose, children, footer } = content;
+
   return (
     <div
       ref={ref}
-      role="dialog"
+      role={role}
       aria-modal="true"
       aria-labelledby={titleId}
+      aria-describedby={content.descriptionId}
       tabIndex={-1}
       className={cn(styles.dialog, styles[`${placement}Dialog`])}
     >
-      <DialogHeader titleId={titleId} title={title} onClose={onClose} />
+      <DialogHeader titleId={titleId} title={title} dismissible={dismissible} onClose={onClose} />
       <div className={styles.body}>{children}</div>
       {footer && <footer className={styles.footer}>{footer}</footer>}
     </div>
@@ -71,26 +79,26 @@ function DialogPanel({
 
 export function OverlayDialog({
   open,
-  onClose,
-  placement,
+  dismissible = true,
   ...panel
 }: OverlayDialogWithPlacementProps) {
   const titleId = useId();
-  const dialogRef = useOverlay<HTMLDivElement>(open, onClose);
+  const close = dismissible ? panel.onClose : keepOpen;
+  const dialogRef = useOverlay<HTMLDivElement>(open, close);
 
   if (!open) return null;
 
   return (
     <div
-      className={cn(styles.overlay, styles[placement])}
-      onMouseDown={closeOnBackdropClick(onClose)}
+      className={cn(styles.overlay, styles[panel.placement])}
+      onMouseDown={closeOnBackdropClick(close)}
     >
       <DialogPanel
+        {...panel}
         ref={dialogRef}
         titleId={titleId}
-        placement={placement}
-        onClose={onClose}
-        {...panel}
+        dismissible={dismissible}
+        onClose={close}
       />
     </div>
   );
