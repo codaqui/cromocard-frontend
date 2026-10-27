@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { type InternalAxiosRequestConfig } from 'axios';
 
 import { env } from '@/config/env';
 import { accessTokenStore } from '@/lib/access-token';
@@ -6,7 +6,17 @@ import { toApiError } from '@/lib/api-error';
 import type { ApiResponse, PaginatedResponse } from '@/types/api';
 
 const HTTP_UNAUTHORIZED = 401;
+const AUTH_ROUTES_PREFIX = '/auth/';
 
+type SessionRefresher = () => Promise<boolean>;
+
+interface RetriableRequestConfig extends InternalAxiosRequestConfig {
+  retriedAfterRefresh?: boolean;
+}
+
+const noSession: SessionRefresher = () => Promise.resolve(false);
+let refreshSession: SessionRefresher = noSession;
+let refreshInFlight: Promise<boolean> | null = null;
 let notifyUnauthorized: () => void = () => undefined;
 
 export function onUnauthorized(listener: () => void): () => void {
@@ -16,7 +26,29 @@ export function onUnauthorized(listener: () => void): () => void {
   };
 }
 
-const http = axios.create({
+export function setSessionRefresher(refresher: SessionRefresher): () => void {
+  refreshSession = refresher;
+  return () => {
+    refreshSession = noSession;
+  };
+}
+
+export function refreshSessionOnce(): Promise<boolean> {
+  refreshInFlight ??= refreshSession().finally(() => {
+    refreshInFlight = null;
+  });
+  return refreshInFlight;
+}
+
+function retriableAfterRefresh(error: unknown): RetriableRequestConfig | undefined {
+  if (!axios.isAxiosError(error) || error.response?.status !== HTTP_UNAUTHORIZED) return undefined;
+
+  const config = error.config as RetriableRequestConfig | undefined;
+  const isAuthRoute = config?.url?.startsWith(AUTH_ROUTES_PREFIX) ?? false;
+  return config && !config.retriedAfterRefresh && !isAuthRoute ? config : undefined;
+}
+
+export const http = axios.create({
   baseURL: `${env.API_URL}/api/v1`,
   withCredentials: true,
 });
@@ -27,10 +59,19 @@ http.interceptors.request.use((config) => {
   return config;
 });
 
+async function retryAfterRefresh(config: RetriableRequestConfig, error: unknown) {
+  config.retriedAfterRefresh = true;
+  if (await refreshSessionOnce()) return http(config);
+
+  notifyUnauthorized();
+  return Promise.reject(toApiError(error));
+}
+
 http.interceptors.response.use(undefined, (error: unknown) => {
-  const apiError = toApiError(error);
-  if (apiError.status === HTTP_UNAUTHORIZED) notifyUnauthorized();
-  return Promise.reject(apiError);
+  const config = retriableAfterRefresh(error);
+  if (config) return retryAfterRefresh(config, error);
+
+  return Promise.reject(toApiError(error));
 });
 
 export const api = {
