@@ -43,6 +43,19 @@
     background: url('/images/auth/fundo_2400x2700.webp') center / cover no-repeat;
   }
 
+  .showcase::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(
+      to right,
+      var(--color-background) 0,
+      transparent var(--size-showcase-fade)
+    );
+    pointer-events: none;
+  }
+
   .highlight {
     position: absolute;
     inset: var(--space-6);
