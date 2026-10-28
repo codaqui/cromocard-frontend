@@ -11,6 +11,7 @@ import styles from './AuthPage.module.css';
 
 interface AuthPanel {
   title: string;
+  compactTitle?: boolean;
   description: string;
   content: ReactNode;
 }
@@ -33,6 +34,7 @@ const panels: Record<AuthTab, AuthPanel> = {
   },
   register: {
     title: 'Comece sua jornada no CromoCard',
+    compactTitle: true,
     description: 'Para começarmos, preencha seus dados de acesso',
     content: (
       <>
@@ -66,13 +68,13 @@ interface AuthPageProps {
 }
 
 export function AuthPage({ tab }: AuthPageProps) {
-  const { title, description, content } = panels[tab];
+  const { title, compactTitle, description, content } = panels[tab];
 
   return (
     <section className={styles.page}>
       <AuthTabs />
       <header className={styles.header}>
-        <h1 className={styles.title}>{title}</h1>
+        <h1 className={cn(styles.title, compactTitle && styles.compactTitle)}>{title}</h1>
         <p className={styles.description}>{description}</p>
       </header>
       {content}

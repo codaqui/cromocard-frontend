@@ -8,6 +8,7 @@ import type { AuthSession } from '../../auth.types';
 import { useLoginRedirect } from '../../hooks/useLoginRedirect';
 import { GoogleButton } from '../GoogleButton/GoogleButton';
 import { LoginForm } from '../LoginForm/LoginForm';
+import { LoginNotice } from './LoginNotice';
 
 function useLoginActions() {
   const login = useLogin();
@@ -17,6 +18,7 @@ function useLoginActions() {
 
   return {
     isPending: login.isPending || googleLogin.isPending,
+    email: login.variables?.email ?? '',
     error: login.error ?? googleLogin.error,
     submit: (input: LoginInput) => login.mutate(input, { onSuccess }),
     submitGoogle: (idToken: string, rememberMe: boolean) =>
@@ -25,14 +27,16 @@ function useLoginActions() {
 }
 
 export function LoginPanel() {
-  const { isPending, error, submit, submitGoogle } = useLoginActions();
+  const { isPending, error, email, submit, submitGoogle } = useLoginActions();
+  const formError = error?.code === 'EMAIL_NOT_VERIFIED' ? null : error;
   const [rememberMe, setRememberMe] = useState(false);
 
   return (
     <>
+      <LoginNotice error={error} email={email} />
       <LoginForm
         isSubmitting={isPending}
-        apiError={error}
+        apiError={formError}
         onSubmit={submit}
         onRememberMeChange={setRememberMe}
       />

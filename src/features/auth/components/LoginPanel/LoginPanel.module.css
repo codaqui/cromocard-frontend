@@ -1,0 +1,21 @@
+.notice {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  font-size: var(--font-size-sm);
+}
+
+.notice[data-tone='success'] {
+  color: var(--color-success);
+}
+
+.notice[data-tone='warning'] {
+  color: var(--color-danger);
+}
+
+.notice a {
+  color: var(--color-link);
+  font-weight: 600;
+}

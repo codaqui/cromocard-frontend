@@ -71,10 +71,10 @@ function ConfirmPasswordField({ register, errors }: Pick<RegisterFields, 'regist
 
 function TermsLabel() {
   return (
-    <>
+    <span>
       Concordo com os <span className={styles.highlight}>Termos de Uso</span> e a{' '}
       <span className={styles.highlight}>Política de Privacidade</span> do ecossistema CromoCard.
-    </>
+    </span>
   );
 }
 

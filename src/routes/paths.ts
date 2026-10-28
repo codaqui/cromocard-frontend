@@ -28,6 +28,10 @@ export const homePathByRole: Record<UserRole, string> = {
   ADMIN: paths.backoffice.dashboard,
 };
 
+export const EMAIL_CONFIRMED_PARAM = 'confirmado';
+
+export const loginAfterEmailConfirmedPath = `${paths.login}?${EMAIL_CONFIRMED_PARAM}=1`;
+
 export function checkEmailPathFor(email: string): string {
   return `${paths.checkEmail}?${new URLSearchParams({ email }).toString()}`;
 }

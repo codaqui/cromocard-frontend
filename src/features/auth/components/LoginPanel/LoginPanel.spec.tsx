@@ -17,6 +17,7 @@ const routes = [
   { path: paths.profile, element: <p>Home do cliente</p> },
   { path: paths.backoffice.dashboard, element: <p>BackOffice</p> },
   { path: '/colecao', element: <p>Página pedida antes do login</p> },
+  { path: paths.checkEmail, element: <p>Confirme seu e-mail</p> },
 ];
 
 function sessionFor(role: UserRole) {
@@ -117,5 +118,18 @@ describe('LoginPanel', () => {
     await submitLogin();
 
     expect(await screen.findByRole('alert')).toHaveTextContent(message);
+  });
+
+  it('e-mail não confirmado oferece o reenvio da confirmação', async () => {
+    rejectWith(403, 'EMAIL_NOT_VERIFIED', 'Confirme seu e-mail para entrar');
+    renderWithProviders({ routes, initialPath: paths.login });
+
+    await submitLogin();
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Confirme seu e-mail para entrar');
+    expect(screen.getByRole('link', { name: 'Reenviar confirmação' })).toHaveAttribute(
+      'href',
+      `${paths.checkEmail}?email=ana%40cromocard.dev`,
+    );
   });
 });

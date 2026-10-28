@@ -157,6 +157,7 @@
   --font-family: 'Plus Jakarta Sans Variable', 'Inter', system-ui, sans-serif;
   --font-size-xs: 0.75rem;
   --font-size-title: 2.25rem;
+  --font-size-title-compact: 2rem;
   --letter-spacing-tight: -0.02em;
 
   --radius-xs: 0.375rem;

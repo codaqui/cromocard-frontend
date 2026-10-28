@@ -16,9 +16,31 @@ function authPageRoute(path: string, tab: AuthTab): RouteObject {
   };
 }
 
+const checkEmailRoute: RouteObject = {
+  path: paths.checkEmail,
+  lazy: async () => ({
+    Component: (await import('./pages/CheckEmailPage/CheckEmailPage')).CheckEmailPage,
+  }),
+};
+
+const verifyEmailRoute: RouteObject = {
+  path: paths.verifyEmail,
+  lazy: async () => ({
+    Component: (await import('./pages/VerifyEmailPage/VerifyEmailPage')).VerifyEmailPage,
+  }),
+};
+
 export const authRoutes: RouteObject[] = [
   {
     element: createElement(AuthLayout),
-    children: [authPageRoute(paths.login, 'login'), authPageRoute(paths.register, 'register')],
+    children: [
+      authPageRoute(paths.login, 'login'),
+      authPageRoute(paths.register, 'register'),
+      checkEmailRoute,
+    ],
   },
+];
+
+export const emailVerificationRoutes: RouteObject[] = [
+  { element: createElement(AuthLayout), children: [verifyEmailRoute] },
 ];
