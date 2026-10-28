@@ -5,6 +5,8 @@ export const paths = {
   login: '/login',
   register: '/cadastro',
   forgotPassword: '/esqueci-senha',
+  checkEmail: '/confirme-seu-email',
+  verifyEmail: '/confirmar-email',
   profile: '/profile',
   backoffice: {
     root: '/backoffice',
