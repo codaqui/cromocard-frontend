@@ -11,7 +11,9 @@ export function AuthLayout() {
         </main>
         <footer className={styles.footer}>© 2026 CromoCard</footer>
       </div>
-      <aside className={styles.showcase} aria-hidden="true" />
+      <aside className={styles.showcase} aria-hidden="true">
+        <img className={styles.highlight} src="/images/auth/destaque_1800x2400.webp" alt="" />
+      </aside>
     </div>
   );
 }

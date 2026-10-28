@@ -40,28 +40,14 @@
   .showcase {
     position: relative;
     display: block;
-    overflow: hidden;
-    background: var(--color-background);
+    background: url('/images/auth/fundo_2400x2700.webp') center / cover no-repeat;
   }
 
-  .showcase::before,
-  .showcase::after {
-    content: '';
+  .highlight {
     position: absolute;
-    background-image: url('/images/auth/cards-panel.webp');
-    background-repeat: no-repeat;
-    background-position: center;
-  }
-
-  .showcase::before {
-    inset: calc(var(--space-8) * -2);
-    background-size: cover;
-    filter: blur(var(--blur-showcase)) brightness(0.7);
-  }
-
-  .showcase::after {
-    inset: 0;
-    background-size: contain;
-    mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+    inset: var(--space-6);
+    width: calc(100% - 2 * var(--space-6));
+    height: calc(100% - 2 * var(--space-6));
+    object-fit: contain;
   }
 }
