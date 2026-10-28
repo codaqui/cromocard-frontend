@@ -6,6 +6,7 @@ import { cn } from '@/utils/cn';
 
 import { type AuthTab, authTabLabels } from '../../auth.labels';
 import { LoginPanel } from '../../components/LoginPanel/LoginPanel';
+import { RegisterPanel } from '../../components/RegisterPanel/RegisterPanel';
 import styles from './AuthPage.module.css';
 
 interface AuthPanel {
@@ -31,9 +32,16 @@ const panels: Record<AuthTab, AuthPanel> = {
     ),
   },
   register: {
-    title: 'Crie sua conta',
-    description: 'Cadastre-se para organizar sua coleção e participar da comunidade.',
-    content: null,
+    title: 'Comece sua jornada no CromoCard',
+    description: 'Para começarmos, preencha seus dados de acesso',
+    content: (
+      <>
+        <RegisterPanel />
+        <p className={styles.switch}>
+          Já tem uma conta? <Link to={paths.login}>Fazer login</Link>
+        </p>
+      </>
+    ),
   },
 };
 

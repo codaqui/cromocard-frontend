@@ -1,4 +1,4 @@
-import { type ChangeEvent, useState } from 'react';
+import type { ChangeEvent } from 'react';
 import { Link } from 'react-router';
 
 import { Button } from '@/components/Button/Button';
@@ -10,6 +10,7 @@ import { paths } from '@/routes/paths';
 
 import type { LoginInput } from '../../auth.schemas';
 import { useLoginForm } from '../../hooks/useLoginForm';
+import { PasswordField } from '../PasswordField/PasswordField';
 import styles from './LoginForm.module.css';
 
 type LoginFields = ReturnType<typeof useLoginForm>;
@@ -28,47 +29,20 @@ function EmailField({ register, errors }: Pick<LoginFields, 'register' | 'errors
   );
 }
 
-function PasswordVisibilityToggle({
-  visible,
-  onToggle,
-}: {
-  visible: boolean;
-  onToggle: () => void;
-}) {
+function LoginPasswordField({ register, errors }: Pick<LoginFields, 'register' | 'errors'>) {
   return (
-    <button
-      type="button"
-      className={styles.visibilityToggle}
-      aria-label={visible ? 'Esconder senha' : 'Mostrar senha'}
-      aria-pressed={visible}
-      onClick={onToggle}
-    >
-      <Icon name={visible ? 'visibilityOff' : 'visibility'} size={20} />
-    </button>
-  );
-}
-
-function PasswordField({ register, errors }: Pick<LoginFields, 'register' | 'errors'>) {
-  const [visible, setVisible] = useState(false);
-
-  return (
-    <div className={styles.passwordField}>
-      <TextField
-        label="Senha"
-        icon="lock"
-        endAdornment={
-          <PasswordVisibilityToggle visible={visible} onToggle={() => setVisible(!visible)} />
-        }
-        type={visible ? 'text' : 'password'}
-        autoComplete="current-password"
-        placeholder="••••••••••••"
-        error={errors.password?.message}
-        {...register('password')}
-      />
-      <Link to={paths.forgotPassword} className={styles.forgotLink}>
-        Esqueceu a senha?
-      </Link>
-    </div>
+    <PasswordField
+      label="Senha"
+      autoComplete="current-password"
+      placeholder="••••••••••••"
+      error={errors.password?.message}
+      aside={
+        <Link to={paths.forgotPassword} className={styles.forgotLink}>
+          Esqueceu a senha?
+        </Link>
+      }
+      {...register('password')}
+    />
   );
 }
 
@@ -103,7 +77,7 @@ export function LoginForm({
   return (
     <form className={styles.form} noValidate onSubmit={submit}>
       <EmailField register={register} errors={errors} />
-      <PasswordField register={register} errors={errors} />
+      <LoginPasswordField register={register} errors={errors} />
       <div className={styles.remember}>
         <Checkbox label="Lembrar de mim por 30 dias" {...rememberMe} />
       </div>

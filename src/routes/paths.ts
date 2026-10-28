@@ -27,3 +27,7 @@ export const homePathByRole: Record<UserRole, string> = {
   SELLER: paths.profile,
   ADMIN: paths.backoffice.dashboard,
 };
+
+export function checkEmailPathFor(email: string): string {
+  return `${paths.checkEmail}?${new URLSearchParams({ email }).toString()}`;
+}

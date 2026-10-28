@@ -1,0 +1,109 @@
+import { Button } from '@/components/Button/Button';
+import { Checkbox } from '@/components/Checkbox/Checkbox';
+import { Icon } from '@/components/Icon/Icon';
+import { TextField } from '@/components/TextField/TextField';
+import type { ApiError } from '@/lib/api-error';
+
+import type { RegisterInput } from '../../auth.schemas';
+import { useRegisterForm } from '../../hooks/useRegisterForm';
+import { PasswordField } from '../PasswordField/PasswordField';
+import { PasswordStrength } from '../PasswordStrength/PasswordStrength';
+import { passwordStrength, passwordStrengthLabel } from '../PasswordStrength/passwordStrength';
+import { RoleSelector } from '../RoleSelector/RoleSelector';
+import styles from './RegisterForm.module.css';
+
+type RegisterFields = ReturnType<typeof useRegisterForm>;
+
+function IdentityFields({ register, errors }: Pick<RegisterFields, 'register' | 'errors'>) {
+  return (
+    <>
+      <TextField
+        label="Nome completo"
+        icon="person"
+        autoComplete="name"
+        placeholder="Ex: Gabriel Nascimento"
+        error={errors.name?.message}
+        {...register('name')}
+      />
+      <TextField
+        label="E-mail institucional ou pessoal"
+        icon="envelope"
+        type="email"
+        autoComplete="email"
+        placeholder="Ex: gabriel@email.com"
+        error={errors.email?.message}
+        {...register('email')}
+      />
+    </>
+  );
+}
+
+function NewPasswordField({ register, errors, password }: Omit<RegisterFields, 'submit' | 'role'>) {
+  const strength = passwordStrength(password);
+
+  return (
+    <div>
+      <PasswordField
+        label="Sua melhor senha"
+        autoComplete="new-password"
+        placeholder="Mínimo 8 dígitos com números e símbolos"
+        error={errors.password?.message}
+        aside={<span className={styles.strengthLabel}>{passwordStrengthLabel(strength)}</span>}
+        {...register('password')}
+      />
+      <PasswordStrength strength={strength} />
+    </div>
+  );
+}
+
+function ConfirmPasswordField({ register, errors }: Pick<RegisterFields, 'register' | 'errors'>) {
+  return (
+    <PasswordField
+      label="Confirmar senha"
+      autoComplete="new-password"
+      placeholder="Repita sua senha escolhida"
+      revealable={false}
+      error={errors.confirmPassword?.message}
+      {...register('confirmPassword')}
+    />
+  );
+}
+
+function TermsLabel() {
+  return (
+    <>
+      Concordo com os <span className={styles.highlight}>Termos de Uso</span> e a{' '}
+      <span className={styles.highlight}>Política de Privacidade</span> do ecossistema CromoCard.
+    </>
+  );
+}
+
+interface RegisterFormProps {
+  isSubmitting: boolean;
+  apiError: ApiError | null;
+  onSubmit: (input: RegisterInput) => void;
+}
+
+export function RegisterForm({ isSubmitting, apiError, onSubmit }: RegisterFormProps) {
+  const { register, errors, submit, password, role } = useRegisterForm(onSubmit, apiError);
+
+  return (
+    <form className={styles.form} noValidate onSubmit={submit}>
+      <IdentityFields register={register} errors={errors} />
+      <RoleSelector selected={role} error={errors.role?.message} {...register('role')} />
+      <NewPasswordField register={register} errors={errors} password={password} />
+      <ConfirmPasswordField register={register} errors={errors} />
+      <div className={styles.terms}>
+        <Checkbox
+          label={<TermsLabel />}
+          error={errors.termsAccepted?.message}
+          {...register('termsAccepted')}
+        />
+      </div>
+      <Button type="submit" disabled={isSubmitting} className={styles.submit}>
+        {isSubmitting ? 'Criando conta…' : 'Criar Conta'}
+        {!isSubmitting && <Icon name="arrowForward" size={20} />}
+      </Button>
+    </form>
+  );
+}
