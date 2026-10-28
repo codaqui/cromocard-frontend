@@ -1,7 +1,7 @@
 import { Link, useSearchParams } from 'react-router';
 
 import type { ApiError } from '@/lib/api-error';
-import { checkEmailPathFor, EMAIL_CONFIRMED_PARAM } from '@/routes/paths';
+import { checkEmailPathFor, EMAIL_CONFIRMED_PARAM, PASSWORD_CHANGED_PARAM } from '@/routes/paths';
 
 import styles from './LoginPanel.module.css';
 
@@ -17,6 +17,14 @@ export function LoginNotice({ error, email }: LoginNoticeProps) {
     return (
       <p className={styles.notice} data-tone="warning" role="alert">
         {error.message}. <Link to={checkEmailPathFor(email)}>Reenviar confirmação</Link>
+      </p>
+    );
+  }
+
+  if (!error && searchParams.has(PASSWORD_CHANGED_PARAM)) {
+    return (
+      <p className={styles.notice} data-tone="success" role="status">
+        Senha alterada. Entre com a senha nova.
       </p>
     );
   }

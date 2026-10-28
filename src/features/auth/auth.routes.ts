@@ -49,6 +49,13 @@ export const authRoutes: RouteObject[] = [
   },
 ];
 
-export const emailVerificationRoutes: RouteObject[] = [
-  { element: createElement(AuthLayout), children: [verifyEmailRoute] },
+const resetPasswordRoute: RouteObject = {
+  path: paths.resetPassword,
+  lazy: async () => ({
+    Component: (await import('./pages/ResetPasswordPage/ResetPasswordPage')).ResetPasswordPage,
+  }),
+};
+
+export const tokenLinkRoutes: RouteObject[] = [
+  { element: createElement(AuthLayout), children: [verifyEmailRoute, resetPasswordRoute] },
 ];
