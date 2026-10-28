@@ -5,6 +5,7 @@ export const paths = {
   login: '/login',
   register: '/cadastro',
   forgotPassword: '/esqueci-senha',
+  resetPassword: '/redefinir-senha',
   checkEmail: '/confirme-seu-email',
   verifyEmail: '/confirmar-email',
   profile: '/profile',
@@ -31,6 +32,10 @@ export const homePathByRole: Record<UserRole, string> = {
 export const EMAIL_CONFIRMED_PARAM = 'confirmado';
 
 export const loginAfterEmailConfirmedPath = `${paths.login}?${EMAIL_CONFIRMED_PARAM}=1`;
+
+export const PASSWORD_CHANGED_PARAM = 'senha-alterada';
+
+export const loginAfterPasswordChangedPath = `${paths.login}?${PASSWORD_CHANGED_PARAM}=1`;
 
 export function checkEmailPathFor(email: string): string {
   return `${paths.checkEmail}?${new URLSearchParams({ email }).toString()}`;

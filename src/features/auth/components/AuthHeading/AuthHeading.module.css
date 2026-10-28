@@ -1,0 +1,21 @@
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.title {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--font-size-title);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.description {
+  margin: 0;
+  max-width: 28rem;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  line-height: 1.65;
+}

@@ -37,3 +37,11 @@ export function useVerifyEmail() {
 export function useResendVerification() {
   return useMutation({ mutationFn: authApi.resendVerification });
 }
+
+export function useForgotPassword() {
+  return useMutation({ mutationFn: authApi.forgotPassword });
+}
+
+export function useResetPassword() {
+  return useMutation({ mutationFn: authApi.resetPassword });
+}
