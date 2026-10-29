@@ -11,7 +11,9 @@ export function loginPathFor({ pathname, search }: Pick<Location, 'pathname' | '
 }
 
 function isInternalPath(path: string | null): path is string {
-  return Boolean(path?.startsWith('/') && !path.startsWith('//'));
+  if (!path?.startsWith('/')) return false;
+  const { origin } = window.location;
+  return new URL(path, origin).origin === origin && !path.includes('\\');
 }
 
 export function pathAfterLogin(search: string, role: UserRole): string {
