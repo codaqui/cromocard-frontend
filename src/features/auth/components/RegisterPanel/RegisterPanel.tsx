@@ -5,6 +5,7 @@ import { checkEmailPathFor, paths } from '@/routes/paths';
 
 import { useRegister } from '../../auth.queries';
 import type { RegisterInput } from '../../auth.schemas';
+import { authErrorCodes } from '../../auth.types';
 import { RegisterForm } from '../RegisterForm/RegisterForm';
 import styles from './RegisterPanel.module.css';
 
@@ -13,18 +14,20 @@ interface RegisterErrorProps {
   email: string;
 }
 
-function RegisterError({ error, email }: RegisterErrorProps) {
-  if (!error || error.details) return null;
+function isEmailAlreadyRegistered(error: ApiError | null): error is ApiError {
+  return error?.code === authErrorCodes.emailAlreadyRegistered;
+}
+
+function EmailAlreadyRegistered({ error, email }: RegisterErrorProps) {
+  if (!isEmailAlreadyRegistered(error)) return null;
 
   return (
     <div className={styles.error} role="alert">
       <p>{error.message}</p>
-      {error.code === 'EMAIL_ALREADY_REGISTERED' && (
-        <p className={styles.actions}>
-          <Link to={paths.login}>Entrar na conta</Link>
-          <Link to={checkEmailPathFor(email)}>Reenviar confirmação</Link>
-        </p>
-      )}
+      <p className={styles.actions}>
+        <Link to={paths.login}>Entrar na conta</Link>
+        <Link to={checkEmailPathFor(email)}>Reenviar confirmação</Link>
+      </p>
     </div>
   );
 }
@@ -40,10 +43,13 @@ export function RegisterPanel() {
 
   return (
     <>
-      <RegisterError error={registration.error} email={registration.variables?.email ?? ''} />
+      <EmailAlreadyRegistered
+        error={registration.error}
+        email={registration.variables?.email ?? ''}
+      />
       <RegisterForm
         isSubmitting={registration.isPending}
-        apiError={registration.error}
+        apiError={isEmailAlreadyRegistered(registration.error) ? null : registration.error}
         onSubmit={submit}
       />
     </>

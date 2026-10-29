@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router';
 import type { ApiError } from '@/lib/api-error';
 import { checkEmailPathFor, EMAIL_CONFIRMED_PARAM } from '@/routes/paths';
 
+import { authErrorCodes } from '../../auth.types';
 import styles from './LoginPanel.module.css';
 
 interface LoginNoticeProps {
@@ -13,7 +14,7 @@ interface LoginNoticeProps {
 export function LoginNotice({ error, email }: LoginNoticeProps) {
   const [searchParams] = useSearchParams();
 
-  if (error?.code === 'EMAIL_NOT_VERIFIED') {
+  if (error?.code === authErrorCodes.emailNotVerified) {
     return (
       <p className={styles.notice} data-tone="warning" role="alert">
         {error.message}. <Link to={checkEmailPathFor(email)}>Reenviar confirmação</Link>

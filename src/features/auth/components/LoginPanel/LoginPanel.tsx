@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { env } from '@/config/env';
 
 import { useGoogleLogin, useLogin } from '../../auth.queries';
+import { authErrorCodes } from '../../auth.types';
 import type { LoginInput } from '../../auth.schemas';
 import type { AuthSession } from '../../auth.types';
 import { useLoginRedirect } from '../../hooks/useLoginRedirect';
@@ -28,7 +29,7 @@ function useLoginActions() {
 
 export function LoginPanel() {
   const { isPending, error, email, submit, submitGoogle } = useLoginActions();
-  const formError = error?.code === 'EMAIL_NOT_VERIFIED' ? null : error;
+  const formError = error?.code === authErrorCodes.emailNotVerified ? null : error;
   const [rememberMe, setRememberMe] = useState(false);
 
   return (
