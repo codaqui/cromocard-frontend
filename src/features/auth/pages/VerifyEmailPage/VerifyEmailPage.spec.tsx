@@ -52,4 +52,23 @@ describe('VerifyEmailPage', () => {
       email: 'ana@cromocard.dev',
     });
   });
+
+  it('sem token mostra o link inválido sem chamar a API', async () => {
+    renderWithProviders({ routes, initialPath: paths.verifyEmail });
+
+    expect(
+      await screen.findByRole('heading', { name: 'Link inválido ou expirado' }),
+    ).toBeInTheDocument();
+    expect(authApi.verifyEmail).not.toHaveBeenCalled();
+  });
+
+  it('falha que não é de link (rede, 500) mostra o erro, sem dizer que o link venceu', async () => {
+    vi.mocked(authApi.verifyEmail).mockRejectedValue(
+      new ApiError({ status: 500, code: 'INTERNAL_ERROR', message: 'Erro inesperado.' }),
+    );
+    renderWithProviders({ routes, initialPath: `${paths.verifyEmail}?token=abc` });
+
+    expect(await screen.findByText('Erro inesperado.')).toBeInTheDocument();
+    expect(screen.queryByText('Link inválido ou expirado')).not.toBeInTheDocument();
+  });
 });

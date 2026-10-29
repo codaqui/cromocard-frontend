@@ -24,7 +24,7 @@
 
 .form .submit {
   width: 100%;
-  min-height: 3.25rem;
+  min-height: var(--size-auth-action);
   border: none;
   border-radius: var(--radius-sm);
   background: var(--gradient-primary);

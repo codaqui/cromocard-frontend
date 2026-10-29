@@ -43,7 +43,7 @@
   justify-content: center;
   gap: var(--space-2);
   width: 100%;
-  min-height: 3.25rem;
+  min-height: var(--size-auth-action);
   margin-top: var(--space-2);
   border: none;
   border-radius: var(--radius-sm);

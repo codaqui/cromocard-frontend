@@ -1,4 +1,5 @@
 import { Button } from '@/components/Button/Button';
+import { FormError } from '@/components/FormError/FormError';
 import { Checkbox } from '@/components/Checkbox/Checkbox';
 import { Icon } from '@/components/Icon/Icon';
 import { TextField } from '@/components/TextField/TextField';
@@ -38,7 +39,11 @@ function IdentityFields({ register, errors }: Pick<RegisterFields, 'register' | 
   );
 }
 
-function NewPasswordField({ register, errors, password }: Omit<RegisterFields, 'submit' | 'role'>) {
+function NewPasswordField({
+  register,
+  errors,
+  password,
+}: Pick<RegisterFields, 'register' | 'errors' | 'password'>) {
   const strength = passwordStrength(password);
 
   return (
@@ -78,6 +83,18 @@ function TermsLabel() {
   );
 }
 
+function TermsField({ register, errors }: Pick<RegisterFields, 'register' | 'errors'>) {
+  return (
+    <div className={styles.terms}>
+      <Checkbox
+        label={<TermsLabel />}
+        error={errors.termsAccepted?.message}
+        {...register('termsAccepted')}
+      />
+    </div>
+  );
+}
+
 interface RegisterFormProps {
   isSubmitting: boolean;
   apiError: ApiError | null;
@@ -85,7 +102,10 @@ interface RegisterFormProps {
 }
 
 export function RegisterForm({ isSubmitting, apiError, onSubmit }: RegisterFormProps) {
-  const { register, errors, submit, password, role } = useRegisterForm(onSubmit, apiError);
+  const { register, errors, submit, password, role, formError } = useRegisterForm(
+    onSubmit,
+    apiError,
+  );
 
   return (
     <form className={styles.form} noValidate onSubmit={submit}>
@@ -93,13 +113,8 @@ export function RegisterForm({ isSubmitting, apiError, onSubmit }: RegisterFormP
       <RoleSelector selected={role} error={errors.role?.message} {...register('role')} />
       <NewPasswordField register={register} errors={errors} password={password} />
       <ConfirmPasswordField register={register} errors={errors} />
-      <div className={styles.terms}>
-        <Checkbox
-          label={<TermsLabel />}
-          error={errors.termsAccepted?.message}
-          {...register('termsAccepted')}
-        />
-      </div>
+      <TermsField register={register} errors={errors} />
+      <FormError message={formError} />
       <Button type="submit" disabled={isSubmitting} className={styles.submit}>
         {isSubmitting ? 'Criando conta…' : 'Criar Conta'}
         {!isSubmitting && <Icon name="arrowForward" size={20} />}

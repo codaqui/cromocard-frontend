@@ -4,7 +4,7 @@ import { paths } from '@/routes/paths';
 
 import { AuthStatus } from '../../components/AuthStatus/AuthStatus';
 import { ResendVerificationForm } from '../../components/ResendVerificationForm/ResendVerificationForm';
-import { useResendVerificationFeedback } from '../../hooks/useResendVerification';
+import { useResendVerificationFeedback } from '../../hooks/useResendVerificationFeedback';
 
 export function CheckEmailPage() {
   const [searchParams] = useSearchParams();

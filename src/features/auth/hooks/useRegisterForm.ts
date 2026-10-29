@@ -1,16 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { type FormEvent, useEffect } from 'react';
+import type { FormEvent } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 
+import { useApiFieldErrors } from '@/hooks/useApiFieldErrors';
 import type { ApiError } from '@/lib/api-error';
 
 import { type RegisterInput, registerSchema } from '../auth.schemas';
 
-const registerFields: (keyof RegisterInput)[] = ['name', 'email', 'role', 'password'];
-
-function isRegisterField(field: string): field is keyof RegisterInput {
-  return registerFields.includes(field as keyof RegisterInput);
-}
+const registerFields = ['name', 'email', 'role', 'password', 'termsAccepted'] as const;
 
 export function useRegisterForm(
   onSubmit: (input: RegisterInput) => void,
@@ -21,11 +18,7 @@ export function useRegisterForm(
     defaultValues: { name: '', email: '', password: '', confirmPassword: '', termsAccepted: false },
   });
 
-  useEffect(() => {
-    apiError?.details
-      ?.filter((detail) => isRegisterField(detail.field))
-      .forEach(({ field, message }) => setError(field as keyof RegisterInput, { message }));
-  }, [apiError, setError]);
+  const formError = useApiFieldErrors(apiError, registerFields, setError);
 
   const submit = (event: FormEvent) => void handleSubmit(onSubmit)(event);
 
@@ -33,6 +26,7 @@ export function useRegisterForm(
     register,
     errors: formState.errors,
     submit,
+    formError,
     password: useWatch({ control, name: 'password' }),
     role: useWatch({ control, name: 'role' }),
   };

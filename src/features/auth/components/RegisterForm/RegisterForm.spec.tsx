@@ -2,14 +2,17 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
+import { ApiError } from '@/lib/api-error';
 import { paths } from '@/routes/paths';
 import { renderWithProviders } from '@/test/renderWithProviders';
 
 import { RegisterForm } from './RegisterForm';
 
-function renderForm(isSubmitting = false) {
+function renderForm(isSubmitting = false, apiError: ApiError | null = null) {
   const onSubmit = vi.fn();
-  const element = <RegisterForm isSubmitting={isSubmitting} apiError={null} onSubmit={onSubmit} />;
+  const element = (
+    <RegisterForm isSubmitting={isSubmitting} apiError={apiError} onSubmit={onSubmit} />
+  );
   renderWithProviders({ routes: [{ path: paths.register, element }], initialPath: paths.register });
   return onSubmit;
 }
@@ -98,5 +101,24 @@ describe('RegisterForm', () => {
     renderForm(true);
 
     expect(screen.getByRole('button', { name: 'Criando conta…' })).toBeDisabled();
+  });
+
+  it('CA3: o erro da API sobre os termos aparece no campo', () => {
+    const apiError = new ApiError({
+      status: 400,
+      code: 'VALIDATION_ERROR',
+      message: 'Dados inválidos',
+      details: [{ field: 'termsAccepted', message: 'Aceite os termos para continuar' }],
+    });
+    renderForm(false, apiError);
+
+    expect(screen.getByText('Aceite os termos para continuar')).toBeInTheDocument();
+    expect(screen.queryByText('Dados inválidos')).not.toBeInTheDocument();
+  });
+
+  it('mostra a mensagem geral quando o erro da API não é de nenhum campo', () => {
+    renderForm(false, new ApiError({ status: 429, code: 'TOO_MANY_REQUESTS', message: 'Aguarde' }));
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Aguarde');
   });
 });

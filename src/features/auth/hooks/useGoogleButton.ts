@@ -2,13 +2,15 @@ import { type RefObject, useEffect, useEffectEvent, useRef, useState } from 'rea
 
 import { type GoogleButtonOptions, loadGoogleIdentity } from '@/lib/google-identity';
 
+const GOOGLE_BUTTON_WIDTH_IN_PX = 400;
+
 const buttonOptions: GoogleButtonOptions = {
   theme: 'filled_black',
   size: 'large',
   text: 'continue_with',
   shape: 'rectangular',
   locale: 'pt-BR',
-  width: 400,
+  width: GOOGLE_BUTTON_WIDTH_IN_PX,
 };
 
 export function useGoogleButton(
