@@ -33,8 +33,15 @@ export function setSessionRefresher(refresher: SessionRefresher): () => void {
   };
 }
 
+const CROSS_TAB_REFRESH_LOCK = 'cromocard-session-refresh';
+
+function refreshAcrossTabs(): Promise<boolean> {
+  if (!('locks' in navigator)) return refreshSession();
+  return navigator.locks.request(CROSS_TAB_REFRESH_LOCK, () => refreshSession());
+}
+
 export function refreshSessionOnce(): Promise<boolean> {
-  refreshInFlight ??= refreshSession().finally(() => {
+  refreshInFlight ??= refreshAcrossTabs().finally(() => {
     refreshInFlight = null;
   });
   return refreshInFlight;
