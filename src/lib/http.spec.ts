@@ -7,7 +7,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { accessTokenStore } from '@/lib/access-token';
-import { api, http, onUnauthorized, setSessionRefresher } from '@/lib/http';
+import { api, http, onUnauthorized, refreshSessionOnce, setSessionRefresher } from '@/lib/http';
 
 type Responder = (config: InternalAxiosRequestConfig) => { status: number; data: unknown };
 
@@ -113,5 +113,20 @@ describe('http', () => {
     });
     expect(refresher).not.toHaveBeenCalled();
     stop();
+  });
+
+  it('renova dentro de um lock entre abas, para duas abas não gastarem o mesmo refresh', async () => {
+    const lockNames: string[] = [];
+    const request = vi.fn((name: string, task: () => Promise<boolean>) => {
+      lockNames.push(name);
+      return task();
+    });
+    vi.stubGlobal('navigator', { ...navigator, locks: { request } });
+    const stop = setSessionRefresher(() => Promise.resolve(true));
+
+    await expect(refreshSessionOnce()).resolves.toBe(true);
+    expect(lockNames).toEqual(['cromocard-session-refresh']);
+    stop();
+    vi.unstubAllGlobals();
   });
 });
