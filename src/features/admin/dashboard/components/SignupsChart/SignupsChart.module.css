@@ -1,0 +1,65 @@
+.chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+}
+
+.title {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-caps);
+  text-transform: uppercase;
+  color: var(--color-label);
+}
+
+.svg {
+  width: 100%;
+  max-height: 14rem;
+}
+
+.customers {
+  fill: var(--color-primary);
+}
+
+.sellers {
+  fill: var(--color-warning);
+}
+
+.label {
+  font-size: var(--font-size-xs);
+  text-anchor: middle;
+  fill: var(--color-text-muted);
+}
+
+.legend {
+  display: flex;
+  gap: var(--space-4);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.customersSwatch,
+.sellersSwatch {
+  width: var(--space-3);
+  height: var(--space-3);
+  border-radius: var(--radius-xs);
+}
+
+.customersSwatch {
+  background: var(--color-primary);
+}
+
+.sellersSwatch {
+  background: var(--color-warning);
+}
