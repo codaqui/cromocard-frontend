@@ -2,6 +2,7 @@ import type { ChangeEvent } from 'react';
 import { Link } from 'react-router';
 
 import { Button } from '@/components/Button/Button';
+import { FormError } from '@/components/FormError/FormError';
 import { Checkbox } from '@/components/Checkbox/Checkbox';
 import { Icon } from '@/components/Icon/Icon';
 import { TextField } from '@/components/TextField/TextField';
@@ -46,16 +47,6 @@ function LoginPasswordField({ register, errors }: Pick<LoginFields, 'register' |
   );
 }
 
-function FormError({ error }: { error: ApiError | null }) {
-  if (!error || error.details) return null;
-
-  return (
-    <p className={styles.error} role="alert">
-      {error.message}
-    </p>
-  );
-}
-
 interface LoginFormProps {
   isSubmitting: boolean;
   apiError: ApiError | null;
@@ -69,7 +60,7 @@ export function LoginForm({
   onSubmit,
   onRememberMeChange,
 }: LoginFormProps) {
-  const { register, errors, submit } = useLoginForm(onSubmit, apiError);
+  const { register, errors, submit, formError } = useLoginForm(onSubmit, apiError);
   const rememberMe = register('rememberMe', {
     onChange: (event: ChangeEvent<HTMLInputElement>) => onRememberMeChange?.(event.target.checked),
   });
@@ -81,7 +72,7 @@ export function LoginForm({
       <div className={styles.remember}>
         <Checkbox label="Lembrar de mim por 30 dias" {...rememberMe} />
       </div>
-      <FormError error={apiError} />
+      <FormError message={formError} />
       <Button type="submit" disabled={isSubmitting} className={styles.submit}>
         {isSubmitting ? 'Entrando…' : 'Entrar na Plataforma'}
         {!isSubmitting && <Icon name="arrowForward" size={20} />}

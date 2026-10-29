@@ -71,14 +71,17 @@ describe('LoginPanel', () => {
     expect(await screen.findByText('Página pedida antes do login')).toBeInTheDocument();
   });
 
-  it('ignora redirect para fora do app', async () => {
-    vi.mocked(authApi.login).mockResolvedValue(sessionFor('CUSTOMER'));
-    renderWithProviders({ routes, initialPath: `${paths.login}?redirect=//site-malicioso.com` });
+  it.each(['//site-malicioso.com', '/%5Csite-malicioso.com', 'https://site-malicioso.com'])(
+    'ignora redirect para fora do app (%s)',
+    async (redirect) => {
+      vi.mocked(authApi.login).mockResolvedValue(sessionFor('CUSTOMER'));
+      renderWithProviders({ routes, initialPath: `${paths.login}?redirect=${redirect}` });
 
-    await submitLogin();
+      await submitLogin();
 
-    expect(await screen.findByText('Home do cliente')).toBeInTheDocument();
-  });
+      expect(await screen.findByText('Home do cliente')).toBeInTheDocument();
+    },
+  );
 
   it('CA4: mostra "E-mail ou senha incorretos" vindo da API', async () => {
     rejectWith(401, 'INVALID_CREDENTIALS', 'E-mail ou senha incorretos');

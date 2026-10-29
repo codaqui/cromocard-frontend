@@ -73,6 +73,7 @@
   --size-dialog: 32rem;
   --size-drawer: 28rem;
   --size-toast: 24rem;
+  --size-field-icon: 1.25rem;
   --size-card-min: 12rem;
 
   --z-overlay: 100;
@@ -164,7 +165,11 @@
   --radius-sm: 0.625rem;
 
   --size-control: 3.125rem;
+  --size-auth-action: 3.25rem;
   --size-auth-form: 37rem;
+  --size-auth-content: 28rem;
+  --size-google-button: 25rem;
+  --size-google-button-height: 2.875rem;
   --size-showcase-fade: 4rem;
 
   color-scheme: dark;
