@@ -2,6 +2,10 @@ import { createBrowserRouter, Navigate } from 'react-router';
 
 import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { NotFoundPage } from '@/components/NotFoundPage/NotFoundPage';
+import { adminBackofficeRoutes } from '@/features/admin';
+import { catalogBackofficeRoutes } from '@/features/catalog';
+import { communityBackofficeRoutes } from '@/features/community';
+import { notificationsBackofficeRoutes } from '@/features/notifications';
 import { usersBackofficeRoutes, usersRoutes } from '@/features/users';
 import { RequireAuth } from '@/routes/guards/RequireAuth';
 import { RequireRole } from '@/routes/guards/RequireRole';
@@ -34,8 +38,12 @@ export const router = createBrowserRouter([
           {
             element: <AdminLayout />,
             children: [
-              { index: true, element: <Navigate to={paths.backoffice.users} replace /> },
+              { index: true, element: <Navigate to={paths.backoffice.dashboard} replace /> },
+              ...adminBackofficeRoutes,
               ...usersBackofficeRoutes,
+              ...notificationsBackofficeRoutes,
+              ...catalogBackofficeRoutes,
+              ...communityBackofficeRoutes,
             ],
           },
         ],

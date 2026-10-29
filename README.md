@@ -36,7 +36,7 @@ O backend ainda não tem `/auth` (login). Até ele existir, o `npm run dev` usa 
    ```
 
 3. Cole o token em `VITE_DEV_ACCESS_TOKEN` e reinicie o `npm run dev`. O ADMIN cai em
-   `/backoffice/users`; CUSTOMER e SELLER caem em `/profile`.
+   `/backoffice/dashboard`; CUSTOMER e SELLER caem em `/profile`.
 
 Quando a feature `auth` existir, este passo some: o login grava o token em memória e o refresh
 token vem em cookie `httpOnly` (ADR-005).

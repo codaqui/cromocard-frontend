@@ -1,16 +1,22 @@
 .link {
-  padding: var(--space-2) var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-sm);
-  color: var(--color-text);
+  color: var(--color-label);
   font-weight: 500;
   text-decoration: none;
 }
 
 .link:hover {
-  background: var(--color-background);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
 }
 
-.active {
-  color: var(--color-primary);
-  background: var(--color-background);
+.active,
+.active:hover {
+  background: var(--color-nav-active-background);
+  color: var(--color-nav-active-text);
+  box-shadow: var(--shadow-primary);
 }
