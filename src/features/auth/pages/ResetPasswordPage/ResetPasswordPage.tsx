@@ -3,12 +3,11 @@ import { Link, Navigate, useSearchParams } from 'react-router';
 import { loginAfterPasswordChangedPath, paths } from '@/routes/paths';
 
 import { useResetPassword } from '../../auth.queries';
+import { authErrorCodes } from '../../auth.types';
 import { AuthHeading } from '../../components/AuthHeading/AuthHeading';
 import { AuthStatus } from '../../components/AuthStatus/AuthStatus';
 import { ResetPasswordForm } from '../../components/ResetPasswordForm/ResetPasswordForm';
 import styles from './ResetPasswordPage.module.css';
-
-const INVALID_RESET_TOKEN = 'INVALID_RESET_TOKEN';
 
 function InvalidResetLink() {
   return (
@@ -24,10 +23,11 @@ function InvalidResetLink() {
 }
 
 export function ResetPasswordPage() {
-  const token = useSearchParams()[0].get('token') ?? '';
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token') ?? '';
   const reset = useResetPassword();
 
-  if (!token || reset.error?.code === INVALID_RESET_TOKEN) return <InvalidResetLink />;
+  if (!token || reset.error?.code === authErrorCodes.invalidResetToken) return <InvalidResetLink />;
   if (reset.isSuccess) return <Navigate to={loginAfterPasswordChangedPath} replace />;
 
   return (
@@ -38,7 +38,7 @@ export function ResetPasswordPage() {
       />
       <ResetPasswordForm
         isSubmitting={reset.isPending}
-        errorMessage={reset.error?.details ? undefined : reset.error?.message}
+        apiError={reset.error}
         onSubmit={({ password }) => reset.mutate({ token, password })}
       />
     </section>

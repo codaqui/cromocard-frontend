@@ -2,6 +2,7 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { ApiError } from '@/lib/api-error';
 import { paths } from '@/routes/paths';
 import { renderWithProviders } from '@/test/renderWithProviders';
 
@@ -54,5 +55,22 @@ describe('ForgotPasswordPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Enviar link de redefinição' }));
 
     expect(await screen.findByRole('button', { name: 'Enviando…' })).toBeDisabled();
+  });
+
+  it('CA3: o erro de formato vindo da API também aparece no campo', async () => {
+    vi.mocked(authApi.forgotPassword).mockRejectedValue(
+      new ApiError({
+        status: 400,
+        code: 'VALIDATION_ERROR',
+        message: 'Dados inválidos',
+        details: [{ field: 'email', message: 'E-mail inválido' }],
+      }),
+    );
+    renderPage();
+
+    await userEvent.type(screen.getByLabelText('E-mail'), 'ana@cromocard.dev');
+    await userEvent.click(screen.getByRole('button', { name: 'Enviar link de redefinição' }));
+
+    expect(await screen.findByText('E-mail inválido')).toBeInTheDocument();
   });
 });

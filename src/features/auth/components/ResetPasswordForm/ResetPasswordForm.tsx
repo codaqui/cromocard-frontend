@@ -1,31 +1,14 @@
 import { Button } from '@/components/Button/Button';
+import { FormError } from '@/components/FormError/FormError';
+import type { ApiError } from '@/lib/api-error';
 
 import type { ResetPasswordInput } from '../../auth.schemas';
 import { useResetPasswordForm } from '../../hooks/useResetPasswordForm';
+import { NewPasswordField } from '../NewPasswordField/NewPasswordField';
 import { PasswordField } from '../PasswordField/PasswordField';
-import { PasswordStrength } from '../PasswordStrength/PasswordStrength';
-import { passwordStrength, passwordStrengthLabel } from '../PasswordStrength/passwordStrength';
 import styles from './ResetPasswordForm.module.css';
 
 type ResetFields = ReturnType<typeof useResetPasswordForm>;
-
-function NewPassword({ register, errors, password }: Omit<ResetFields, 'submit'>) {
-  const strength = passwordStrength(password);
-
-  return (
-    <div>
-      <PasswordField
-        label="Senha nova"
-        autoComplete="new-password"
-        placeholder="Mínimo 8 dígitos com números e símbolos"
-        error={errors.password?.message}
-        aside={<span className={styles.strengthLabel}>{passwordStrengthLabel(strength)}</span>}
-        {...register('password')}
-      />
-      <PasswordStrength strength={strength} />
-    </div>
-  );
-}
 
 function ConfirmPassword({ register, errors }: Pick<ResetFields, 'register' | 'errors'>) {
   return (
@@ -42,26 +25,26 @@ function ConfirmPassword({ register, errors }: Pick<ResetFields, 'register' | 'e
 
 interface ResetPasswordFormProps {
   isSubmitting: boolean;
-  errorMessage?: string;
+  apiError: ApiError | null;
   onSubmit: (input: ResetPasswordInput) => void;
 }
 
-export function ResetPasswordForm({
-  isSubmitting,
-  errorMessage,
-  onSubmit,
-}: ResetPasswordFormProps) {
-  const { register, errors, submit, password } = useResetPasswordForm(onSubmit);
+export function ResetPasswordForm({ isSubmitting, apiError, onSubmit }: ResetPasswordFormProps) {
+  const { register, errors, submit, password, formError } = useResetPasswordForm(
+    onSubmit,
+    apiError,
+  );
 
   return (
     <form className={styles.form} noValidate onSubmit={submit}>
-      <NewPassword register={register} errors={errors} password={password} />
+      <NewPasswordField
+        label="Senha nova"
+        password={password}
+        error={errors.password?.message}
+        {...register('password')}
+      />
       <ConfirmPassword register={register} errors={errors} />
-      {errorMessage && (
-        <p className={styles.error} role="alert">
-          {errorMessage}
-        </p>
-      )}
+      <FormError message={formError} />
       <Button type="submit" disabled={isSubmitting} className={styles.submit}>
         {isSubmitting ? 'Salvando…' : 'Salvar senha nova'}
       </Button>

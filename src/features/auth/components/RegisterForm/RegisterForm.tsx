@@ -7,9 +7,8 @@ import type { ApiError } from '@/lib/api-error';
 
 import type { RegisterInput } from '../../auth.schemas';
 import { useRegisterForm } from '../../hooks/useRegisterForm';
+import { NewPasswordField } from '../NewPasswordField/NewPasswordField';
 import { PasswordField } from '../PasswordField/PasswordField';
-import { PasswordStrength } from '../PasswordStrength/PasswordStrength';
-import { passwordStrength, passwordStrengthLabel } from '../PasswordStrength/passwordStrength';
 import { RoleSelector } from '../RoleSelector/RoleSelector';
 import styles from './RegisterForm.module.css';
 
@@ -36,28 +35,6 @@ function IdentityFields({ register, errors }: Pick<RegisterFields, 'register' | 
         {...register('email')}
       />
     </>
-  );
-}
-
-function NewPasswordField({
-  register,
-  errors,
-  password,
-}: Pick<RegisterFields, 'register' | 'errors' | 'password'>) {
-  const strength = passwordStrength(password);
-
-  return (
-    <div>
-      <PasswordField
-        label="Sua melhor senha"
-        autoComplete="new-password"
-        placeholder="Mínimo 8 dígitos com números e símbolos"
-        error={errors.password?.message}
-        aside={<span className={styles.strengthLabel}>{passwordStrengthLabel(strength)}</span>}
-        {...register('password')}
-      />
-      <PasswordStrength strength={strength} />
-    </div>
   );
 }
 
@@ -111,7 +88,12 @@ export function RegisterForm({ isSubmitting, apiError, onSubmit }: RegisterFormP
     <form className={styles.form} noValidate onSubmit={submit}>
       <IdentityFields register={register} errors={errors} />
       <RoleSelector selected={role} error={errors.role?.message} {...register('role')} />
-      <NewPasswordField register={register} errors={errors} password={password} />
+      <NewPasswordField
+        label="Sua melhor senha"
+        password={password}
+        error={errors.password?.message}
+        {...register('password')}
+      />
       <ConfirmPasswordField register={register} errors={errors} />
       <TermsField register={register} errors={errors} />
       <FormError message={formError} />

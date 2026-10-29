@@ -36,6 +36,7 @@ export const authErrorCodes = {
   emailNotVerified: 'EMAIL_NOT_VERIFIED',
   emailAlreadyRegistered: 'EMAIL_ALREADY_REGISTERED',
   invalidVerificationToken: 'INVALID_VERIFICATION_TOKEN',
+  invalidResetToken: 'INVALID_RESET_TOKEN',
 } as const;
 
 export type AuthErrorCode = (typeof authErrorCodes)[keyof typeof authErrorCodes];

@@ -41,7 +41,7 @@ export function ForgotPasswordPage() {
       />
       <ForgotPasswordForm
         isSubmitting={forgot.isPending}
-        errorMessage={forgot.error?.details ? undefined : forgot.error?.message}
+        apiError={forgot.error}
         onSubmit={(input) => forgot.mutate(input)}
       />
       <BackToLogin />

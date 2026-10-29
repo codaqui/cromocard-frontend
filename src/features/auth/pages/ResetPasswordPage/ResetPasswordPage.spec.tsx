@@ -89,4 +89,20 @@ describe('ResetPasswordPage', () => {
 
     expect(await screen.findByRole('button', { name: 'Salvando…' })).toBeDisabled();
   });
+
+  it('CA7: erro de validação da API sem campo da tela mostra a mensagem geral', async () => {
+    vi.mocked(authApi.resetPassword).mockRejectedValue(
+      new ApiError({
+        status: 400,
+        code: 'VALIDATION_ERROR',
+        message: 'Dados inválidos',
+        details: [{ field: 'token', message: 'Obrigatório' }],
+      }),
+    );
+    renderPage();
+
+    await submitPasswords();
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Dados inválidos');
+  });
 });
