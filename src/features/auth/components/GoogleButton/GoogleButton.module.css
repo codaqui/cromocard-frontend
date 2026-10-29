@@ -30,7 +30,7 @@
 
 .button {
   position: relative;
-  width: min(100%, 25rem);
+  width: min(100%, var(--size-google-button));
 }
 
 .button[aria-disabled='true'] {
@@ -43,7 +43,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-3);
-  min-height: 2.875rem;
+  min-height: var(--size-google-button-height);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
