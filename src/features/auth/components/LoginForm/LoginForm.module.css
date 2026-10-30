@@ -37,36 +37,13 @@
   margin-top: var(--space-2);
 }
 
-.passwordField {
-  position: relative;
-}
-
 .forgotLink {
-  position: absolute;
-  top: 0;
-  right: 0;
   color: var(--color-link);
-  font-size: var(--font-size-xs);
-  font-weight: 600;
   text-decoration: none;
 }
 
 .forgotLink:hover {
   text-decoration: underline;
-}
-
-.visibilityToggle {
-  display: inline-flex;
-  padding: var(--space-1);
-  border: none;
-  border-radius: var(--radius-xs);
-  background: transparent;
-  color: var(--color-text-muted);
-  cursor: pointer;
-}
-
-.visibilityToggle:hover {
-  color: var(--color-text);
 }
 
 .form .submit {

@@ -22,7 +22,9 @@ describe('AuthPage', () => {
   it('abre /cadastro na mesma página com a aba Criar Conta ativa', async () => {
     renderWithProviders({ routes: authRoutes, initialPath: paths.register });
 
-    expect(await screen.findByRole('heading', { name: 'Crie sua conta' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Comece sua jornada no CromoCard' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Criar Conta' })).toHaveAttribute(
       'aria-current',
       'page',

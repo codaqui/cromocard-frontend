@@ -1,4 +1,4 @@
-import { type ComponentProps, useId } from 'react';
+import { type ComponentProps, type ReactNode, useId } from 'react';
 
 import { describedByOf } from '@/components/FormField/field-ids';
 import { FieldMessages } from '@/components/FormField/FormField';
@@ -6,7 +6,7 @@ import { FieldMessages } from '@/components/FormField/FormField';
 import styles from './Checkbox.module.css';
 
 interface CheckboxProps extends Omit<ComponentProps<'input'>, 'type'> {
-  label: string;
+  label: ReactNode;
   hint?: string;
   error?: string;
 }

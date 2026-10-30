@@ -47,6 +47,10 @@
   letter-spacing: var(--letter-spacing-tight);
 }
 
+.compactTitle {
+  font-size: var(--font-size-title-compact);
+}
+
 .description {
   margin: 0;
   max-width: var(--size-auth-content);

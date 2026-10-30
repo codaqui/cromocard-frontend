@@ -3,7 +3,7 @@ import { createBrowserRouter, Navigate } from 'react-router';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { NotFoundPage } from '@/components/NotFoundPage/NotFoundPage';
 import { adminBackofficeRoutes } from '@/features/admin';
-import { authRoutes } from '@/features/auth';
+import { authRoutes, emailVerificationRoutes } from '@/features/auth';
 import { catalogBackofficeRoutes } from '@/features/catalog';
 import { communityBackofficeRoutes } from '@/features/community';
 import { notificationsBackofficeRoutes } from '@/features/notifications';
@@ -23,6 +23,7 @@ export const router = createBrowserRouter([
     errorElement: <ErrorState />,
     children: [
       { element: <RedirectIfAuthenticated />, children: authRoutes },
+      ...emailVerificationRoutes,
       {
         element: <PublicLayout />,
         children: [

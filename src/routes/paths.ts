@@ -5,6 +5,8 @@ export const paths = {
   login: '/login',
   register: '/cadastro',
   forgotPassword: '/esqueci-senha',
+  checkEmail: '/confirme-seu-email',
+  verifyEmail: '/confirmar-email',
   profile: '/profile',
   backoffice: {
     root: '/backoffice',
@@ -25,3 +27,11 @@ export const homePathByRole: Record<UserRole, string> = {
   SELLER: paths.profile,
   ADMIN: paths.backoffice.dashboard,
 };
+
+export const EMAIL_CONFIRMED_PARAM = 'confirmado';
+
+export const loginAfterEmailConfirmedPath = `${paths.login}?${EMAIL_CONFIRMED_PARAM}=1`;
+
+export function checkEmailPathFor(email: string): string {
+  return `${paths.checkEmail}?${new URLSearchParams({ email }).toString()}`;
+}
