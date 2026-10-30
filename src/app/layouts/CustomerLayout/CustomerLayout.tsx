@@ -4,13 +4,13 @@ import { Footer } from '@/components/Footer/Footer';
 import { Header } from '@/components/Header/Header';
 import { NavItem } from '@/components/NavItem/NavItem';
 import { Button } from '@/components/Button/Button';
-import { useAuth } from '@/hooks/useAuth';
+import { useSignOut } from '@/hooks/useSignOut';
 import { paths } from '@/routes/paths';
 
 import styles from './CustomerLayout.module.css';
 
 export function CustomerLayout() {
-  const { signOut } = useAuth();
+  const signOut = useSignOut();
 
   return (
     <div className={styles.shell}>

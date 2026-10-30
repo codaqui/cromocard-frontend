@@ -2,6 +2,12 @@ import type { UserRole } from '@/types/authenticated-user';
 
 export const paths = {
   home: '/',
+  login: '/login',
+  register: '/cadastro',
+  forgotPassword: '/esqueci-senha',
+  resetPassword: '/redefinir-senha',
+  checkEmail: '/confirme-seu-email',
+  verifyEmail: '/confirmar-email',
   profile: '/profile',
   backoffice: {
     root: '/backoffice',
@@ -22,3 +28,15 @@ export const homePathByRole: Record<UserRole, string> = {
   SELLER: paths.profile,
   ADMIN: paths.backoffice.dashboard,
 };
+
+export const EMAIL_CONFIRMED_PARAM = 'confirmado';
+
+export const loginAfterEmailConfirmedPath = `${paths.login}?${EMAIL_CONFIRMED_PARAM}=1`;
+
+export const PASSWORD_CHANGED_PARAM = 'senha-alterada';
+
+export const loginAfterPasswordChangedPath = `${paths.login}?${PASSWORD_CHANGED_PARAM}=1`;
+
+export function checkEmailPathFor(email: string): string {
+  return `${paths.checkEmail}?${new URLSearchParams({ email }).toString()}`;
+}
