@@ -100,12 +100,36 @@ describe('DashboardPage', () => {
       kpis: { ...summary.kpis, newUsers: 0, newSellers: 0 },
       signupsByMonth: [{ month: '2026-10', customers: 0, sellers: 0 }],
     });
+    vi.mocked(dashboardApi.listRecentSellers).mockResolvedValue({
+      data: [],
+      meta: { page: 1, pageSize: 5, total: 0, totalPages: 0 },
+    });
 
     renderPage();
 
+    await screen.findByRole('table', { name: 'Cadastros de vendedores recentes' });
     expect(
-      await screen.findByText('Não foram encontrados dados para os filtros selecionados'),
-    ).toBeInTheDocument();
+      screen.getAllByText('Não foram encontrados dados para os filtros selecionados'),
+    ).toHaveLength(2);
+    expect(screen.getByRole('region', { name: 'Total de usuários' })).toBeInTheDocument();
+  });
+
+  it('volta a lista de vendedores para a página 1 ao trocar o período', async () => {
+    vi.mocked(dashboardApi.listRecentSellers).mockResolvedValue({
+      ...sellersPage,
+      meta: { page: 1, pageSize: 5, total: 12, totalPages: 3 },
+    });
+    renderPage();
+    await screen.findByRole('row', { name: /Fábio TCG Store/ });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Próxima' }));
+    await userEvent.click(screen.getByRole('button', { name: '7 dias' }));
+
+    expect(dashboardApi.listRecentSellers).toHaveBeenLastCalledWith({
+      period: '7d',
+      page: 1,
+      pageSize: 5,
+    });
   });
 
   it('CA8: mostra o erro e tenta de novo', async () => {

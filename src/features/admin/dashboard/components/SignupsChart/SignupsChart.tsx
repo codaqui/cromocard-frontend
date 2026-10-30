@@ -20,7 +20,7 @@ function monthLabel(month: string): string {
   return monthFormatter.format(new Date(`${month}-01T00:00:00Z`)).replace(' de ', '/');
 }
 
-function describe(signups: MonthlySignups[]): string {
+function describeSignups(signups: MonthlySignups[]): string {
   const parts = signups.map(
     ({ month, customers, sellers }) =>
       `${monthLabel(month)}: ${customers} clientes e ${sellers} vendedores`,
@@ -93,7 +93,7 @@ export function SignupsChart({ signups }: SignupsChartProps) {
       <h2 className={styles.title}>Novos cadastros por mês</h2>
       <svg
         role="img"
-        aria-label={describe(signups)}
+        aria-label={describeSignups(signups)}
         viewBox={`0 0 ${width} ${CHART_HEIGHT + LABEL_HEIGHT}`}
         className={styles.svg}
       >

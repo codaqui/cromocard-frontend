@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { Link } from 'react-router';
 
 import { DataTable, type DataTableColumn } from '@/components/DataTable/DataTable';
@@ -31,9 +32,11 @@ const columns: DataTableColumn<RecentSeller>[] = [
 ];
 
 export function RecentSellersTable({ sellers, meta, onPageChange }: RecentSellersTableProps) {
+  const titleId = useId();
+
   return (
-    <section className={styles.section} aria-labelledby="recent-sellers-title">
-      <h2 id="recent-sellers-title" className={styles.title}>
+    <section className={styles.section} aria-labelledby={titleId}>
+      <h2 id={titleId} className={styles.title}>
         Cadastros de vendedores recentes
       </h2>
       <DataTable
@@ -41,7 +44,7 @@ export function RecentSellersTable({ sellers, meta, onPageChange }: RecentSeller
         columns={columns}
         rows={sellers}
         getRowKey={(seller) => seller.id}
-        emptyMessage="Nenhum vendedor cadastrado no período"
+        emptyMessage="Não foram encontrados dados para os filtros selecionados"
       />
       <Pagination page={meta.page} totalPages={meta.totalPages} onPageChange={onPageChange} />
     </section>

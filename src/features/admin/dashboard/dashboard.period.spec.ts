@@ -8,10 +8,17 @@ describe('toPeriodParams', () => {
     expect(toPeriodParams({ preset: '7d' })).toEqual({ period: '7d' });
   });
 
-  it('envia o intervalo cortando o dia pelo horário de Brasília', () => {
+  it('envia o intervalo em UTC, cortando o dia pelo horário de Brasília', () => {
     expect(toPeriodParams({ from: '2026-10-01', to: '2026-10-15' })).toEqual({
-      from: '2026-10-01T00:00:00-03:00',
-      to: '2026-10-15T23:59:59-03:00',
+      from: '2026-10-01T03:00:00.000Z',
+      to: '2026-10-16T02:59:59.999Z',
+    });
+  });
+
+  it('respeita o horário de verão antigo de Brasília', () => {
+    expect(toPeriodParams({ from: '2001-01-10', to: '2001-01-10' })).toEqual({
+      from: '2001-01-10T02:00:00.000Z',
+      to: '2001-01-11T01:59:59.999Z',
     });
   });
 });

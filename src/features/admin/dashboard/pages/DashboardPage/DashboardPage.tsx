@@ -34,12 +34,13 @@ function LoadError({ message, onRetry }: LoadErrorProps) {
   );
 }
 
-interface RecentSellersProps {
+interface SellersPaging {
   params: DashboardPeriodParams;
+  page: number;
+  onPageChange: (page: number) => void;
 }
 
-function RecentSellers({ params }: RecentSellersProps) {
-  const [page, setPage] = useState(1);
+function RecentSellers({ params, page, onPageChange }: SellersPaging) {
   const query = useRecentSellers({ ...params, page, pageSize: RECENT_SELLERS_PAGE_SIZE });
 
   if (query.isPending) return <LoadingState message="Carregando vendedores…" />;
@@ -48,19 +49,21 @@ function RecentSellers({ params }: RecentSellersProps) {
   }
 
   return (
-    <RecentSellersTable sellers={query.data.data} meta={query.data.meta} onPageChange={setPage} />
+    <RecentSellersTable
+      sellers={query.data.data}
+      meta={query.data.meta}
+      onPageChange={onPageChange}
+    />
   );
 }
 
 interface DashboardDataProps {
   summary: DashboardSummary;
-  params: DashboardPeriodParams;
+  sellers: SellersPaging;
 }
 
-function DashboardData({ summary, params }: DashboardDataProps) {
+function DashboardData({ summary, sellers }: DashboardDataProps) {
   if (summary.isEmpty) return <EmptyState title="Não existem dados para apresentação" />;
-
-  const periodKey = JSON.stringify(params);
 
   return (
     <>
@@ -70,24 +73,30 @@ function DashboardData({ summary, params }: DashboardDataProps) {
       ) : (
         <SignupsChart signups={summary.signupsByMonth} />
       )}
-      <RecentSellers key={periodKey} params={params} />
+      <RecentSellers {...sellers} />
     </>
   );
 }
 
-function DashboardContent({ params }: { params: DashboardPeriodParams }) {
-  const query = useDashboardSummary(params);
+function DashboardContent(sellers: SellersPaging) {
+  const query = useDashboardSummary(sellers.params);
 
   if (query.isPending) return <LoadingState message="Carregando o dashboard…" />;
   if (query.isError) {
     return <LoadError message={query.error.message} onRetry={() => void query.refetch()} />;
   }
 
-  return <DashboardData summary={query.data} params={params} />;
+  return <DashboardData summary={query.data} sellers={sellers} />;
 }
 
 export function DashboardPage() {
   const [period, setPeriod] = useState<Period>(DEFAULT_DASHBOARD_PERIOD);
+  const [sellersPage, setSellersPage] = useState(1);
+
+  const changePeriod = (next: Period) => {
+    setPeriod(next);
+    setSellersPage(1);
+  };
 
   return (
     <section className={styles.page}>
@@ -97,8 +106,12 @@ export function DashboardPage() {
           Exportar Dados
         </Link>
       </header>
-      <PeriodFilter value={period} onChange={setPeriod} />
-      <DashboardContent params={toPeriodParams(period)} />
+      <PeriodFilter value={period} onChange={changePeriod} />
+      <DashboardContent
+        params={toPeriodParams(period)}
+        page={sellersPage}
+        onPageChange={setSellersPage}
+      />
     </section>
   );
 }
