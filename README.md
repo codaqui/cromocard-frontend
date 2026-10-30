@@ -16,30 +16,16 @@ npm ci
 npm run dev             # http://localhost:5173
 ```
 
-## Sessão de desenvolvimento
+## Entrar no app
 
-O backend ainda não tem `/auth` (login). Até ele existir, o `npm run dev` usa um access token gerado
-à mão, informado em `VITE_DEV_ACCESS_TOKEN` no `.env`. Esse valor é ignorado no build de produção.
+O login usa a API: `/login` envia e-mail e senha para `POST /api/v1/auth/login`. O access token fica só
+em memória e o refresh token vem em cookie `httpOnly`, renovado ao abrir o app e a cada `401` (ADR-043).
+No banco local, o `npm run db:seed` do backend cria as contas de teste, com a senha que está no README
+dele (por exemplo `admin@cromocard.dev`, que cai em `/backoffice/dashboard`).
 
-1. Crie um usuário no banco local do backend:
-
-   ```bash
-   docker exec cromocard-postgres psql -U cromocard -d cromocard -c \
-     "INSERT INTO users (name, email, role) VALUES ('Admin Dev', 'admin@cromocard.local', 'ADMIN') RETURNING id;"
-   ```
-
-2. Gere um token para ele, na pasta do backend (troque `<id>` pelo id retornado; o papel pode ser
-   `ADMIN`, `CUSTOMER` ou `SELLER`):
-
-   ```bash
-   node --env-file=.env -e "const jwt = require('jsonwebtoken'); console.log(jwt.sign({ role: process.argv[2] }, process.env.JWT_SECRET, { subject: process.argv[1], expiresIn: '7d' }))" <id> ADMIN
-   ```
-
-3. Cole o token em `VITE_DEV_ACCESS_TOKEN` e reinicie o `npm run dev`. O ADMIN cai em
-   `/backoffice/dashboard`; CUSTOMER e SELLER caem em `/profile`.
-
-Quando a feature `auth` existir, este passo some: o login grava o token em memória e o refresh
-token vem em cookie `httpOnly` (ADR-005).
+O botão "Entrar com Google" só aparece com `VITE_GOOGLE_CLIENT_ID` preenchido: o client ID de um projeto
+do Google Cloud com `http://localhost:5173` nas origens JavaScript autorizadas, o mesmo `GOOGLE_CLIENT_ID`
+do backend.
 
 ## Estrutura
 
@@ -80,10 +66,11 @@ feature, use o alias `@/`; `import.meta.env` só em `src/config/env.ts`.
 | Nome | Onde | Observação |
 | --- | --- | --- |
 | `VITE_API_URL` | `.env` (dev) | URL da API sem `/api/v1` |
-| `VITE_DEV_ACCESS_TOKEN` | `.env` (dev) | Token temporário; ver "Sessão de desenvolvimento" |
+| `VITE_GOOGLE_CLIENT_ID` | `.env` (dev) | Client ID do Google Identity Services; vazio esconde o botão do Google |
 | `API_URL` | Container | Gravada em `/env.js` na subida do container; tem prioridade sobre `VITE_API_URL` |
+| `GOOGLE_CLIENT_ID` | Container | Gravada em `/env.js`; tem prioridade sobre `VITE_GOOGLE_CLIENT_ID`. Não é segredo (ADR-048) |
 
-A mesma imagem roda em homologação e produção: a URL da API não entra no build, vem do container.
+A mesma imagem roda em homologação e produção: a URL da API e o client ID do Google não entram no build, vêm do container.
 
 ## Scripts
 
@@ -99,7 +86,7 @@ A mesma imagem roda em homologação e produção: a URL da API não entra no bu
 
 ```bash
 docker build -f docker/Dockerfile -t cromocard-web .
-docker run --rm -p 8080:8080 -e API_URL=http://localhost:3000 cromocard-web
+docker run --rm -p 8080:8080 -e API_URL=http://localhost:3000 -e GOOGLE_CLIENT_ID=<client-id> cromocard-web
 ```
 
 nginx sem root na porta 8080; qualquer URL desconhecida devolve o `index.html` (SPA). Sem `API_URL`

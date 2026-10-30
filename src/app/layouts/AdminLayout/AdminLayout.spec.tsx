@@ -1,6 +1,6 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { adminBackofficeRoutes } from '@/features/admin';
 import { catalogBackofficeRoutes } from '@/features/catalog';
@@ -22,6 +22,7 @@ const routes = [
       { path: paths.backoffice.users, element: <h1>Usuários</h1> },
     ],
   },
+  { path: paths.home, element: <p>Área pública</p> },
 ];
 
 const underConstructionModules = [
@@ -82,4 +83,20 @@ describe('AdminLayout', () => {
       );
     },
   );
+
+  it('CA15: o Sair encerra a sessão e volta para a área pública', async () => {
+    const signOut = vi.fn();
+    const router = renderWithProviders({
+      routes,
+      initialPath: paths.backoffice.dashboard,
+      user: { id: '1', role: 'ADMIN' },
+      signOut,
+    });
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Sair' }));
+
+    expect(signOut).toHaveBeenCalledOnce();
+    expect(await screen.findByText('Área pública')).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe(paths.home);
+  });
 });

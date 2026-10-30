@@ -1,12 +1,14 @@
 import { Navigate } from 'react-router';
 
 import { EmptyState } from '@/components/EmptyState/EmptyState';
+import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { useAuth } from '@/hooks/useAuth';
 import { homePathByRole } from '@/routes/paths';
 
 export function RoleHomeRedirect() {
-  const { user } = useAuth();
+  const { user, isRestoringSession } = useAuth();
 
+  if (isRestoringSession) return <LoadingState message="Carregando sessão…" />;
   if (user) return <Navigate to={homePathByRole[user.role]} replace />;
 
   return (
