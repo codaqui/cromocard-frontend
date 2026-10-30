@@ -23,6 +23,13 @@ const checkEmailRoute: RouteObject = {
   }),
 };
 
+const forgotPasswordRoute: RouteObject = {
+  path: paths.forgotPassword,
+  lazy: async () => ({
+    Component: (await import('./pages/ForgotPasswordPage/ForgotPasswordPage')).ForgotPasswordPage,
+  }),
+};
+
 const verifyEmailRoute: RouteObject = {
   path: paths.verifyEmail,
   lazy: async () => ({
@@ -37,10 +44,18 @@ export const authRoutes: RouteObject[] = [
       authPageRoute(paths.login, 'login'),
       authPageRoute(paths.register, 'register'),
       checkEmailRoute,
+      forgotPasswordRoute,
     ],
   },
 ];
 
-export const emailVerificationRoutes: RouteObject[] = [
-  { element: createElement(AuthLayout), children: [verifyEmailRoute] },
+const resetPasswordRoute: RouteObject = {
+  path: paths.resetPassword,
+  lazy: async () => ({
+    Component: (await import('./pages/ResetPasswordPage/ResetPasswordPage')).ResetPasswordPage,
+  }),
+};
+
+export const tokenLinkRoutes: RouteObject[] = [
+  { element: createElement(AuthLayout), children: [verifyEmailRoute, resetPasswordRoute] },
 ];

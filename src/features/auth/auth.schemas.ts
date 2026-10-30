@@ -48,6 +48,20 @@ export const registerSchema = z
 
 export const resendVerificationSchema = z.object({ email: emailSchema });
 
+export const forgotPasswordSchema = z.object({ email: emailSchema });
+
+export const resetPasswordSchema = z
+  .object({
+    password: passwordSchema,
+    confirmPassword: z.string().min(1, { error: 'Repita a senha' }),
+  })
+  .refine(({ password, confirmPassword }) => password === confirmPassword, {
+    path: ['confirmPassword'],
+    error: 'As senhas não são iguais',
+  });
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type ResendVerificationInput = z.infer<typeof resendVerificationSchema>;
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;

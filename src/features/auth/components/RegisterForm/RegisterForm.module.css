@@ -4,10 +4,6 @@
   gap: var(--space-4);
 }
 
-.strengthLabel {
-  color: var(--color-success);
-}
-
 .terms {
   color: var(--color-label);
   font-size: var(--font-size-xs);
