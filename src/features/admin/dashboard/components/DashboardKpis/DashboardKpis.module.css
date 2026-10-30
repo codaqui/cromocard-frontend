@@ -3,3 +3,139 @@
   grid-template-columns: repeat(auto-fit, minmax(var(--size-card-min), 1fr));
   gap: var(--space-4);
 }
+
+.tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-glass);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(var(--blur-glass));
+}
+
+.glow {
+  position: absolute;
+  top: calc(var(--space-8) * -1);
+  right: calc(var(--space-8) * -1);
+  width: var(--size-glow);
+  height: var(--size-glow);
+  border-radius: var(--radius-pill);
+  filter: blur(var(--blur-glow));
+}
+
+.primary {
+  background: var(--color-glow-primary);
+}
+
+.accent {
+  background: var(--color-glow-accent);
+}
+
+.warning {
+  background: var(--color-glow-warning);
+}
+
+.body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.label,
+.footerLabel,
+.footerAccent {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-caps);
+  text-transform: uppercase;
+  color: var(--color-label);
+}
+
+.figure {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-top: var(--space-1);
+}
+
+.value {
+  font-size: var(--font-size-display);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.unit {
+  font-size: var(--font-size-caption);
+  font-weight: 400;
+  letter-spacing: normal;
+  color: var(--color-label);
+}
+
+.description,
+.footerText {
+  font-size: var(--font-size-caption);
+  color: var(--color-label);
+}
+
+.sparkline {
+  flex-shrink: 0;
+  width: var(--size-sparkline-width);
+  height: var(--size-sparkline-height);
+}
+
+.sparklineLine {
+  fill: none;
+  stroke: var(--color-chart-secondary);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.footer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  background: var(--color-surface-shade);
+}
+
+.footerValue,
+.footerValueAccent {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+}
+
+.footerAccent,
+.footerValueAccent {
+  color: var(--color-success);
+}
+
+.alignEnd {
+  text-align: right;
+}
+
+.divider {
+  align-self: stretch;
+  width: 1px;
+  background: var(--color-chart-grid);
+}
+
+.footerLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-info);
+}

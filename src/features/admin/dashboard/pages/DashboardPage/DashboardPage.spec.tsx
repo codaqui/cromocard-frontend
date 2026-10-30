@@ -107,7 +107,7 @@ describe('DashboardPage', () => {
 
     renderPage();
 
-    await screen.findByRole('table', { name: 'Cadastros de vendedores recentes' });
+    await screen.findByRole('table', { name: 'Cadastros dos Vendedores Recentes' });
     expect(
       screen.getAllByText('Não foram encontrados dados para os filtros selecionados'),
     ).toHaveLength(2);
@@ -122,7 +122,7 @@ describe('DashboardPage', () => {
     renderPage();
     await screen.findByRole('row', { name: /Fábio TCG Store/ });
 
-    await userEvent.click(screen.getByRole('button', { name: 'Próxima' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Próximo' }));
     await userEvent.click(screen.getByRole('button', { name: '7 dias' }));
 
     expect(dashboardApi.listRecentSellers).toHaveBeenLastCalledWith({

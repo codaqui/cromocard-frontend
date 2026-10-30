@@ -4,35 +4,6 @@
   gap: var(--space-6);
 }
 
-.header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-}
-
-.title {
-  font-size: var(--font-size-xl);
-}
-
-.export {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--size-control);
-  padding: var(--space-2) var(--space-5);
-  border: 1px solid var(--color-input-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface-high);
-  color: var(--color-text);
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.export:hover {
-  background: var(--color-surface-raised);
-}
-
 .error {
   display: flex;
   flex-direction: column;

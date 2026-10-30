@@ -1,13 +1,12 @@
 import { useState } from 'react';
-import { Link } from 'react-router';
 
 import { Button } from '@/components/Button/Button';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
-import { type Period, PeriodFilter } from '@/components/PeriodFilter/PeriodFilter';
-import { paths } from '@/routes/paths';
+import type { Period } from '@/components/PeriodFilter/PeriodFilter';
 
+import { DashboardHeader } from '../../components/DashboardHeader/DashboardHeader';
 import { DashboardKpis } from '../../components/DashboardKpis/DashboardKpis';
 import { RecentSellersTable } from '../../components/RecentSellersTable/RecentSellersTable';
 import { SignupsChart } from '../../components/SignupsChart/SignupsChart';
@@ -17,6 +16,7 @@ import type { DashboardPeriodParams, DashboardSummary } from '../../dashboard.ty
 import styles from './DashboardPage.module.css';
 
 const RECENT_SELLERS_PAGE_SIZE = 5;
+const NO_DATA_FOR_FILTERS = 'Não foram encontrados dados para os filtros selecionados';
 
 interface LoadErrorProps {
   message: string;
@@ -53,6 +53,7 @@ function RecentSellers({ params, page, onPageChange }: SellersPaging) {
       sellers={query.data.data}
       meta={query.data.meta}
       onPageChange={onPageChange}
+      onRefresh={() => void query.refetch()}
     />
   );
 }
@@ -67,9 +68,9 @@ function DashboardData({ summary, sellers }: DashboardDataProps) {
 
   return (
     <>
-      <DashboardKpis kpis={summary.kpis} />
+      <DashboardKpis kpis={summary.kpis} signups={summary.signupsByMonth} />
       {summary.kpis.newUsers === 0 ? (
-        <EmptyState title="Não foram encontrados dados para os filtros selecionados" />
+        <EmptyState title={NO_DATA_FOR_FILTERS} />
       ) : (
         <SignupsChart signups={summary.signupsByMonth} />
       )}
@@ -92,6 +93,7 @@ function DashboardContent(sellers: SellersPaging) {
 export function DashboardPage() {
   const [period, setPeriod] = useState<Period>(DEFAULT_DASHBOARD_PERIOD);
   const [sellersPage, setSellersPage] = useState(1);
+  const params = toPeriodParams(period);
 
   const changePeriod = (next: Period) => {
     setPeriod(next);
@@ -100,18 +102,8 @@ export function DashboardPage() {
 
   return (
     <section className={styles.page}>
-      <header className={styles.header}>
-        <h1 className={styles.title}>Dashboard</h1>
-        <Link to={paths.backoffice.reports} className={styles.export}>
-          Exportar Dados
-        </Link>
-      </header>
-      <PeriodFilter value={period} onChange={changePeriod} />
-      <DashboardContent
-        params={toPeriodParams(period)}
-        page={sellersPage}
-        onPageChange={setSellersPage}
-      />
+      <DashboardHeader period={period} params={params} onPeriodChange={changePeriod} />
+      <DashboardContent params={params} page={sellersPage} onPageChange={setSellersPage} />
     </section>
   );
 }

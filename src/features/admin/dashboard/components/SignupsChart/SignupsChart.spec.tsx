@@ -17,8 +17,7 @@ describe('SignupsChart', () => {
     const chart = screen.getByRole('img', { name: /Novos cadastros por mês/ });
     expect(chart).toHaveAccessibleName(/set\.\/26: 3 clientes e 1 vendedores/);
     expect(chart).toHaveAccessibleName(/out\.\/26: 0 clientes e 2 vendedores/);
-    expect(chart.querySelectorAll('rect')).toHaveLength(4);
-    expect(screen.getByText('Clientes')).toBeInTheDocument();
-    expect(screen.getByText('Vendedores')).toBeInTheDocument();
+    expect(screen.getByText('Clientes (+3)')).toBeInTheDocument();
+    expect(screen.getByText('Vendedores (+3)')).toBeInTheDocument();
   });
 });

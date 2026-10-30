@@ -48,7 +48,7 @@ describe('RecentSellersTable', () => {
       </MemoryRouter>,
     );
 
-    await userEvent.click(screen.getByRole('button', { name: 'Próxima' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Próximo' }));
 
     expect(onPageChange).toHaveBeenCalledWith(2);
   });
