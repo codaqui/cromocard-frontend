@@ -149,6 +149,10 @@
   --size-glow: 7rem;
   --size-sparkline-width: 6rem;
   --size-sparkline-height: 2.5rem;
+  --size-brand-mark: 2.25rem;
+  --size-kpi-footer: 4.5rem;
+  --size-side-card: 19rem;
+  --size-seller-row: 5.5rem;
 
   color-scheme: dark;
   color: var(--color-text);
