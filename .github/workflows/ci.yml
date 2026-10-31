@@ -6,6 +6,7 @@ on:
   pull_request:
 
 # Se chegar um commit novo no mesmo PR, cancela a execução antiga.
+# Em push não cancela: a execução pode estar no meio de um deploy.
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -15,11 +16,15 @@ permissions:
 
 env:
   NODE_VERSION: "24"
+  # Imagens fixadas por digest, as mesmas do CI do backend (ADR-055, decisões 6 e 16).
+  TRIVY_IMAGE: aquasec/trivy:0.74.0@sha256:62b1e65e8869bc4b4c6aa4fa2b21595256c7c2f6018a9d9ad61caf87187c1969
+  GITLEAKS_IMAGE: ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
 
 jobs:
+  # 1) Qualidade do código: formatação, lint, tipos, testes e build.
   quality:
     name: Formatação, lint, tipos, testes e build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
 
@@ -46,12 +51,106 @@ jobs:
       - name: Build
         run: npm run build
 
+  # 2) Scan de segredos com o gitleaks em todo o histórico do repositório.
+  #    O repositório é público: um segredo que chega ao GitHub conta como vazado.
+  #    A gitleaks-action exige licença paga para organizações, por isso o job roda a imagem oficial.
+  secrets:
+    name: Scan de segredos (gitleaks)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0   # histórico completo: um segredo apagado num commit novo continua nos antigos
+
+      - name: gitleaks
+        run: |
+          docker run --rm \
+            --user "$(id -u):$(id -g)" -e HOME=/tmp \
+            -v "${PWD}:/repo" \
+            "${GITLEAKS_IMAGE}" git /repo \
+              --redact \
+              --no-banner \
+              --verbose
+
+  # 3) Build da imagem web, scan com Trivy e push ao GHCR com a tag do SHA (ADR-056, decisão 3).
+  #    O nome bate com o infra/docker-compose.yml do backend: ghcr.io/codaqui/cromocard-web.
   docker:
-    name: Build da imagem
-    needs: quality
-    runs-on: ubuntu-latest
+    name: Imagem web (build, Trivy, GHCR)
+    runs-on: ubuntu-24.04
+    # Nenhuma imagem é publicada sem a qualidade e o scan de segredos.
+    needs: [quality, secrets]
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v5
 
-      - name: Build da imagem cromocard-web
-        run: docker build -f docker/Dockerfile -t cromocard-web:${{ github.sha }} .
+      - name: Definir nome e tag da imagem
+        id: meta
+        env:
+          # Em PR usa o SHA do último commit do PR (não o merge commit temporário).
+          SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          # O GHCR exige nome em minúsculas.
+          OWNER="${GITHUB_REPOSITORY_OWNER,,}"
+          echo "tag=ghcr.io/${OWNER}/cromocard-web:${SHA}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build da imagem
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          load: true
+          tags: ${{ steps.meta.outputs.tag }}
+          # Liga o pacote do GHCR a este repositório (herda as permissões dele).
+          labels: org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
+
+      - name: Conferir que a imagem roda como usuário não-root
+        run: |
+          USER_ID=$(docker run --rm --entrypoint id "${{ steps.meta.outputs.tag }}" -u)
+          echo "UID dentro do container: ${USER_ID}"
+          test "${USER_ID}" != "0"
+
+      - name: Scan de vulnerabilidades (Trivy)
+        # Falha o pipeline se houver vulnerabilidade HIGH/CRITICAL que já tenha correção disponível.
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "${HOME}/.cache/trivy:/root/.cache/trivy" \
+            "${TRIVY_IMAGE}" image \
+              --severity CRITICAL,HIGH \
+              --ignore-unfixed \
+              --exit-code 1 \
+              --no-progress \
+              "${{ steps.meta.outputs.tag }}"
+
+      - name: Login no GHCR
+        # PRs vindos de forks não recebem permissão de escrita, então não fazem push.
+        if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push ao GHCR
+        if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+        run: docker push "${{ steps.meta.outputs.tag }}"
+
+  # 4) Deploy em homologação: só em push na develop, depois da imagem no GHCR.
+  #    O job em si fica no deploy.yml (o único que usa o runner do servidor).
+  deploy-hml:
+    name: Deploy em hml
+    needs: [docker]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    permissions:
+      contents: read
+      packages: read
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: hml
+      tag: ${{ github.sha }}
