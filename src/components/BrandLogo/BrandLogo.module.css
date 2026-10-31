@@ -1,0 +1,22 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.sparkle {
+  width: var(--size-brand-mark);
+  height: var(--size-brand-mark);
+  filter: drop-shadow(0 0 var(--space-2) var(--color-chart-primary));
+}
+
+.wordmark {
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--color-text);
+}
+
+.accent {
+  color: var(--color-chart-secondary);
+}

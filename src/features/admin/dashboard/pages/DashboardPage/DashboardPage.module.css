@@ -4,27 +4,21 @@
   gap: var(--space-6);
 }
 
-.header {
-  display: flex;
-  align-items: center;
-  align-self: flex-start;
-  gap: var(--space-3);
-}
-
-.title {
-  font-size: var(--font-size-xl);
-}
-
-.actions {
-  display: flex;
-}
-
-.notice {
-  color: var(--color-text-muted);
-}
-
-.kpis {
+.insights {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(var(--size-card-min), 1fr));
+  grid-template-columns: minmax(0, 1fr) var(--size-side-card);
   gap: var(--space-4);
+}
+
+@media (max-width: 64rem) {
+  .insights {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
 }

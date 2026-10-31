@@ -4,11 +4,51 @@
   min-height: 100vh;
 }
 
+.notifications {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-avatar);
+  height: var(--size-avatar);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+  color: var(--color-label);
+}
+
+.notifications:hover {
+  color: var(--color-text);
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.identityText {
+  text-align: right;
+}
+
+.name {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
 .role {
   font-size: var(--font-size-xs);
   font-weight: 600;
-  letter-spacing: var(--letter-spacing-caps);
-  text-transform: uppercase;
+  color: var(--color-info);
+}
+
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-avatar);
+  height: var(--size-avatar);
+  border-radius: var(--radius-pill);
+  background: var(--color-info-soft);
   color: var(--color-info);
 }
 

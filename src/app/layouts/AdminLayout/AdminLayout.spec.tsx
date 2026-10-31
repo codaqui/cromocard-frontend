@@ -61,10 +61,12 @@ describe('AdminLayout', () => {
     ]);
   });
 
-  it('abre o Dashboard provisório', async () => {
+  it('abre o Dashboard Gerencial', async () => {
     renderBackoffice();
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'Dashboard' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Visão Executiva & Gerencial' }),
+    ).toBeInTheDocument();
   });
 
   it.each(underConstructionModules)(
