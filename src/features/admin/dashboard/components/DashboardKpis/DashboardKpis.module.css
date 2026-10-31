@@ -41,9 +41,36 @@
 .body {
   position: relative;
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: var(--space-2);
   padding: var(--space-4);
+}
+
+.heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.badge {
+  flex-shrink: 0;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.infoBadge {
+  background: var(--color-info-soft);
+  color: var(--color-success);
+}
+
+.warningBadge {
+  background: var(--color-warning-soft);
+  color: var(--color-warning-text);
 }
 
 .label,
@@ -106,6 +133,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
+  min-height: var(--size-kpi-footer);
   padding: var(--space-3) var(--space-4) var(--space-4);
   background: var(--color-surface-shade);
 }
@@ -114,6 +142,12 @@
 .footerValueAccent {
   font-size: var(--font-size-lg);
   font-weight: 700;
+}
+
+.footerHighlight {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--color-warning);
 }
 
 .footerAccent,

@@ -15,8 +15,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  padding: var(--space-4);
-  background: var(--color-surface-high);
+  padding: var(--space-5) var(--space-4) var(--space-4);
 }
 
 .titleRow {
@@ -52,14 +51,18 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
-  border: none;
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface-sunken);
   font: inherit;
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--color-text);
   cursor: pointer;
+}
+
+.refresh:hover {
+  background: var(--color-surface-high);
 }
 
 .scroll {
@@ -83,8 +86,17 @@
 }
 
 .table td {
-  padding: var(--space-4);
+  height: var(--size-seller-row);
+  padding: var(--space-3) var(--space-4);
   vertical-align: middle;
+}
+
+.table tbody tr + tr td {
+  border-top: 1px solid var(--color-surface-shade);
+}
+
+.table tbody tr:hover td {
+  background: var(--color-surface-shade);
 }
 
 .seller {
@@ -101,15 +113,15 @@
   width: var(--size-avatar);
   height: var(--size-avatar);
   border-radius: var(--radius-sm);
-  background: var(--color-neutral-soft);
+  background: linear-gradient(135deg, var(--color-info-soft), var(--color-surface-sunken));
   box-shadow: var(--shadow-card);
   font-size: var(--font-size-sm);
   font-weight: 800;
-  color: var(--color-info);
+  color: var(--color-success);
 }
 
 .name {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-md);
   font-weight: 700;
   color: var(--color-text);
 }
@@ -142,7 +154,8 @@
 }
 
 .action:hover {
-  background: var(--color-neutral-soft);
+  background: var(--color-info);
+  color: var(--color-info-contrast);
 }
 
 .empty {

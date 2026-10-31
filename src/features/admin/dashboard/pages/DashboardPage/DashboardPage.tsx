@@ -10,6 +10,7 @@ import { DashboardHeader } from '../../components/DashboardHeader/DashboardHeade
 import { DashboardKpis } from '../../components/DashboardKpis/DashboardKpis';
 import { RecentSellersTable } from '../../components/RecentSellersTable/RecentSellersTable';
 import { SignupsChart } from '../../components/SignupsChart/SignupsChart';
+import { SignupsMix } from '../../components/SignupsMix/SignupsMix';
 import { DEFAULT_DASHBOARD_PERIOD, toPeriodParams } from '../../dashboard.period';
 import { useDashboardSummary, useRecentSellers } from '../../dashboard.queries';
 import type { DashboardPeriodParams, DashboardSummary } from '../../dashboard.types';
@@ -72,7 +73,10 @@ function DashboardData({ summary, sellers }: DashboardDataProps) {
       {summary.kpis.newUsers === 0 ? (
         <EmptyState title={NO_DATA_FOR_FILTERS} />
       ) : (
-        <SignupsChart signups={summary.signupsByMonth} />
+        <div className={styles.insights}>
+          <SignupsChart signups={summary.signupsByMonth} />
+          <SignupsMix kpis={summary.kpis} />
+        </div>
       )}
       <RecentSellers {...sellers} />
     </>

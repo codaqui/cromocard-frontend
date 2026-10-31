@@ -16,8 +16,10 @@ interface SignupsChartProps {
   signups: MonthlySignups[];
 }
 
-const GRID_LINES = [0.25, 0.5, 0.75];
+const VISIBLE_MONTHS = 7;
 const HEADROOM = 1.4;
+
+const lastMonths = (signups: MonthlySignups[]) => signups.slice(-VISIBLE_MONTHS);
 
 function describeSignups(signups: MonthlySignups[]): string {
   const parts = signups.map(
@@ -37,15 +39,17 @@ interface SeriesProps {
 
 function Series({ points, fillId, tone }: SeriesProps) {
   const last = points.at(-1);
-  const dots = tone === 'customers' ? points : last ? [last] : [];
 
   return (
     <g>
       <path d={areaUnder(points)} fill={`url(#${fillId})`} />
       <path d={smoothLine(points)} className={styles[`${tone}Line`]} />
-      {dots.map(({ x, y }) => (
-        <circle key={`${x}-${y}`} cx={x} cy={y} r={5} className={styles[`${tone}Dot`]} />
-      ))}
+      {last && (
+        <>
+          <circle cx={last.x} cy={last.y} r={12} className={styles[`${tone}Halo`]} />
+          <circle cx={last.x} cy={last.y} r={6} className={styles[`${tone}Dot`]} />
+        </>
+      )}
     </g>
   );
 }
@@ -59,17 +63,10 @@ function Gradient({ id, tone }: { id: string; tone: 'customers' | 'sellers' }) {
   );
 }
 
-function GridLines() {
-  return GRID_LINES.map((ratio) => (
-    <line
-      key={ratio}
-      x1={0}
-      x2={CHART_WIDTH}
-      y1={CHART_HEIGHT * ratio}
-      y2={CHART_HEIGHT * ratio}
-      className={styles.grid}
-    />
-  ));
+function Baseline() {
+  return (
+    <line x1={0} x2={CHART_WIDTH} y1={CHART_HEIGHT} y2={CHART_HEIGHT} className={styles.baseline} />
+  );
 }
 
 function seriesPoints(signups: MonthlySignups[]) {
@@ -102,7 +99,7 @@ function Plot({ signups }: SignupsChartProps) {
         <Gradient id={`${gradientId}-customers`} tone="customers" />
         <Gradient id={`${gradientId}-sellers`} tone="sellers" />
       </defs>
-      <GridLines />
+      <Baseline />
       <Series points={customers} fillId={`${gradientId}-customers`} tone="customers" />
       <Series points={sellers} fillId={`${gradientId}-sellers`} tone="sellers" />
     </svg>
@@ -142,14 +139,18 @@ function MonthLabels({ signups }: SignupsChartProps) {
   );
 }
 
-export function SignupsChart({ signups }: SignupsChartProps) {
+const monthsLabel = (count: number) => (count === 1 ? 'último mês' : `últimos ${count} meses`);
+
+export function SignupsChart({ signups: periodSignups }: SignupsChartProps) {
+  const signups = lastMonths(periodSignups);
+
   return (
     <figure className={styles.chart}>
       <header className={styles.header}>
         <div>
           <h2 className={styles.title}>Evolução Mensal: Novos Cadastros vs Vendedores</h2>
           <p className={styles.subtitle}>
-            Clientes e vendedores cadastrados a cada mês do período selecionado.
+            Clientes e vendedores cadastrados por mês no {monthsLabel(signups.length)} do período.
           </p>
         </div>
         <Legend signups={signups} />

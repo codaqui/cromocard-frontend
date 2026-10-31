@@ -4,6 +4,18 @@
   gap: var(--space-6);
 }
 
+.insights {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--size-side-card);
+  gap: var(--space-4);
+}
+
+@media (max-width: 64rem) {
+  .insights {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .error {
   display: flex;
   flex-direction: column;

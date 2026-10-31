@@ -22,6 +22,14 @@ const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1
 export const formatCount = (value: number | null) =>
   value === null ? '—' : numberFormatter.format(value);
 
+const percentFormatter = new Intl.NumberFormat('pt-BR', {
+  style: 'percent',
+  maximumFractionDigits: 0,
+});
+
+export const formatShare = (part: number, whole: number) =>
+  percentFormatter.format(whole === 0 ? 0 : part / whole);
+
 function dateParts(iso: string) {
   const parts = dayMonthFormatter.formatToParts(new Date(iso));
   const part = (type: Intl.DateTimeFormatPartTypes) =>

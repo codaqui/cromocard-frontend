@@ -1,7 +1,9 @@
 .chart {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: var(--space-4);
+  min-width: 0;
   padding: var(--space-4);
   border-radius: var(--radius-md);
   background: var(--color-surface-glass);
@@ -73,9 +75,17 @@
   overflow: visible;
 }
 
-.grid {
+.baseline {
   stroke: var(--color-chart-grid);
-  stroke-dasharray: 4 6;
+  stroke-width: 2;
+}
+
+.customersHalo {
+  fill: var(--color-chart-primary-fill);
+}
+
+.sellersHalo {
+  fill: var(--color-chart-secondary-fill);
 }
 
 .customersLine,
@@ -95,9 +105,9 @@
 }
 
 .customersDot {
-  fill: var(--color-chart-primary);
-  stroke: var(--color-surface-sunken);
-  stroke-width: 2;
+  fill: var(--color-text);
+  stroke: var(--color-chart-primary);
+  stroke-width: 3;
 }
 
 .sellersDot {
