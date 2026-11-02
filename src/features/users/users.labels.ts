@@ -12,3 +12,11 @@ export const statusLabels: Record<UserStatus, string> = {
   ACTIVE: 'Ativo',
   SUSPENDED: 'Suspenso',
 };
+
+export const userActionMessages = {
+  created: 'Usuário cadastrado com sucesso.',
+  updated: 'Usuário atualizado com sucesso.',
+  suspended: 'Usuário suspenso com sucesso.',
+  reactivated: 'Usuário reativado com sucesso.',
+  removed: 'Usuário excluído com sucesso.',
+} as const;

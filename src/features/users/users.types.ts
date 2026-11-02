@@ -16,3 +16,15 @@ export interface UserSummary {
 export interface ListUsersParams extends PaginationParams {
   search?: string;
 }
+
+export const usersErrorCodes = {
+  emailAlreadyRegistered: 'EMAIL_ALREADY_REGISTERED',
+  cannotChangeOwnRole: 'CANNOT_CHANGE_OWN_ROLE',
+  lastAdmin: 'LAST_ADMIN',
+  cannotSuspendSelf: 'CANNOT_SUSPEND_SELF',
+  alreadySuspended: 'ALREADY_SUSPENDED',
+  notSuspended: 'NOT_SUSPENDED',
+  cannotDeleteSelf: 'CANNOT_DELETE_SELF',
+} as const;
+
+export type UsersErrorCode = (typeof usersErrorCodes)[keyof typeof usersErrorCodes];
