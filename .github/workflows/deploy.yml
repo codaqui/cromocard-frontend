@@ -1,0 +1,219 @@
+name: deploy
+
+# Deploy do frontend (serviço web) no servidor cromocard-srv (ADR-056).
+#
+# Como cada evento vira um deploy:
+#   - CI verde num push em develop    -> hml,  tag = SHA desse push
+#     (o ci.yml chama este arquivo no job "Deploy em hml", depois da imagem)
+#   - push em main (merge de release) -> prod, tag = HEAD^2 do merge commit (o SHA testado em hml)
+#   - execução manual (rollback)      -> ambiente e tag escolhidos
+#
+# O que este deploy faz e o que não faz:
+#   - Troca só a linha FRONTEND_TAG do .env do ambiente e sobe só o web (--no-deps).
+#   - O .env e os arquivos Compose são do deploy do backend, que preserva o FRONTEND_TAG.
+#     Sem eles (backend nunca implantado no ambiente), este deploy falha.
+#   - Os passos que mexem no .env ou no Compose pegam a trava /srv/cromocard/<env>/.deploy.lock,
+#     a mesma do deploy do backend: o concurrency do GitHub não vale entre repositórios.
+#
+# IMPORTANTE:
+#   - Este é o ÚNICO arquivo com job no runner self-hosted. Ele não pode ter gatilho
+#     pull_request nem pull_request_target: o repositório é público.
+#   - Os logs são públicos: nunca imprimir o .env nem rodar "docker compose config" sem -q.
+on:
+  workflow_call:             # chamado pelo ci.yml depois de um push em develop
+    inputs:
+      environment:
+        type: string
+        required: true
+      tag:
+        type: string
+        required: true
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Ambiente"
+        type: choice
+        options: [hml, prod]
+        required: true
+      tag:
+        description: "SHA completo (40 caracteres) da imagem do frontend"
+        type: string
+        required: true
+
+permissions: {}
+
+jobs:
+  # 1) Descobre o ambiente e a tag. Roda no GitHub, não no servidor.
+  resolve:
+    name: Definir ambiente e tag
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      env: ${{ steps.r.outputs.env }}
+      tag: ${{ steps.r.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v5
+        if: inputs.environment == ''     # só o push em main precisa do histórico
+        with:
+          fetch-depth: 2           # o merge commit e os dois pais
+          persist-credentials: false
+
+      - id: r
+        env:
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          IN_ENV: ${{ inputs.environment }}
+          IN_TAG: ${{ inputs.tag }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [ -n "$IN_ENV" ]; then
+            # Chamado pelo ci.yml (hml) ou executado à mão (rollback): ambiente e tag vêm prontos.
+            ENV="$IN_ENV"; TAG="$IN_TAG"
+          elif [ "$EVENT" = push ] && [ "$REF" = refs/heads/main ]; then
+            ENV=prod
+            # O PR de develop para main precisa usar "Create a merge commit".
+            # O segundo pai (HEAD^2) é o commit de develop que já foi buildado e testado.
+            TAG=$(git rev-parse --verify --quiet 'HEAD^2') || {
+              echo "::error::O push em main não é um merge commit. Use 'Create a merge commit' no PR de develop para main."
+              exit 1
+            }
+          else
+            echo "::error::Evento não esperado: $EVENT em $REF"; exit 1
+          fi
+
+          if ! grep -Eq '^[0-9a-f]{40}$' <<< "$TAG"; then
+            echo "::error::Tag inválida: use o SHA completo do commit (40 caracteres)."
+            exit 1
+          fi
+
+          # Produção só recebe código que já passou pela develop (e, portanto, por hml).
+          if [ "$ENV" = prod ]; then
+            STATUS=$(gh api "repos/$REPO/compare/develop...$TAG" --jq .status)
+            case "$STATUS" in
+              behind|identical) ;;
+              *) echo "::error::O commit $TAG não está na develop (status: $STATUS). Produção só recebe o que passou por hml."
+                 exit 1 ;;
+            esac
+          fi
+
+          echo "Ambiente: $ENV · tag: $TAG"
+          { echo "env=$ENV"; echo "tag=$TAG"; } >> "$GITHUB_OUTPUT"
+
+  # 2) Deploy do web no servidor, pelo runner self-hosted deste repositório.
+  deploy:
+    name: Deploy do web em ${{ needs.resolve.outputs.env }}
+    needs: resolve
+    runs-on: [self-hosted, cromocard-deploy]
+    environment: ${{ needs.resolve.outputs.env }}     # prod espera aprovação de QA ou PO
+    concurrency:
+      group: deploy-web-${{ needs.resolve.outputs.env }}
+      cancel-in-progress: false
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: read            # pull do pacote privado do GHCR
+    env:
+      ENV_NAME: ${{ needs.resolve.outputs.env }}
+      FRONTEND_TAG: ${{ needs.resolve.outputs.tag }}
+      REGISTRY: ${{ vars.REGISTRY || 'ghcr.io/codaqui' }}
+      DIR: /srv/cromocard/${{ needs.resolve.outputs.env }}
+      # Com isso, todo "docker compose" abaixo usa o projeto e os arquivos do ambiente, sem o
+      # compose.sem-frontend.yml, e sem repetir -p e -f.
+      COMPOSE_PROJECT_NAME: cromocard-${{ needs.resolve.outputs.env }}
+      COMPOSE_FILE: docker-compose.yml:compose.${{ needs.resolve.outputs.env }}.yml
+      LOCK_FILE: /srv/cromocard/${{ needs.resolve.outputs.env }}/.deploy.lock
+      LOCK_TIMEOUT_SECONDS: "900"
+    steps:
+      - name: Conferir o ambiente
+        run: |
+          set -euo pipefail
+          for f in .env docker-compose.yml "compose.$ENV_NAME.yml"; do
+            if [ ! -f "$DIR/$f" ]; then
+              echo "::error::$DIR/$f não existe: o backend precisa ter sido implantado em $ENV_NAME antes do frontend."
+              exit 1
+            fi
+          done
+
+      # Pacote privado: login com o GITHUB_TOKEN, que só vale enquanto o job roda.
+      - name: Login no GHCR
+        env:
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+
+      - name: Baixar a imagem do frontend
+        run: docker pull --quiet "$REGISTRY/cromocard-web:$FRONTEND_TAG"
+
+      - name: Trocar a tag e subir o web
+        id: subida
+        working-directory: ${{ env.DIR }}
+        run: |
+          set -euo pipefail
+          exec 9>"$LOCK_FILE"
+          flock -w "$LOCK_TIMEOUT_SECONDS" 9 || { echo "::error::Outro deploy segura o ambiente há mais de ${LOCK_TIMEOUT_SECONDS}s."; exit 1; }
+
+          # Guarda a versão que estava no ar, para o rollback automático.
+          ANTERIOR=$(grep -s '^FRONTEND_TAG=' .env | tail -n 1 | cut -d= -f2- || true)
+          if [ -n "$ANTERIOR" ] && [ "$ANTERIOR" != sem-frontend ]; then
+            echo "$ANTERIOR" > .previous-web-tag
+          fi
+
+          # .env só legível pelo usuário deploy (600). Grava num arquivo novo e troca de uma vez.
+          umask 077
+          { grep -v '^FRONTEND_TAG=' .env || true; echo "FRONTEND_TAG=$FRONTEND_TAG"; } > .env.novo
+          mv .env.novo .env
+
+          docker compose config -q
+          docker compose up -d --no-deps web
+
+      - name: Healthcheck
+        id: health
+        working-directory: ${{ env.DIR }}
+        env:
+          WEB_URL: ${{ vars.WEB_URL }}
+        run: |
+          set -uo pipefail
+          if [ -z "$WEB_URL" ]; then echo "::error::Variável WEB_URL não cadastrada no Environment."; exit 1; fi
+          for i in $(seq 1 30); do
+            # O container novo precisa estar rodando e o site público precisa responder 200,
+            # com o env.js gerado na subida (ADR-045).
+            ESTADO=$(docker inspect -f '{{.State.Status}}' "$(docker compose ps -q web)" 2>/dev/null || true)
+            if [ "$ESTADO" = running ] \
+              && curl -fsS -o /dev/null --max-time 5 "$WEB_URL/" \
+              && curl -fsS --max-time 5 "$WEB_URL/env.js" | grep -q 'API_URL'; then
+              echo "$FRONTEND_TAG" > .deployed-web-tag
+              echo "Healthcheck OK na tentativa $i"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::Healthcheck falhou (web: ${ESTADO:-sem container}; $WEB_URL)."
+          exit 1
+
+      - name: Rollback automático
+        if: failure() && (steps.subida.outcome == 'failure' || steps.health.outcome == 'failure')
+        working-directory: ${{ env.DIR }}
+        run: |
+          set -euo pipefail
+          PREV=$(cat .previous-web-tag 2>/dev/null || true)
+          if [ -z "$PREV" ] || [ "$PREV" = "$FRONTEND_TAG" ]; then
+            echo "::error::Não existe versão anterior do frontend para voltar (primeiro deploy?). Nada foi revertido."
+            exit 1
+          fi
+          exec 9>"$LOCK_FILE"
+          flock -w "$LOCK_TIMEOUT_SECONDS" 9
+          echo "::warning::Voltando o frontend para a versão anterior: $PREV"
+          umask 077
+          { grep -v '^FRONTEND_TAG=' .env || true; echo "FRONTEND_TAG=$PREV"; } > .env.novo
+          mv .env.novo .env
+          docker compose up -d --no-deps web
+          echo "Rollback feito."
+
+      - name: Logout do GHCR
+        if: always()
+        run: docker logout ghcr.io
