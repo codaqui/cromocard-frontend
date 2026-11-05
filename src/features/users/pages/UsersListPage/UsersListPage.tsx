@@ -4,16 +4,76 @@ import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { Pagination } from '@/components/Pagination/Pagination';
+import { Select, type SelectOption } from '@/components/Select/Select';
 import { TextField } from '@/components/TextField/TextField';
 import type { PaginatedResponse } from '@/types/api';
+import { USER_ROLES, type UserRole } from '@/types/authenticated-user';
 
 import { UsersTable } from '../../components/UsersTable/UsersTable';
 import { useUsersListFilters } from '../../hooks/useUsersListFilters';
+import { roleLabels, statusLabels } from '../../users.labels';
 import { useUsersList } from '../../users.queries';
-import type { UserSummary } from '../../users.types';
+import { USER_STATUSES, type UserStatus, type UserSummary } from '../../users.types';
 import styles from './UsersListPage.module.css';
 
 const PAGE_SIZE = 20;
+
+const roleOptions: SelectOption[] = USER_ROLES.map((role) => ({
+  value: role,
+  label: roleLabels[role],
+}));
+
+const statusOptions: SelectOption[] = USER_STATUSES.map((status) => ({
+  value: status,
+  label: statusLabels[status],
+}));
+
+type UsersListFilters = ReturnType<typeof useUsersListFilters>;
+
+function SearchFilter({ search, changeSearch }: Pick<UsersListFilters, 'search' | 'changeSearch'>) {
+  return (
+    <TextField
+      label="Buscar por nome ou e-mail"
+      type="search"
+      value={search}
+      onChange={(event) => changeSearch(event.target.value)}
+    />
+  );
+}
+
+function RoleFilter({ role, changeRole }: Pick<UsersListFilters, 'role' | 'changeRole'>) {
+  return (
+    <Select
+      label="Papel"
+      placeholder="Todos"
+      options={roleOptions}
+      value={role}
+      onChange={(event) => changeRole(event.target.value as UserRole | '')}
+    />
+  );
+}
+
+function StatusFilter({ status, changeStatus }: Pick<UsersListFilters, 'status' | 'changeStatus'>) {
+  return (
+    <Select
+      label="Status"
+      placeholder="Todos"
+      options={statusOptions}
+      value={status}
+      onChange={(event) => changeStatus(event.target.value as UserStatus | '')}
+    />
+  );
+}
+
+function UsersListFilterFields(filters: UsersListFilters) {
+  return (
+    <div className={styles.filters}>
+      <SearchFilter {...filters} />
+      <RoleFilter {...filters} />
+      <StatusFilter {...filters} />
+    </div>
+  );
+}
 
 interface UsersListResultProps {
   query: UseQueryResult<PaginatedResponse<UserSummary>>;
@@ -36,23 +96,20 @@ function UsersListResult({ query, onPageChange }: UsersListResultProps) {
 }
 
 export function UsersListPage() {
-  const { search, page, debouncedSearch, changeSearch, changePage } = useUsersListFilters();
+  const filters = useUsersListFilters();
   const usersQuery = useUsersList({
-    page,
+    page: filters.page,
     pageSize: PAGE_SIZE,
-    search: debouncedSearch || undefined,
+    q: filters.debouncedSearch || undefined,
+    role: filters.role || undefined,
+    status: filters.status || undefined,
   });
 
   return (
     <section className={styles.page}>
       <h1 className={styles.title}>Usuários</h1>
-      <TextField
-        label="Buscar por nome ou e-mail"
-        type="search"
-        value={search}
-        onChange={(event) => changeSearch(event.target.value)}
-      />
-      <UsersListResult query={usersQuery} onPageChange={changePage} />
+      <UsersListFilterFields {...filters} />
+      <UsersListResult query={usersQuery} onPageChange={filters.changePage} />
     </section>
   );
 }

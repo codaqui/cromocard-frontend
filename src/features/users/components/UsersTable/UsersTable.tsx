@@ -1,44 +1,50 @@
+import { Badge, type BadgeTone } from '@/components/Badge/Badge';
+import { DataTable, type DataTableColumn } from '@/components/DataTable/DataTable';
+import type { UserRole } from '@/types/authenticated-user';
 import { formatDate } from '@/utils/formatDate';
 
 import { roleLabels, statusLabels } from '../../users.labels';
-import type { UserSummary } from '../../users.types';
-import styles from './UsersTable.module.css';
+import type { UserStatus, UserSummary } from '../../users.types';
 
 interface UsersTableProps {
   users: UserSummary[];
 }
 
-function UserRow({ user }: { user: UserSummary }) {
-  return (
-    <tr>
-      <td>{user.name}</td>
-      <td>{user.email}</td>
-      <td>{roleLabels[user.role]}</td>
-      <td>{statusLabels[user.status]}</td>
-      <td>{formatDate(user.createdAt)}</td>
-    </tr>
-  );
-}
+const statusTones: Record<UserStatus, BadgeTone> = {
+  ACTIVE: 'success',
+  SUSPENDED: 'danger',
+};
+
+const roleTones: Record<UserRole, BadgeTone> = {
+  CUSTOMER: 'neutral',
+  SELLER: 'neutral',
+  ADMIN: 'info',
+};
+
+const columns: DataTableColumn<UserSummary>[] = [
+  { key: 'name', header: 'Nome', render: (user) => user.name },
+  { key: 'email', header: 'E-mail', render: (user) => user.email },
+  {
+    key: 'role',
+    header: 'Tipo',
+    render: (user) => <Badge tone={roleTones[user.role]}>{roleLabels[user.role]}</Badge>,
+  },
+  {
+    key: 'status',
+    header: 'Situação',
+    render: (user) => <Badge tone={statusTones[user.status]}>{statusLabels[user.status]}</Badge>,
+  },
+  { key: 'createdAt', header: 'Cadastro', render: (user) => formatDate(user.createdAt) },
+];
 
 export function UsersTable({ users }: UsersTableProps) {
   return (
-    <div className={styles.wrapper}>
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>Nome</th>
-            <th>E-mail</th>
-            <th>Tipo</th>
-            <th>Situação</th>
-            <th>Cadastro</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((user) => (
-            <UserRow key={user.id} user={user} />
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <DataTable
+      caption="Usuários"
+      columns={columns}
+      rows={users}
+      getRowKey={(user) => user.id}
+      emptyMessage="Nenhum usuário encontrado"
+    />
   );
 }

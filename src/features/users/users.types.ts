@@ -1,7 +1,9 @@
 import type { PaginationParams } from '@/types/api';
 import type { UserRole } from '@/types/authenticated-user';
 
-export type UserStatus = 'ACTIVE' | 'SUSPENDED';
+export const USER_STATUSES = ['ACTIVE', 'SUSPENDED'] as const;
+
+export type UserStatus = (typeof USER_STATUSES)[number];
 
 export interface UserSummary {
   id: string;
@@ -14,7 +16,9 @@ export interface UserSummary {
 }
 
 export interface ListUsersParams extends PaginationParams {
-  search?: string;
+  q?: string;
+  role?: UserRole;
+  status?: UserStatus;
 }
 
 export const usersErrorCodes = {
