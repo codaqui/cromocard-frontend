@@ -4,11 +4,14 @@ import { FormError } from '@/components/FormError/FormError';
 import { Select } from '@/components/Select/Select';
 import { Textarea } from '@/components/Textarea/Textarea';
 import { TextField } from '@/components/TextField/TextField';
+import type { ApiError } from '@/lib/api-error';
 
 import type { CardFormValues, CardInput } from '../../catalog.schemas';
 import type { Card } from '../../catalog.types';
 import { useCardForm } from '../../hooks/useCardForm';
 import {
+  optionOfAlbum,
+  optionOfReference,
   useAlbumOptions,
   useCategoryOptions,
   useLanguageOptions,
@@ -20,7 +23,7 @@ import styles from './CardForm.module.css';
 interface CardFormProps {
   formId: string;
   card?: Card;
-  errorMessage?: string;
+  apiError: ApiError | null;
   onSubmit: (input: CardInput) => void;
 }
 
@@ -29,15 +32,25 @@ interface CardFieldsProps {
   errors: FieldErrors<CardFormValues>;
 }
 
-function useCardReferenceSelects() {
+function usePlacementSelects(card?: Card) {
   return [
-    { name: 'albumId', label: 'Álbum', placeholder: 'Sem álbum', options: useAlbumOptions() },
+    {
+      name: 'albumId',
+      label: 'Álbum',
+      placeholder: 'Sem álbum',
+      options: useAlbumOptions(optionOfAlbum(card?.album)),
+    },
     {
       name: 'categoryId',
       label: 'Categoria',
       placeholder: 'Sem categoria',
-      options: useCategoryOptions('CARD'),
+      options: useCategoryOptions('CARD', optionOfReference(card?.category)),
     },
+  ] as const;
+}
+
+function useClassificationSelects() {
+  return [
     {
       name: 'rarityId',
       label: 'Raridade',
@@ -53,8 +66,12 @@ function useCardReferenceSelects() {
   ] as const;
 }
 
-function CardReferenceFields({ register, errors }: CardFieldsProps) {
-  return useCardReferenceSelects().map((select) => (
+function useCardReferenceSelects(card?: Card) {
+  return [...usePlacementSelects(card), ...useClassificationSelects()];
+}
+
+function CardReferenceFields({ register, errors, card }: CardFieldsProps & { card?: Card }) {
+  return useCardReferenceSelects(card).map((select) => (
     <Select
       key={select.name}
       label={select.label}
@@ -80,13 +97,13 @@ function CardDetailsFields({ register, errors }: CardFieldsProps) {
   );
 }
 
-export function CardForm({ formId, card, errorMessage, onSubmit }: CardFormProps) {
-  const { register, control, errors, submit } = useCardForm(card, onSubmit);
+export function CardForm({ formId, card, apiError, onSubmit }: CardFormProps) {
+  const { register, control, errors, formError, submit } = useCardForm(card, onSubmit, apiError);
 
   return (
     <form id={formId} className={styles.form} noValidate onSubmit={submit}>
       <CardDetailsFields register={register} errors={errors} />
-      <CardReferenceFields register={register} errors={errors} />
+      <CardReferenceFields register={register} errors={errors} card={card} />
       <ImageUploadController
         control={control}
         name="frontImageUrl"
@@ -99,7 +116,7 @@ export function CardForm({ formId, card, errorMessage, onSubmit }: CardFormProps
         label="Imagem do verso (opcional)"
         folder="cards"
       />
-      <FormError message={errorMessage} />
+      <FormError message={formError} />
     </form>
   );
 }

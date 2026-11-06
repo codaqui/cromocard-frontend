@@ -1,12 +1,15 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ApiError } from '@/lib/api-error';
+import { downloadFile } from '@/lib/download-file';
 import { renderWithProviders } from '@/test/renderWithProviders';
 
 import { catalogApi } from '../../catalog.api';
 import { ImportCsvModal } from './ImportCsvModal';
+
+vi.mock('@/lib/download-file', () => ({ downloadFile: vi.fn() }));
 
 vi.mock('../../catalog.api', () => ({
   catalogApi: {
@@ -44,11 +47,8 @@ describe('ImportCsvModal', () => {
     vi.mocked(catalogApi.downloadImportTemplate)
       .mockReset()
       .mockResolvedValue(new Blob(['csv']));
+    vi.mocked(downloadFile).mockReset();
     onImported.mockReset();
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
   });
 
   it('R13: só libera a importação depois de escolher o arquivo', async () => {
@@ -96,14 +96,25 @@ describe('ImportCsvModal', () => {
   });
 
   it('R13: baixa o modelo do CSV', async () => {
-    const createObjectURL = vi.fn(() => 'blob:modelo');
-    Object.assign(URL, { createObjectURL, revokeObjectURL: vi.fn() });
-    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
     renderModal();
     await userEvent.click(screen.getByRole('button', { name: 'Baixar modelo' }));
 
-    await vi.waitFor(() => expect(click).toHaveBeenCalledOnce());
-    expect(catalogApi.downloadImportTemplate).toHaveBeenCalledOnce();
-    expect(createObjectURL).toHaveBeenCalledOnce();
+    await vi.waitFor(() =>
+      expect(downloadFile).toHaveBeenCalledWith(expect.any(Blob), 'modelo-importacao-cartas.csv'),
+    );
+  });
+
+  it('R13: mostra o motivo quando o modelo não pode ser baixado', async () => {
+    vi.mocked(catalogApi.downloadImportTemplate).mockRejectedValue(
+      new ApiError({
+        status: 403,
+        code: 'FORBIDDEN',
+        message: 'Acesso restrito a administradores',
+      }),
+    );
+    renderModal();
+    await userEvent.click(screen.getByRole('button', { name: 'Baixar modelo' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Acesso restrito a administradores');
   });
 });

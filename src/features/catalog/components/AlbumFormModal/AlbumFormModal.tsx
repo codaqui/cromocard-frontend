@@ -26,12 +26,7 @@ export function AlbumFormModal({ album, onClose, onSaved }: AlbumFormModalProps)
       onClose={onClose}
     >
       {(formId) => (
-        <AlbumForm
-          formId={formId}
-          album={album}
-          errorMessage={save.errorMessage}
-          onSubmit={save.review}
-        />
+        <AlbumForm formId={formId} album={album} apiError={save.apiError} onSubmit={save.review} />
       )}
     </CatalogFormModal>
   );

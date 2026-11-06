@@ -6,7 +6,7 @@
 
 .thumbnail {
   display: block;
-  width: var(--space-8);
+  width: var(--size-table-thumbnail);
   height: auto;
   border-radius: var(--radius-xs);
 }

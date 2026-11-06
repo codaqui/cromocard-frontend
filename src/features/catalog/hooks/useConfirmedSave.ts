@@ -1,10 +1,13 @@
 import type { UseMutationResult } from '@tanstack/react-query';
 import { useState } from 'react';
 
-export interface ConfirmedSaveControls {
+import { ApiError } from '@/lib/api-error';
+
+export interface ConfirmedSaveControls<TInput> {
   isReviewing: boolean;
   isSaving: boolean;
-  errorMessage?: string;
+  apiError: ApiError | null;
+  review: (input: TInput) => void;
   back: () => void;
   confirm: () => void;
 }
@@ -12,7 +15,7 @@ export interface ConfirmedSaveControls {
 export function useConfirmedSave<TInput>(
   mutation: UseMutationResult<unknown, Error, TInput>,
   onSaved: () => void,
-) {
+): ConfirmedSaveControls<TInput> {
   const [pending, setPending] = useState<{ input: TInput } | null>(null);
 
   const review = (input: TInput) => {
@@ -28,7 +31,7 @@ export function useConfirmedSave<TInput>(
   return {
     isReviewing: pending !== null,
     isSaving: mutation.isPending,
-    errorMessage: mutation.error?.message,
+    apiError: mutation.error instanceof ApiError ? mutation.error : null,
     review,
     back: () => setPending(null),
     confirm,

@@ -129,4 +129,22 @@ describe('http', () => {
     stop();
     vi.unstubAllGlobals();
   });
+
+  it('getBlob devolve o arquivo sem desembrulhar', async () => {
+    const file = new Blob(['album_title;number']);
+    useFakeApi(() => ({ status: 200, data: file }));
+
+    await expect(api.getBlob('/admin/catalog/cards/import/template')).resolves.toBe(file);
+  });
+
+  it('getBlob converte o erro em ApiError lendo o JSON do corpo em Blob', async () => {
+    const body = { error: 'FORBIDDEN', message: 'Acesso restrito a administradores' };
+    useFakeApi(() => ({ status: 403, data: new Blob([JSON.stringify(body)]) }));
+
+    await expect(api.getBlob('/admin/catalog/cards/import/template')).rejects.toMatchObject({
+      status: 403,
+      code: 'FORBIDDEN',
+      message: 'Acesso restrito a administradores',
+    });
+  });
 });

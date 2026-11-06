@@ -33,7 +33,7 @@ export interface Card {
   name: string;
   number: string | null;
   description: string | null;
-  frontImageUrl: string;
+  frontImageUrl: string | null;
   backImageUrl: string | null;
   albumId: string | null;
   categoryId: string | null;

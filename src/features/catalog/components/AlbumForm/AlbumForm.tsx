@@ -4,18 +4,19 @@ import { FormError } from '@/components/FormError/FormError';
 import { Select } from '@/components/Select/Select';
 import { Textarea } from '@/components/Textarea/Textarea';
 import { TextField } from '@/components/TextField/TextField';
+import type { ApiError } from '@/lib/api-error';
 
 import type { AlbumFormValues, AlbumInput } from '../../catalog.schemas';
 import type { Album } from '../../catalog.types';
 import { useAlbumForm } from '../../hooks/useAlbumForm';
-import { useCategoryOptions } from '../../hooks/useCatalogFilterOptions';
+import { optionOfReference, useCategoryOptions } from '../../hooks/useCatalogFilterOptions';
 import { ImageUploadController } from '../ImageUploadController/ImageUploadController';
 import styles from './AlbumForm.module.css';
 
 interface AlbumFormProps {
   formId: string;
   album?: Album;
-  errorMessage?: string;
+  apiError: ApiError | null;
   onSubmit: (input: AlbumInput) => void;
 }
 
@@ -44,9 +45,9 @@ function AlbumDetailsFields({ register, errors }: AlbumFieldsProps) {
   );
 }
 
-export function AlbumForm({ formId, album, errorMessage, onSubmit }: AlbumFormProps) {
-  const { register, control, errors, submit } = useAlbumForm(album, onSubmit);
-  const categoryOptions = useCategoryOptions('ALBUM');
+export function AlbumForm({ formId, album, apiError, onSubmit }: AlbumFormProps) {
+  const { register, control, errors, formError, submit } = useAlbumForm(album, onSubmit, apiError);
+  const categoryOptions = useCategoryOptions('ALBUM', optionOfReference(album?.category));
 
   return (
     <form id={formId} className={styles.form} noValidate onSubmit={submit}>
@@ -64,7 +65,7 @@ export function AlbumForm({ formId, album, errorMessage, onSubmit }: AlbumFormPr
         label="Capa (opcional)"
         folder="albums"
       />
-      <FormError message={errorMessage} />
+      <FormError message={formError} />
     </form>
   );
 }

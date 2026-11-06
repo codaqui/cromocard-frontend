@@ -75,6 +75,9 @@
   --size-toast: 24rem;
   --size-field-icon: 1.25rem;
   --size-card-min: 12rem;
+  --size-table-thumbnail: 2rem;
+  --size-image-preview: 6rem;
+  --size-scroll-list: 16rem;
 
   --z-overlay: 100;
   --z-toast: 200;

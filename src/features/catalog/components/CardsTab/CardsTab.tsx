@@ -31,7 +31,12 @@ const cardsTable: CatalogTable<Card> = {
     {
       key: 'image',
       header: 'Imagem',
-      render: (card) => <img className={styles.thumbnail} src={card.frontImageUrl} alt="" />,
+      render: (card) =>
+        card.frontImageUrl ? (
+          <img className={styles.thumbnail} src={card.frontImageUrl} alt="" />
+        ) : (
+          EMPTY_VALUE_LABEL
+        ),
     },
     { key: 'number', header: 'Nº', render: (card) => card.number ?? EMPTY_VALUE_LABEL },
     { key: 'name', header: 'Nome', render: (card) => card.name },

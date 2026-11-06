@@ -26,12 +26,7 @@ export function CardFormModal({ card, onClose, onSaved }: CardFormModalProps) {
       onClose={onClose}
     >
       {(formId) => (
-        <CardForm
-          formId={formId}
-          card={card}
-          errorMessage={save.errorMessage}
-          onSubmit={save.review}
-        />
+        <CardForm formId={formId} card={card} apiError={save.apiError} onSubmit={save.review} />
       )}
     </CatalogFormModal>
   );

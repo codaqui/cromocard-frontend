@@ -29,7 +29,7 @@ export function CategoryFormModal({ category, onClose, onSaved }: CategoryFormMo
         <CategoryForm
           formId={formId}
           category={category}
-          errorMessage={save.errorMessage}
+          apiError={save.apiError}
           onSubmit={save.review}
         />
       )}

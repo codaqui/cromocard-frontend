@@ -1,6 +1,7 @@
 import { FormError } from '@/components/FormError/FormError';
 import { Select } from '@/components/Select/Select';
 import { TextField } from '@/components/TextField/TextField';
+import type { ApiError } from '@/lib/api-error';
 
 import { categoryTypeLabels } from '../../catalog.labels';
 import type { CategoryInput } from '../../catalog.schemas';
@@ -17,13 +18,13 @@ const categoryTypeOptions = CATEGORY_TYPES.map((type) => ({
 interface CategoryFormProps {
   formId: string;
   category?: Category;
-  errorMessage?: string;
+  apiError: ApiError | null;
   onSubmit: (input: CategoryInput) => void;
 }
 
-export function CategoryForm({ formId, category, errorMessage, onSubmit }: CategoryFormProps) {
-  const { register, errors, submit } = useCategoryForm(category, onSubmit);
-  const parentOptions = useParentCategoryOptions(category?.id);
+export function CategoryForm({ formId, category, apiError, onSubmit }: CategoryFormProps) {
+  const { register, errors, formError, submit } = useCategoryForm(category, onSubmit, apiError);
+  const parentOptions = useParentCategoryOptions(category);
 
   return (
     <form id={formId} className={styles.form} noValidate onSubmit={submit}>
@@ -42,7 +43,7 @@ export function CategoryForm({ formId, category, errorMessage, onSubmit }: Categ
         error={errors.parentCategoryId?.message}
         {...register('parentCategoryId')}
       />
-      <FormError message={errorMessage} />
+      <FormError message={formError} />
     </form>
   );
 }

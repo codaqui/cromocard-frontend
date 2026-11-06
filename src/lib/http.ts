@@ -74,11 +74,26 @@ async function retryAfterRefresh(config: RetriableRequestConfig, error: unknown)
   return Promise.reject(toApiError(error));
 }
 
-http.interceptors.response.use(undefined, (error: unknown) => {
+async function parsedBlobBody(body: Blob): Promise<unknown> {
+  try {
+    return JSON.parse(await body.text()) as unknown;
+  } catch {
+    return body;
+  }
+}
+
+async function withJsonErrorBody(error: unknown): Promise<unknown> {
+  if (!axios.isAxiosError(error) || !(error.response?.data instanceof Blob)) return error;
+
+  error.response.data = await parsedBlobBody(error.response.data);
+  return error;
+}
+
+http.interceptors.response.use(undefined, async (error: unknown) => {
   const config = retriableAfterRefresh(error);
   if (config) return retryAfterRefresh(config, error);
 
-  return Promise.reject(toApiError(error));
+  return Promise.reject(toApiError(await withJsonErrorBody(error)));
 });
 
 export const api = {

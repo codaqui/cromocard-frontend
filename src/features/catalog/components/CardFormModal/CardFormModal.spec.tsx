@@ -49,7 +49,7 @@ async function fillNewCard() {
 
 async function saveAndConfirm() {
   await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
-  expect(await screen.findByText('Confirma salvar os dados da carta?')).toBeInTheDocument();
+  expect(await screen.findByText('Confirma salvar os dados da carta?')).toBeVisible();
   await userEvent.click(screen.getByRole('button', { name: 'Confirmar' }));
 }
 
@@ -90,7 +90,7 @@ describe('CardFormModal', () => {
 
     expect(await screen.findByText('Informe o nome da carta')).toBeInTheDocument();
     expect(screen.getByText('Envie a imagem')).toBeInTheDocument();
-    expect(screen.queryByText('Confirma salvar os dados da carta?')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Confirmar' })).not.toBeInTheDocument();
   });
 
   it('CA3: número repetido no álbum volta ao formulário com o motivo do 409', async () => {
@@ -121,5 +121,60 @@ describe('CardFormModal', () => {
 
     await vi.waitFor(() => expect(onSaved).toHaveBeenCalledWith('Carta atualizada com sucesso.'));
     expect(vi.mocked(catalogApi.updateCard).mock.calls[0]?.[0]).toBe(card.id);
+  });
+
+  it('R8: leva ao campo o erro que a API devolve em details', async () => {
+    vi.mocked(catalogApi.createCard).mockRejectedValue(
+      new ApiError({
+        status: 400,
+        code: 'VALIDATION_ERROR',
+        message: 'Dados inválidos',
+        details: [{ field: 'number', message: 'O número pode ter no máximo 20 caracteres' }],
+      }),
+    );
+    renderModal();
+    await fillNewCard();
+    await saveAndConfirm();
+
+    expect(
+      await screen.findByText('O número pode ter no máximo 20 caracteres'),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText('Número')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('R8: leva o foco ao Confirmar e o devolve ao Salvar no Voltar', async () => {
+    renderModal(card);
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+
+    const confirm = await screen.findByRole('button', { name: 'Confirmar' });
+    expect(confirm).toHaveFocus();
+    expect(confirm).toHaveAccessibleDescription('Confirma salvar os dados da carta?');
+    await userEvent.click(screen.getByRole('button', { name: 'Voltar' }));
+    expect(screen.getByRole('button', { name: 'Salvar' })).toHaveFocus();
+  });
+
+  it('R6: na edição, mantém o álbum da carta mesmo fora das opções carregadas', () => {
+    vi.mocked(catalogApi.listAlbums).mockResolvedValue(pageOf([]));
+    renderModal(card);
+
+    expect(screen.getByLabelText('Álbum')).toHaveValue(album.id);
+    expect(screen.getByRole('option', { name: album.title })).toBeInTheDocument();
+  });
+
+  it('R12: só libera o Salvar depois que a imagem termina de subir', async () => {
+    let finishUpload: (image: { key: string; url: string }) => void = () => undefined;
+    vi.mocked(catalogApi.uploadImage).mockReturnValue(
+      new Promise((resolve) => {
+        finishUpload = resolve;
+      }),
+    );
+    renderModal(card);
+    const image = new File(['imagem'], 'frente.webp', { type: 'image/webp' });
+    await userEvent.upload(screen.getByLabelText('Imagem da frente'), image);
+
+    expect(screen.getByRole('button', { name: 'Salvar' })).toBeDisabled();
+    finishUpload({ key: 'cards/nova.webp', url: FRONT_IMAGE_URL });
+    await vi.waitFor(() => expect(screen.getByRole('button', { name: 'Salvar' })).toBeEnabled());
   });
 });

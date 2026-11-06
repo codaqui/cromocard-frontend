@@ -23,6 +23,7 @@ export const catalogKeys = {
     [...catalogKeys.lists(), 'categories', params] as const,
   rarities: () => [...catalogKeys.all, 'rarities'] as const,
   languages: () => [...catalogKeys.all, 'languages'] as const,
+  uploads: () => [...catalogKeys.all, 'upload'] as const,
 };
 
 function useCatalogMutation<TVariables, TData>(
@@ -92,6 +93,7 @@ export function useDeleteCatalogItem() {
 
 export function useUploadImage() {
   return useMutation({
+    mutationKey: catalogKeys.uploads(),
     mutationFn: ({ folder, file }: UploadImageVariables) => catalogApi.uploadImage(folder, file),
   });
 }
