@@ -1,15 +1,19 @@
 import type { UseQueryResult } from '@tanstack/react-query';
 
+import { Button } from '@/components/Button/Button';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { Pagination } from '@/components/Pagination/Pagination';
 import { Select, type SelectOption } from '@/components/Select/Select';
 import { TextField } from '@/components/TextField/TextField';
+import { Toast } from '@/components/Toast/Toast';
 import type { PaginatedResponse } from '@/types/api';
 import { USER_ROLES, type UserRole } from '@/types/authenticated-user';
 
+import { UserFormModal } from '../../components/UserFormModal/UserFormModal';
 import { UsersTable } from '../../components/UsersTable/UsersTable';
+import { useUserFormModal } from '../../hooks/useUserFormModal';
 import { useUsersListFilters } from '../../hooks/useUsersListFilters';
 import { roleLabels, statusLabels } from '../../users.labels';
 import { useUsersList } from '../../users.queries';
@@ -78,9 +82,10 @@ function UsersListFilterFields(filters: UsersListFilters) {
 interface UsersListResultProps {
   query: UseQueryResult<PaginatedResponse<UserSummary>>;
   onPageChange: (page: number) => void;
+  onEdit: (user: UserSummary) => void;
 }
 
-function UsersListResult({ query, onPageChange }: UsersListResultProps) {
+function UsersListResult({ query, onPageChange, onEdit }: UsersListResultProps) {
   if (query.isPending) return <LoadingState />;
   if (query.isError) return <ErrorState message={query.error.message} />;
   if (query.data.data.length === 0) return <EmptyState title="Nenhum usuário encontrado" />;
@@ -89,14 +94,40 @@ function UsersListResult({ query, onPageChange }: UsersListResultProps) {
 
   return (
     <>
-      <UsersTable users={query.data.data} />
+      <UsersTable users={query.data.data} onEdit={onEdit} />
       <Pagination page={meta.page} totalPages={meta.totalPages} onPageChange={onPageChange} />
+    </>
+  );
+}
+
+function UsersListHeader({ onNewUser }: { onNewUser: () => void }) {
+  return (
+    <div className={styles.header}>
+      <h1 className={styles.title}>Usuários</h1>
+      <Button onClick={onNewUser}>Novo usuário</Button>
+    </div>
+  );
+}
+
+type FormModal = ReturnType<typeof useUserFormModal>;
+
+function UserFormModalWithToast(formModal: FormModal) {
+  return (
+    <>
+      <UserFormModal
+        open={formModal.isOpen}
+        user={formModal.editingUser}
+        onClose={formModal.close}
+        onSaved={formModal.saved}
+      />
+      <Toast message={formModal.toastMessage} onDismiss={formModal.dismissToast} />
     </>
   );
 }
 
 export function UsersListPage() {
   const filters = useUsersListFilters();
+  const formModal = useUserFormModal();
   const usersQuery = useUsersList({
     page: filters.page,
     pageSize: PAGE_SIZE,
@@ -107,9 +138,14 @@ export function UsersListPage() {
 
   return (
     <section className={styles.page}>
-      <h1 className={styles.title}>Usuários</h1>
+      <UsersListHeader onNewUser={formModal.openCreate} />
       <UsersListFilterFields {...filters} />
-      <UsersListResult query={usersQuery} onPageChange={filters.changePage} />
+      <UsersListResult
+        query={usersQuery}
+        onPageChange={filters.changePage}
+        onEdit={formModal.openEdit}
+      />
+      <UserFormModalWithToast {...formModal} />
     </section>
   );
 }
