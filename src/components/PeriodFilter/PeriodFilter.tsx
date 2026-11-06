@@ -20,10 +20,10 @@ interface PeriodFilterProps {
   onChange: (period: Period) => void;
 }
 
-const presetOptions: { value: PeriodPreset; label: string }[] = [
+const presetOptions: { value: PeriodPreset; label: string; shortLabel?: string }[] = [
   { value: 'today', label: 'Hoje' },
-  { value: '7d', label: '7 dias' },
-  { value: '30d', label: '30 dias' },
+  { value: '7d', label: '7 dias', shortLabel: '7D' },
+  { value: '30d', label: '30 dias', shortLabel: '30 Dias' },
   { value: '1y', label: '1 ano' },
 ];
 
@@ -31,19 +31,21 @@ const isDateRange = (period: Period): period is DateRange => 'from' in period;
 
 interface PresetButtonProps {
   label: string;
+  shortLabel?: string;
   pressed: boolean;
   onClick: () => void;
 }
 
-function PresetButton({ label, pressed, onClick }: PresetButtonProps) {
+function PresetButton({ label, shortLabel, pressed, onClick }: PresetButtonProps) {
   return (
     <button
       type="button"
       aria-pressed={pressed}
+      aria-label={shortLabel ? label : undefined}
       className={cn(styles.preset, pressed && styles.pressed)}
       onClick={onClick}
     >
-      {label}
+      {shortLabel ?? label}
     </button>
   );
 }
@@ -106,6 +108,7 @@ function PresetGroup({
         <PresetButton
           key={option.value}
           label={option.label}
+          shortLabel={option.shortLabel}
           pressed={option.value === activePreset}
           onClick={() => onSelectPreset(option.value)}
         />

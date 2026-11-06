@@ -9,7 +9,7 @@ describe('PeriodFilter', () => {
     render(<PeriodFilter value={{ preset: '30d' }} onChange={vi.fn()} />);
 
     const group = screen.getByRole('group', { name: 'Período' });
-    expect(group).toHaveTextContent('Hoje7 dias30 dias1 anoPersonalizado');
+    expect(group).toHaveTextContent('Hoje7D30 Dias1 anoPersonalizado');
     expect(screen.getByRole('button', { name: '30 dias' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('button', { name: '7 dias' })).toHaveAttribute('aria-pressed', 'false');
   });

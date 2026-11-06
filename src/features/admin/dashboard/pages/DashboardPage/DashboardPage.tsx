@@ -1,102 +1,113 @@
 import { useState } from 'react';
 
-import { Badge, type BadgeTone } from '@/components/Badge/Badge';
 import { Button } from '@/components/Button/Button';
-import { DataTable, type DataTableColumn } from '@/components/DataTable/DataTable';
-import { KpiCard } from '@/components/KpiCard/KpiCard';
-import { type Period, PeriodFilter } from '@/components/PeriodFilter/PeriodFilter';
-import { Tabs } from '@/components/Tabs/Tabs';
-import { Toast } from '@/components/Toast/Toast';
+import { EmptyState } from '@/components/EmptyState/EmptyState';
+import { ErrorState } from '@/components/ErrorState/ErrorState';
+import { LoadingState } from '@/components/LoadingState/LoadingState';
+import type { Period } from '@/components/PeriodFilter/PeriodFilter';
 
+import { DashboardHeader } from '../../components/DashboardHeader/DashboardHeader';
+import { DashboardKpis } from '../../components/DashboardKpis/DashboardKpis';
+import { RecentSellersTable } from '../../components/RecentSellersTable/RecentSellersTable';
+import { SignupsChart } from '../../components/SignupsChart/SignupsChart';
+import { SignupsMix } from '../../components/SignupsMix/SignupsMix';
+import { DEFAULT_DASHBOARD_PERIOD, toPeriodParams } from '../../dashboard.period';
+import { useDashboardSummary, useRecentSellers } from '../../dashboard.queries';
+import type { DashboardPeriodParams, DashboardSummary } from '../../dashboard.types';
 import styles from './DashboardPage.module.css';
 
-interface SampleSeller {
-  id: string;
-  name: string;
-  status: string;
-  tone: BadgeTone;
+const RECENT_SELLERS_PAGE_SIZE = 5;
+const NO_DATA_FOR_FILTERS = 'Não foram encontrados dados para os filtros selecionados';
+
+interface LoadErrorProps {
+  message: string;
+  onRetry: () => void;
 }
 
-const sampleSellers: SampleSeller[] = [
-  { id: '1', name: 'Elisa Cartas Raras', status: 'Ativo', tone: 'success' },
-  { id: '2', name: 'Fábio TCG Store', status: 'Pendente', tone: 'warning' },
-];
-
-const sellerColumns: DataTableColumn<SampleSeller>[] = [
-  { key: 'name', header: 'Vendedor', render: (seller) => seller.name },
-  {
-    key: 'status',
-    header: 'Situação',
-    render: (seller) => <Badge tone={seller.tone}>{seller.status}</Badge>,
-  },
-];
-
-const sampleTabs = [
-  { id: 'sellers', label: 'Vendedores recentes', count: sampleSellers.length },
-  { id: 'empty', label: 'Sem registros', count: 0 },
-];
-
-function KpiSample() {
+function LoadError({ message, onRetry }: LoadErrorProps) {
   return (
-    <div className={styles.kpis}>
-      <KpiCard
-        label="Usuários ativos"
-        value="—"
-        unit="ativos"
-        hint="Exemplo"
-        trend={{ label: '+0%' }}
-      />
-      <KpiCard label="Cartas cadastradas" value="—" hint="Exemplo" />
-      <KpiCard label="Novos cadastros" value="—" hint="Exemplo" />
-    </div>
-  );
-}
-
-function TableSample() {
-  const [activeTab, setActiveTab] = useState('sellers');
-  const rows = activeTab === 'sellers' ? sampleSellers : [];
-
-  return (
-    <Tabs label="Exemplo de tabela" items={sampleTabs} activeId={activeTab} onChange={setActiveTab}>
-      <DataTable
-        caption="Vendedores de exemplo"
-        columns={sellerColumns}
-        rows={rows}
-        getRowKey={(seller) => seller.id}
-      />
-    </Tabs>
-  );
-}
-
-function ToastSample() {
-  const [message, setMessage] = useState<string | null>(null);
-
-  return (
-    <div className={styles.actions}>
-      <Button variant="secondary" onClick={() => setMessage('Aviso de exemplo')}>
-        Mostrar aviso
+    <div className={styles.error}>
+      <ErrorState message={message} />
+      <Button variant="secondary" onClick={onRetry}>
+        Tentar de novo
       </Button>
-      <Toast message={message} onDismiss={() => setMessage(null)} />
     </div>
   );
+}
+
+interface SellersPaging {
+  params: DashboardPeriodParams;
+  page: number;
+  onPageChange: (page: number) => void;
+}
+
+function RecentSellers({ params, page, onPageChange }: SellersPaging) {
+  const query = useRecentSellers({ ...params, page, pageSize: RECENT_SELLERS_PAGE_SIZE });
+
+  if (query.isPending) return <LoadingState message="Carregando vendedores…" />;
+  if (query.isError) {
+    return <LoadError message={query.error.message} onRetry={() => void query.refetch()} />;
+  }
+
+  return (
+    <RecentSellersTable
+      sellers={query.data.data}
+      meta={query.data.meta}
+      onPageChange={onPageChange}
+      onRefresh={() => void query.refetch()}
+    />
+  );
+}
+
+interface DashboardDataProps {
+  summary: DashboardSummary;
+  sellers: SellersPaging;
+}
+
+function DashboardData({ summary, sellers }: DashboardDataProps) {
+  if (summary.isEmpty) return <EmptyState title="Não existem dados para apresentação" />;
+
+  return (
+    <>
+      <DashboardKpis kpis={summary.kpis} signups={summary.signupsByMonth} />
+      {summary.kpis.newUsers === 0 ? (
+        <EmptyState title={NO_DATA_FOR_FILTERS} />
+      ) : (
+        <div className={styles.insights}>
+          <SignupsChart signups={summary.signupsByMonth} />
+          <SignupsMix kpis={summary.kpis} />
+        </div>
+      )}
+      <RecentSellers {...sellers} />
+    </>
+  );
+}
+
+function DashboardContent(sellers: SellersPaging) {
+  const query = useDashboardSummary(sellers.params);
+
+  if (query.isPending) return <LoadingState message="Carregando o dashboard…" />;
+  if (query.isError) {
+    return <LoadError message={query.error.message} onRetry={() => void query.refetch()} />;
+  }
+
+  return <DashboardData summary={query.data} sellers={sellers} />;
 }
 
 export function DashboardPage() {
-  const [period, setPeriod] = useState<Period>({ preset: '30d' });
+  const [period, setPeriod] = useState<Period>(DEFAULT_DASHBOARD_PERIOD);
+  const [sellersPage, setSellersPage] = useState(1);
+  const params = toPeriodParams(period);
+
+  const changePeriod = (next: Period) => {
+    setPeriod(next);
+    setSellersPage(1);
+  };
 
   return (
     <section className={styles.page}>
-      <header className={styles.header}>
-        <h1 className={styles.title}>Dashboard</h1>
-        <Badge tone="info">Em construção</Badge>
-      </header>
-      <p className={styles.notice}>
-        Página provisória: os componentes do BackOffice aparecem com dados de exemplo até a CCD058.
-      </p>
-      <PeriodFilter value={period} onChange={setPeriod} />
-      <KpiSample />
-      <TableSample />
-      <ToastSample />
+      <DashboardHeader period={period} params={params} onPeriodChange={changePeriod} />
+      <DashboardContent params={params} page={sellersPage} onPageChange={setSellersPage} />
     </section>
   );
 }
