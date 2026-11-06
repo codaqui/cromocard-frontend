@@ -74,7 +74,22 @@ export interface ListCardsParams extends SearchParams {
 
 export type ListCategoriesParams = SearchParams;
 
-export interface UpdateCatalogItem<TInput> {
+export type CatalogItemKind = 'card' | 'album' | 'category';
+
+export interface CatalogItemRef {
+  kind: CatalogItemKind;
   id: string;
-  input: TInput;
+  name: string;
+}
+
+export type UploadFolder = 'cards' | 'albums';
+
+export interface StoredImage {
+  key: string;
+  url: string;
+}
+
+export interface UploadImageVariables {
+  folder: UploadFolder;
+  file: File;
 }

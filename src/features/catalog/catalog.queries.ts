@@ -3,10 +3,11 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { catalogApi } from './catalog.api';
 import type { AlbumInput, CardInput, CategoryInput } from './catalog.schemas';
 import type {
+  CatalogItemRef,
   ListAlbumsParams,
   ListCardsParams,
   ListCategoriesParams,
-  UpdateCatalogItem,
+  UploadImageVariables,
 } from './catalog.types';
 
 export const catalogKeys = {
@@ -63,44 +64,30 @@ export function useLanguages() {
   return useQuery({ queryKey: catalogKeys.languages(), queryFn: catalogApi.listLanguages });
 }
 
-export function useCreateAlbum() {
-  return useCatalogMutation(catalogApi.createAlbum);
-}
-
-export function useUpdateAlbum() {
-  return useCatalogMutation(({ id, input }: UpdateCatalogItem<AlbumInput>) =>
-    catalogApi.updateAlbum(id, input),
+export function useSaveAlbum(id?: string) {
+  return useCatalogMutation((input: AlbumInput) =>
+    id ? catalogApi.updateAlbum(id, input) : catalogApi.createAlbum(input),
   );
 }
 
-export function useDeleteAlbum() {
-  return useCatalogMutation(catalogApi.deleteAlbum);
-}
-
-export function useCreateCard() {
-  return useCatalogMutation(catalogApi.createCard);
-}
-
-export function useUpdateCard() {
-  return useCatalogMutation(({ id, input }: UpdateCatalogItem<CardInput>) =>
-    catalogApi.updateCard(id, input),
+export function useSaveCard(id?: string) {
+  return useCatalogMutation((input: CardInput) =>
+    id ? catalogApi.updateCard(id, input) : catalogApi.createCard(input),
   );
 }
 
-export function useDeleteCard() {
-  return useCatalogMutation(catalogApi.deleteCard);
-}
-
-export function useCreateCategory() {
-  return useCatalogMutation(catalogApi.createCategory);
-}
-
-export function useUpdateCategory() {
-  return useCatalogMutation(({ id, input }: UpdateCatalogItem<CategoryInput>) =>
-    catalogApi.updateCategory(id, input),
+export function useSaveCategory(id?: string) {
+  return useCatalogMutation((input: CategoryInput) =>
+    id ? catalogApi.updateCategory(id, input) : catalogApi.createCategory(input),
   );
 }
 
-export function useDeleteCategory() {
-  return useCatalogMutation(catalogApi.deleteCategory);
+export function useDeleteCatalogItem() {
+  return useCatalogMutation(({ kind, id }: CatalogItemRef) => catalogApi.deleteItem(kind, id));
+}
+
+export function useUploadImage() {
+  return useMutation({
+    mutationFn: ({ folder, file }: UploadImageVariables) => catalogApi.uploadImage(folder, file),
+  });
 }

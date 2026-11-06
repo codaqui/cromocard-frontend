@@ -6,13 +6,17 @@ import {
   useCategoryOptions,
   useRarityOptions,
 } from '../../hooks/useCatalogFilterOptions';
-import { useCatalogListFilters } from '../../hooks/useCatalogListFilters';
+import { type CatalogItemDialogs, useCatalogItemDialogs } from '../../hooks/useCatalogItemDialogs';
+import { type CatalogListFilters, useCatalogListFilters } from '../../hooks/useCatalogListFilters';
 import {
   type CatalogFilterSelect,
   CatalogFilterSelects,
 } from '../CatalogFilterSelects/CatalogFilterSelects';
 import { CatalogFilters } from '../CatalogFilters/CatalogFilters';
 import { CatalogListResult, type CatalogTable } from '../CatalogListResult/CatalogListResult';
+import { CatalogDialogs } from '../CatalogDialogs/CatalogDialogs';
+import { catalogActionsColumn } from '../CatalogRowActions/catalogActionsColumn';
+import { CardFormModal } from '../CardFormModal/CardFormModal';
 import styles from './CardsTab.module.css';
 
 const cardsTable: CatalogTable<Card> = {
@@ -47,6 +51,17 @@ const initialFilters = { albumId: '', categoryId: '', rarityId: '' };
 
 type CardFilterName = keyof typeof initialFilters;
 
+function cardsTableWith(dialogs: CatalogItemDialogs<Card>): CatalogTable<Card> {
+  const actions = catalogActionsColumn<Card>('card', (card) => card.name, dialogs);
+  return { ...cardsTable, columns: [...cardsTable.columns, actions] };
+}
+
+function renderCardForm(dialogs: CatalogItemDialogs<Card>) {
+  return (card?: Card) => (
+    <CardFormModal card={card} onClose={dialogs.close} onSaved={dialogs.finish} />
+  );
+}
+
 function useCardFilterSelects(): CatalogFilterSelect<CardFilterName>[] {
   return [
     { name: 'albumId', label: 'Álbum', placeholder: 'Todos os álbuns', options: useAlbumOptions() },
@@ -65,25 +80,38 @@ function useCardFilterSelects(): CatalogFilterSelect<CardFilterName>[] {
   ];
 }
 
+function CardFilters({ list }: { list: CatalogListFilters<typeof initialFilters> }) {
+  const selects = useCardFilterSelects();
+
+  return (
+    <CatalogFilters
+      texts={cardFiltersTexts}
+      search={list.search}
+      onSearchChange={list.changeSearch}
+    >
+      <CatalogFilterSelects selects={selects} values={list.filters} onChange={list.changeFilter} />
+    </CatalogFilters>
+  );
+}
+
 export function CardsTab() {
   const list = useCatalogListFilters(initialFilters);
-  const selects = useCardFilterSelects();
   const cardsQuery = useCardsList(list.params);
+  const dialogs = useCatalogItemDialogs<Card>();
 
   return (
     <div className={styles.tab}>
-      <CatalogFilters
-        texts={cardFiltersTexts}
-        search={list.search}
-        onSearchChange={list.changeSearch}
-      >
-        <CatalogFilterSelects
-          selects={selects}
-          values={list.filters}
-          onChange={list.changeFilter}
-        />
-      </CatalogFilters>
-      <CatalogListResult query={cardsQuery} table={cardsTable} onPageChange={list.changePage} />
+      <CatalogDialogs
+        createLabel="+ Cadastrar Carta"
+        dialogs={dialogs}
+        renderForm={renderCardForm(dialogs)}
+      />
+      <CardFilters list={list} />
+      <CatalogListResult
+        query={cardsQuery}
+        table={cardsTableWith(dialogs)}
+        onPageChange={list.changePage}
+      />
     </div>
   );
 }

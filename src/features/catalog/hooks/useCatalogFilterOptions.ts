@@ -1,7 +1,7 @@
 import type { SelectOption } from '@/components/Select/Select';
 
-import { useAlbumsList, useCategoriesList, useRarities } from '../catalog.queries';
-import type { Category, CategoryType } from '../catalog.types';
+import { useAlbumsList, useCategoriesList, useLanguages, useRarities } from '../catalog.queries';
+import type { CatalogReference, Category, CategoryType } from '../catalog.types';
 
 const OPTIONS_PAGE = { page: 1, pageSize: 100 };
 
@@ -21,7 +21,19 @@ export function useAlbumOptions(): SelectOption[] {
   return (data?.data ?? []).map((album) => ({ value: album.id, label: album.title }));
 }
 
+function referenceOptionsOf(references: CatalogReference[] = []): SelectOption[] {
+  return references.map((reference) => ({ value: reference.id, label: reference.name }));
+}
+
+export function useParentCategoryOptions(excludedId?: string): SelectOption[] {
+  const { data } = useCategoriesList(OPTIONS_PAGE);
+  return referenceOptionsOf(data?.data.filter((category) => category.id !== excludedId));
+}
+
 export function useRarityOptions(): SelectOption[] {
-  const { data } = useRarities();
-  return (data ?? []).map((rarity) => ({ value: rarity.id, label: rarity.name }));
+  return referenceOptionsOf(useRarities().data);
+}
+
+export function useLanguageOptions(): SelectOption[] {
+  return referenceOptionsOf(useLanguages().data);
 }

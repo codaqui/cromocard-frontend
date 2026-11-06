@@ -39,3 +39,7 @@ export function useCatalogListFilters<TFilters extends Record<string, string>>(
     changePage: setPage,
   };
 }
+
+export type CatalogListFilters<TFilters extends Record<string, string>> = ReturnType<
+  typeof useCatalogListFilters<TFilters>
+>;

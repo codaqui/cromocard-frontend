@@ -4,10 +4,17 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { paths } from '@/routes/paths';
 import { renderWithProviders } from '@/test/renderWithProviders';
-import type { PaginatedResponse } from '@/types/api';
 
 import { catalogApi } from '../../catalog.api';
-import type { Album, Card, Category } from '../../catalog.types';
+import type { Card } from '../../catalog.types';
+import {
+  album,
+  albumCategory,
+  card,
+  cardCategory,
+  pageOf,
+  rarity,
+} from '../../test/catalogFixtures';
 import { CatalogAdminPage } from './CatalogAdminPage';
 
 vi.mock('../../catalog.api', () => ({
@@ -16,60 +23,13 @@ vi.mock('../../catalog.api', () => ({
     listAlbums: vi.fn(),
     listCategories: vi.fn(),
     listRarities: vi.fn(),
+    listLanguages: vi.fn(),
+    deleteItem: vi.fn(),
   },
 }));
 
-const TIMESTAMP = '2026-11-05T12:00:00.000Z';
-const RARITY = { id: '0190f3a4-0000-7000-8000-000000000001', name: 'Lendária' };
-const CARD_CATEGORY = { id: '0190f3a4-0000-7000-8000-000000000002', name: 'Seleções' };
-
-const album: Album = {
-  id: '0190f3a4-0000-7000-8000-000000000010',
-  title: 'Copa 2026',
-  publisher: 'Panini',
-  year: 2026,
-  description: null,
-  coverUrl: null,
-  totalCards: 670,
-  categoryId: null,
-  category: null,
-  createdAt: TIMESTAMP,
-  updatedAt: TIMESTAMP,
-};
-
-const card: Card = {
-  id: '0190f3a4-0000-7000-8000-000000000020',
-  name: 'Pelé',
-  number: '10',
-  description: null,
-  frontImageUrl: 'https://hml-api.cromocard.com.br/uploads/cards/pele.webp',
-  backImageUrl: null,
-  albumId: album.id,
-  categoryId: CARD_CATEGORY.id,
-  rarityId: RARITY.id,
-  languageId: null,
-  album: { id: album.id, title: album.title },
-  category: CARD_CATEGORY,
-  rarity: RARITY,
-  language: null,
-  createdAt: TIMESTAMP,
-  updatedAt: TIMESTAMP,
-};
-
-const categories: Category[] = [
-  { ...CARD_CATEGORY, type: 'CARD', parentCategoryId: null, parentCategory: null },
-  {
-    id: '0190f3a4-0000-7000-8000-000000000003',
-    name: 'Futebol',
-    type: 'ALBUM',
-    parentCategoryId: null,
-    parentCategory: null,
-  },
-].map((category) => ({ ...category, createdAt: TIMESTAMP, updatedAt: TIMESTAMP }) as Category);
-
-function pageOf<T>(data: T[], totalPages = 1): PaginatedResponse<T> {
-  return { data, meta: { page: 1, pageSize: 20, total: data.length, totalPages } };
-}
+const RARITY = rarity;
+const categories = [cardCategory, albumCategory];
 
 function renderPage() {
   renderWithProviders({
@@ -88,6 +48,8 @@ describe('CatalogAdminPage', () => {
       .mockResolvedValue(pageOf([album]));
     vi.mocked(catalogApi.listCategories).mockReset().mockResolvedValue(pageOf(categories));
     vi.mocked(catalogApi.listRarities).mockReset().mockResolvedValue([RARITY]);
+    vi.mocked(catalogApi.listLanguages).mockReset().mockResolvedValue([]);
+    vi.mocked(catalogApi.deleteItem).mockReset().mockResolvedValue(undefined);
   });
 
   it('CA1: abre na aba de cartas com a lista paginada, a busca e os filtros', async () => {
@@ -160,5 +122,22 @@ describe('CatalogAdminPage', () => {
     expect(
       await screen.findByRole('heading', { name: 'Nenhuma carta encontrada' }),
     ).toBeInTheDocument();
+  });
+
+  it('R9: exclui a carta, confirma a operação e atualiza a lista', async () => {
+    renderPage();
+    await userEvent.click(await screen.findByRole('button', { name: 'Excluir Pelé' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Excluir' }));
+
+    expect(await screen.findByText('Carta excluída com sucesso.')).toBeInTheDocument();
+    expect(catalogApi.deleteItem).toHaveBeenCalledWith('card', card.id);
+    await vi.waitFor(() => expect(catalogApi.listCards).toHaveBeenCalledTimes(2));
+  });
+
+  it('R4: o botão de cadastro abre o formulário da carta', async () => {
+    renderPage();
+    await userEvent.click(screen.getByRole('button', { name: '+ Cadastrar Carta' }));
+
+    expect(screen.getByRole('dialog', { name: 'Cadastrar carta' })).toBeInTheDocument();
   });
 });

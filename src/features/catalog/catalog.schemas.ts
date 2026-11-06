@@ -80,7 +80,7 @@ export const cardFormSchema = z.object({
 
 export const categoryFormSchema = z.object({
   name: requiredText(CATEGORY_NAME_MAX_LENGTH, 'Informe o nome da categoria'),
-  type: z.enum(CATEGORY_TYPES, { error: 'Escolha o tipo da categoria' }),
+  type: z.string().pipe(z.enum(CATEGORY_TYPES, { error: 'Escolha o tipo da categoria' })),
   parentCategoryId: optionalReference,
 });
 

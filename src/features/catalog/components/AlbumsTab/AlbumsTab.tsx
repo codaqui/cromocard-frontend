@@ -4,10 +4,14 @@ import { EMPTY_VALUE_LABEL } from '../../catalog.labels';
 import { useAlbumsList } from '../../catalog.queries';
 import type { Album } from '../../catalog.types';
 import { useCategoryOptions } from '../../hooks/useCatalogFilterOptions';
+import { type CatalogItemDialogs, useCatalogItemDialogs } from '../../hooks/useCatalogItemDialogs';
 import { useCatalogListFilters } from '../../hooks/useCatalogListFilters';
 import { CatalogFilterSelects } from '../CatalogFilterSelects/CatalogFilterSelects';
 import { CatalogFilters } from '../CatalogFilters/CatalogFilters';
 import { CatalogListResult, type CatalogTable } from '../CatalogListResult/CatalogListResult';
+import { CatalogDialogs } from '../CatalogDialogs/CatalogDialogs';
+import { catalogActionsColumn } from '../CatalogRowActions/catalogActionsColumn';
+import { AlbumFormModal } from '../AlbumFormModal/AlbumFormModal';
 import styles from './AlbumsTab.module.css';
 
 const albumsTable: CatalogTable<Album> = {
@@ -33,6 +37,17 @@ const albumsTable: CatalogTable<Album> = {
 const albumFiltersTexts = { label: 'Filtros dos álbuns', searchLabel: 'Buscar álbum pelo título' };
 
 const initialFilters = { categoryId: '', year: '' };
+
+function albumsTableWith(dialogs: CatalogItemDialogs<Album>): CatalogTable<Album> {
+  const actions = catalogActionsColumn<Album>('album', (album) => album.title, dialogs);
+  return { ...albumsTable, columns: [...albumsTable.columns, actions] };
+}
+
+function renderAlbumForm(dialogs: CatalogItemDialogs<Album>) {
+  return (album?: Album) => (
+    <AlbumFormModal album={album} onClose={dialogs.close} onSaved={dialogs.finish} />
+  );
+}
 
 function yearFilterOf(value: string): number | undefined {
   const year = Number(value);
@@ -79,16 +94,26 @@ function AlbumFilters({ search, filters, onSearchChange, onFilterChange }: Album
 export function AlbumsTab() {
   const list = useCatalogListFilters(initialFilters);
   const albumsQuery = useAlbumsList({ ...list.params, year: yearFilterOf(list.filters.year) });
+  const dialogs = useCatalogItemDialogs<Album>();
 
   return (
     <div className={styles.tab}>
+      <CatalogDialogs
+        createLabel="+ Novo Álbum"
+        dialogs={dialogs}
+        renderForm={renderAlbumForm(dialogs)}
+      />
       <AlbumFilters
         search={list.search}
         filters={list.filters}
         onSearchChange={list.changeSearch}
         onFilterChange={list.changeFilter}
       />
-      <CatalogListResult query={albumsQuery} table={albumsTable} onPageChange={list.changePage} />
+      <CatalogListResult
+        query={albumsQuery}
+        table={albumsTableWith(dialogs)}
+        onPageChange={list.changePage}
+      />
     </div>
   );
 }
