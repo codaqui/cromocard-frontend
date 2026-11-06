@@ -1,5 +1,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { downloadFile } from '@/lib/download-file';
+
 import { catalogApi } from './catalog.api';
 import type { AlbumInput, CardInput, CategoryInput } from './catalog.schemas';
 import type {
@@ -9,6 +11,8 @@ import type {
   ListCategoriesParams,
   UploadImageVariables,
 } from './catalog.types';
+
+const IMPORT_TEMPLATE_FILE_NAME = 'modelo-importacao-cartas.csv';
 
 export const catalogKeys = {
   all: ['catalog'] as const,
@@ -89,5 +93,16 @@ export function useDeleteCatalogItem() {
 export function useUploadImage() {
   return useMutation({
     mutationFn: ({ folder, file }: UploadImageVariables) => catalogApi.uploadImage(folder, file),
+  });
+}
+
+export function useImportCards() {
+  return useCatalogMutation((file: File) => catalogApi.importCards(file));
+}
+
+export function useDownloadImportTemplate() {
+  return useMutation({
+    mutationFn: async () =>
+      downloadFile(await catalogApi.downloadImportTemplate(), IMPORT_TEMPLATE_FILE_NAME),
   });
 }

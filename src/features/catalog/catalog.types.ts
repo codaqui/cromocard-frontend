@@ -93,3 +93,7 @@ export interface UploadImageVariables {
   folder: UploadFolder;
   file: File;
 }
+
+export interface CardImportResult {
+  created: number;
+}

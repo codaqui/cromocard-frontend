@@ -11,14 +11,21 @@ interface CatalogDialogsProps<T> {
   createLabel: string;
   dialogs: CatalogItemDialogs<T>;
   renderForm: (item: T | undefined) => ReactNode;
+  actions?: ReactNode;
 }
 
-export function CatalogDialogs<T>({ createLabel, dialogs, renderForm }: CatalogDialogsProps<T>) {
+export function CatalogDialogs<T>({
+  createLabel,
+  dialogs,
+  renderForm,
+  actions,
+}: CatalogDialogsProps<T>) {
   return (
     <>
-      <Button className={styles.create} onClick={dialogs.openCreate}>
-        {createLabel}
-      </Button>
+      <div className={styles.toolbar}>
+        {actions}
+        <Button onClick={dialogs.openCreate}>{createLabel}</Button>
+      </div>
       {dialogs.form && renderForm(dialogs.form.item)}
       {dialogs.deleting && (
         <DeleteCatalogItemDialog

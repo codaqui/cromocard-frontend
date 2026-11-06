@@ -1,3 +1,6 @@
-.create {
-  align-self: flex-end;
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-3);
 }

@@ -1,3 +1,7 @@
+import { useState } from 'react';
+
+import { Button } from '@/components/Button/Button';
+
 import { EMPTY_VALUE_LABEL } from '../../catalog.labels';
 import { useCardsList } from '../../catalog.queries';
 import type { Card } from '../../catalog.types';
@@ -17,6 +21,7 @@ import { CatalogListResult, type CatalogTable } from '../CatalogListResult/Catal
 import { CatalogDialogs } from '../CatalogDialogs/CatalogDialogs';
 import { catalogActionsColumn } from '../CatalogRowActions/catalogActionsColumn';
 import { CardFormModal } from '../CardFormModal/CardFormModal';
+import { ImportCsvModal } from '../ImportCsvModal/ImportCsvModal';
 import styles from './CardsTab.module.css';
 
 const cardsTable: CatalogTable<Card> = {
@@ -94,6 +99,24 @@ function CardFilters({ list }: { list: CatalogListFilters<typeof initialFilters>
   );
 }
 
+function CardImport({ onImported }: { onImported: (message: string) => void }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const finish = (message: string) => {
+    setIsOpen(false);
+    onImported(message);
+  };
+
+  return (
+    <>
+      <Button variant="secondary" onClick={() => setIsOpen(true)}>
+        Importar CSV
+      </Button>
+      {isOpen && <ImportCsvModal onClose={() => setIsOpen(false)} onImported={finish} />}
+    </>
+  );
+}
+
 export function CardsTab() {
   const list = useCatalogListFilters(initialFilters);
   const cardsQuery = useCardsList(list.params);
@@ -105,6 +128,7 @@ export function CardsTab() {
         createLabel="+ Cadastrar Carta"
         dialogs={dialogs}
         renderForm={renderCardForm(dialogs)}
+        actions={<CardImport onImported={dialogs.finish} />}
       />
       <CardFilters list={list} />
       <CatalogListResult

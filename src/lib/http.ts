@@ -92,6 +92,11 @@ export const api = {
     return response.data;
   },
 
+  async getBlob(url: string): Promise<Blob> {
+    const response = await http.get<Blob>(url, { responseType: 'blob' });
+    return response.data;
+  },
+
   async post<T>(url: string, body?: unknown): Promise<T> {
     const response = await http.post<ApiResponse<T>>(url, body);
     return response.data.data;

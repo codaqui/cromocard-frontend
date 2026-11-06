@@ -6,6 +6,7 @@ import type {
   Card,
   CatalogReference,
   Category,
+  CardImportResult,
   CatalogItemKind,
   ListAlbumsParams,
   ListCardsParams,
@@ -26,9 +27,9 @@ const itemPathByKind: Record<CatalogItemKind, string> = {
   category: CATEGORIES_PATH,
 };
 
-function imageForm(folder: UploadFolder, file: File): FormData {
+function fileForm(file: File, folder?: UploadFolder): FormData {
   const form = new FormData();
-  form.append('folder', folder);
+  if (folder) form.append('folder', folder);
   form.append('file', file);
   return form;
 }
@@ -41,6 +42,8 @@ export const catalogApi = {
   listCards: (params: ListCardsParams) => api.getPage<Card>(CARDS_PATH, params),
   createCard: (input: CardInput) => api.post<Card>(CARDS_PATH, input),
   updateCard: (id: string, input: CardInput) => api.patch<Card>(`${CARDS_PATH}/${id}`, input),
+  importCards: (file: File) => api.post<CardImportResult>(`${CARDS_PATH}/import`, fileForm(file)),
+  downloadImportTemplate: () => api.getBlob(`${CARDS_PATH}/import/template`),
 
   listCategories: (params: ListCategoriesParams) => api.getPage<Category>(CATEGORIES_PATH, params),
   createCategory: (input: CategoryInput) => api.post<Category>(CATEGORIES_PATH, input),
@@ -52,5 +55,5 @@ export const catalogApi = {
 
   deleteItem: (kind: CatalogItemKind, id: string) => api.delete(`${itemPathByKind[kind]}/${id}`),
   uploadImage: (folder: UploadFolder, file: File) =>
-    api.post<StoredImage>(UPLOADS_PATH, imageForm(folder, file)),
+    api.post<StoredImage>(UPLOADS_PATH, fileForm(file, folder)),
 };

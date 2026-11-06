@@ -140,4 +140,11 @@ describe('CatalogAdminPage', () => {
 
     expect(screen.getByRole('dialog', { name: 'Cadastrar carta' })).toBeInTheDocument();
   });
+
+  it('R13: o botão de importação abre o modal do CSV', async () => {
+    renderPage();
+    await userEvent.click(screen.getByRole('button', { name: 'Importar CSV' }));
+
+    expect(screen.getByRole('dialog', { name: 'Importar cartas por CSV' })).toBeInTheDocument();
+  });
 });

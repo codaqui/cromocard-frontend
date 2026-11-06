@@ -46,3 +46,24 @@ export const catalogItemTexts: Record<CatalogItemKind, CatalogItemTexts> = {
     confirmSave: 'Confirma salvar os dados da categoria?',
   },
 };
+
+const importColumnLabels: Record<string, string> = {
+  album_title: 'Álbum',
+  number: 'Número',
+  name: 'Nome',
+  rarity: 'Raridade',
+  language: 'Idioma',
+  category: 'Categoria',
+  columns: 'Colunas',
+};
+
+export function importErrorLocation(field: string): string {
+  const [line, column] = field.split('.');
+  if (!column) return 'Arquivo';
+  return `Linha ${line} · ${importColumnLabels[column] ?? column}`;
+}
+
+export function importedCardsMessage(created: number): string {
+  if (created === 1) return '1 carta importada com sucesso.';
+  return `${created} cartas importadas com sucesso.`;
+}
