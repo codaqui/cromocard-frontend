@@ -151,7 +151,8 @@ function Footer({
         <b>
           {first} a {last}
         </b>{' '}
-        de {formatCount(meta.total)} vendedores cadastrados no período
+        de {formatCount(meta.total)}{' '}
+        {meta.total === 1 ? 'vendedor cadastrado' : 'vendedores cadastrados'} no período
       </p>
       <SellersPager page={meta.page} totalPages={meta.totalPages} onPageChange={onPageChange} />
     </footer>

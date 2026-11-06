@@ -18,6 +18,7 @@ interface SignupsChartProps {
 
 const VISIBLE_MONTHS = 7;
 const HEADROOM = 1.4;
+const GRID_LINES = [0.25, 0.5, 0.75];
 
 const lastMonths = (signups: MonthlySignups[]) => signups.slice(-VISIBLE_MONTHS);
 
@@ -69,6 +70,19 @@ function Baseline() {
   );
 }
 
+function GridLines() {
+  return GRID_LINES.map((ratio) => (
+    <line
+      key={ratio}
+      x1={0}
+      x2={CHART_WIDTH}
+      y1={CHART_HEIGHT * ratio}
+      y2={CHART_HEIGHT * ratio}
+      className={styles.grid}
+    />
+  ));
+}
+
 function seriesPoints(signups: MonthlySignups[]) {
   const peak = Math.max(1, ...signups.flatMap(({ customers, sellers }) => [customers, sellers]));
   const highest = peak * HEADROOM;
@@ -99,6 +113,7 @@ function Plot({ signups }: SignupsChartProps) {
         <Gradient id={`${gradientId}-customers`} tone="customers" />
         <Gradient id={`${gradientId}-sellers`} tone="sellers" />
       </defs>
+      <GridLines />
       <Baseline />
       <Series points={customers} fillId={`${gradientId}-customers`} tone="customers" />
       <Series points={sellers} fillId={`${gradientId}-sellers`} tone="sellers" />
@@ -139,7 +154,8 @@ function MonthLabels({ signups }: SignupsChartProps) {
   );
 }
 
-const monthsLabel = (count: number) => (count === 1 ? 'último mês' : `últimos ${count} meses`);
+const monthsLabel = (count: number) =>
+  count === 1 ? 'no último mês' : `nos últimos ${count} meses`;
 
 export function SignupsChart({ signups: periodSignups }: SignupsChartProps) {
   const signups = lastMonths(periodSignups);
@@ -150,7 +166,7 @@ export function SignupsChart({ signups: periodSignups }: SignupsChartProps) {
         <div>
           <h2 className={styles.title}>Evolução Mensal: Novos Cadastros vs Vendedores</h2>
           <p className={styles.subtitle}>
-            Clientes e vendedores cadastrados por mês no {monthsLabel(signups.length)} do período.
+            Clientes e vendedores cadastrados por mês {monthsLabel(signups.length)} do período.
           </p>
         </div>
         <Legend signups={signups} />

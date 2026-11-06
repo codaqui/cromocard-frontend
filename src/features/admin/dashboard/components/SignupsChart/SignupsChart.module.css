@@ -13,7 +13,6 @@
 
 .header {
   display: flex;
-  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-4);
@@ -33,6 +32,7 @@
 
 .legend {
   display: flex;
+  flex-shrink: 0;
   gap: var(--space-4);
   font-size: var(--font-size-xs);
   font-weight: 700;
@@ -73,6 +73,11 @@
   width: 100%;
   height: auto;
   overflow: visible;
+}
+
+.grid {
+  stroke: var(--color-chart-grid);
+  stroke-dasharray: 4 6;
 }
 
 .baseline {

@@ -20,3 +20,13 @@
   color: var(--color-nav-active-text);
   box-shadow: var(--shadow-primary);
 }
+
+.iconMask {
+  flex-shrink: 0;
+  width: var(--size-nav-icon-width);
+  height: var(--size-nav-icon-height);
+  margin-right: calc(var(--space-3) * -1);
+  background: currentColor;
+  mask-repeat: no-repeat;
+  mask-position: left center;
+}

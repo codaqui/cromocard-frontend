@@ -18,7 +18,7 @@ function AdminMenu() {
         Módulos oficiais
       </h2>
       {adminMenu.map((item) => (
-        <NavItem key={item.to} to={item.to} icon={item.icon}>
+        <NavItem key={item.to} to={item.to} iconMask={item.iconMask}>
           {item.label}
         </NavItem>
       ))}
