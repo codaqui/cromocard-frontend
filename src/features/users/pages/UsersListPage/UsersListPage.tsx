@@ -11,8 +11,11 @@ import { Toast } from '@/components/Toast/Toast';
 import type { PaginatedResponse } from '@/types/api';
 import { USER_ROLES, type UserRole } from '@/types/authenticated-user';
 
+import { DeleteUserDialog } from '../../components/DeleteUserDialog/DeleteUserDialog';
+import { SuspendUserDialog } from '../../components/SuspendUserDialog/SuspendUserDialog';
 import { UserFormModal } from '../../components/UserFormModal/UserFormModal';
 import { UsersTable } from '../../components/UsersTable/UsersTable';
+import { useUserActionDialogs } from '../../hooks/useUserActionDialogs';
 import { useUserFormModal } from '../../hooks/useUserFormModal';
 import { useUsersListFilters } from '../../hooks/useUsersListFilters';
 import { roleLabels, statusLabels } from '../../users.labels';
@@ -83,9 +86,11 @@ interface UsersListResultProps {
   query: UseQueryResult<PaginatedResponse<UserSummary>>;
   onPageChange: (page: number) => void;
   onEdit: (user: UserSummary) => void;
+  onToggleStatus: (user: UserSummary) => void;
+  onDelete: (user: UserSummary) => void;
 }
 
-function UsersListResult({ query, onPageChange, onEdit }: UsersListResultProps) {
+function UsersListResult({ query, onPageChange, ...actions }: UsersListResultProps) {
   if (query.isPending) return <LoadingState />;
   if (query.isError) return <ErrorState message={query.error.message} />;
   if (query.data.data.length === 0) return <EmptyState title="Nenhum usuário encontrado" />;
@@ -94,7 +99,7 @@ function UsersListResult({ query, onPageChange, onEdit }: UsersListResultProps) 
 
   return (
     <>
-      <UsersTable users={query.data.data} onEdit={onEdit} />
+      <UsersTable users={query.data.data} {...actions} />
       <Pagination page={meta.page} totalPages={meta.totalPages} onPageChange={onPageChange} />
     </>
   );
@@ -125,16 +130,41 @@ function UserFormModalWithToast(formModal: FormModal) {
   );
 }
 
-export function UsersListPage() {
-  const filters = useUsersListFilters();
-  const formModal = useUserFormModal();
-  const usersQuery = useUsersList({
+type ActionDialogs = ReturnType<typeof useUserActionDialogs>;
+
+function UserActionDialogsWithToast(dialogs: ActionDialogs) {
+  return (
+    <>
+      <SuspendUserDialog
+        user={dialogs.suspendTarget}
+        onClose={dialogs.close}
+        onSaved={dialogs.savedSuspend}
+      />
+      <DeleteUserDialog
+        user={dialogs.deleteTarget}
+        onClose={dialogs.close}
+        onSaved={dialogs.savedDelete}
+      />
+      <Toast message={dialogs.toastMessage} onDismiss={dialogs.dismissToast} />
+    </>
+  );
+}
+
+function useFilteredUsersList(filters: UsersListFilters) {
+  return useUsersList({
     page: filters.page,
     pageSize: PAGE_SIZE,
     q: filters.debouncedSearch || undefined,
     role: filters.role || undefined,
     status: filters.status || undefined,
   });
+}
+
+export function UsersListPage() {
+  const filters = useUsersListFilters();
+  const formModal = useUserFormModal();
+  const actionDialogs = useUserActionDialogs();
+  const usersQuery = useFilteredUsersList(filters);
 
   return (
     <section className={styles.page}>
@@ -144,8 +174,11 @@ export function UsersListPage() {
         query={usersQuery}
         onPageChange={filters.changePage}
         onEdit={formModal.openEdit}
+        onToggleStatus={actionDialogs.openSuspend}
+        onDelete={actionDialogs.openDelete}
       />
       <UserFormModalWithToast {...formModal} />
+      <UserActionDialogsWithToast {...actionDialogs} />
     </section>
   );
 }
