@@ -10,13 +10,21 @@ import styles from './NavItem.module.css';
 interface NavItemProps {
   to: string;
   icon?: IconName;
+  iconMask?: string;
   children: ReactNode;
 }
 
-export function NavItem({ to, icon, children }: NavItemProps) {
+export function NavItem({ to, icon, iconMask, children }: NavItemProps) {
   return (
     <NavLink to={to} className={({ isActive }) => cn(styles.link, isActive && styles.active)}>
       {icon && <Icon name={icon} />}
+      {iconMask && (
+        <span
+          className={styles.iconMask}
+          style={{ maskImage: `url("${iconMask}")` }}
+          aria-hidden="true"
+        />
+      )}
       {children}
     </NavLink>
   );
