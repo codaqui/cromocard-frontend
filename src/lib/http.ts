@@ -102,7 +102,7 @@ export const api = {
     return response.data.data;
   },
 
-  async delete(url: string): Promise<void> {
-    await http.delete(url);
+  async delete(url: string, body?: unknown): Promise<void> {
+    await http.delete(url, { data: body });
   },
 };
