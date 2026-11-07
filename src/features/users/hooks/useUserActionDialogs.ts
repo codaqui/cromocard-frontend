@@ -7,7 +7,9 @@ type ActionDialog = 'suspend' | 'delete' | null;
 
 function suspendMessageFor(target: UserSummary | null): string | null {
   if (!target) return null;
-  return target.status === 'SUSPENDED' ? userActionMessages.reactivated : userActionMessages.suspended;
+  return target.status === 'SUSPENDED'
+    ? userActionMessages.reactivated
+    : userActionMessages.suspended;
 }
 
 interface DialogState {

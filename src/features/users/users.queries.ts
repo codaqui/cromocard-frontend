@@ -72,7 +72,8 @@ export function useReactivateUser() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: ReasonInput }) => usersApi.reactivate(id, input),
+    mutationFn: ({ id, input }: { id: string; input: ReasonInput }) =>
+      usersApi.reactivate(id, input),
     onSuccess: () => invalidateUsersList(queryClient),
   });
 }

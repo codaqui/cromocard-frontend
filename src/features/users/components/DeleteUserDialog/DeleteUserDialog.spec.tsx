@@ -54,7 +54,9 @@ describe('DeleteUserDialog', () => {
     renderDialog(buildUser({ name: 'Ana Colecionadora' }));
 
     expect(
-      screen.getByText('A conta de Ana Colecionadora será excluída e pode ser restaurada depois, se for preciso.'),
+      screen.getByText(
+        'A conta de Ana Colecionadora será excluída e pode ser restaurada depois, se for preciso.',
+      ),
     ).toBeInTheDocument();
     expect(screen.queryByText(/definitivamente/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/irrevers/i)).not.toBeInTheDocument();

@@ -1,6 +1,11 @@
 import { api } from '@/lib/http';
 
-import type { AdminUpdateUserInput, CreateUserInput, ReasonInput, UpdateUserInput } from './users.schemas';
+import type {
+  AdminUpdateUserInput,
+  CreateUserInput,
+  ReasonInput,
+  UpdateUserInput,
+} from './users.schemas';
 import type { ListUsersParams, UserSummary } from './users.types';
 
 export const usersApi = {
@@ -9,7 +14,8 @@ export const usersApi = {
   updateMe: (input: UpdateUserInput) => api.patch<UserSummary>('/users/me', input),
   deleteMe: () => api.delete('/users/me'),
   create: (input: CreateUserInput) => api.post<UserSummary>('/users', input),
-  update: (id: string, input: AdminUpdateUserInput) => api.patch<UserSummary>(`/users/${id}`, input),
+  update: (id: string, input: AdminUpdateUserInput) =>
+    api.patch<UserSummary>(`/users/${id}`, input),
   suspend: (id: string, input: ReasonInput) => api.post<UserSummary>(`/users/${id}/suspend`, input),
   reactivate: (id: string, input: ReasonInput) =>
     api.post<UserSummary>(`/users/${id}/reactivate`, input),
