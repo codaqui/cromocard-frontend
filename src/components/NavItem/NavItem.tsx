@@ -11,12 +11,17 @@ interface NavItemProps {
   to: string;
   icon?: IconName;
   iconMask?: string;
+  end?: boolean;
   children: ReactNode;
 }
 
-export function NavItem({ to, icon, iconMask, children }: NavItemProps) {
+export function NavItem({ to, icon, iconMask, end, children }: NavItemProps) {
   return (
-    <NavLink to={to} className={({ isActive }) => cn(styles.link, isActive && styles.active)}>
+    <NavLink
+      to={to}
+      end={end}
+      className={({ isActive }) => cn(styles.link, isActive && styles.active)}
+    >
       {icon && <Icon name={icon} />}
       {iconMask && (
         <span

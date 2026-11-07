@@ -9,6 +9,14 @@ export const paths = {
   checkEmail: '/confirme-seu-email',
   verifyEmail: '/confirmar-email',
   profile: '/profile',
+  highlights: '/destaques',
+  search: '/pesquisar',
+  categories: '/categorias',
+  albums: '/albuns',
+  communities: '/comunidades',
+  help: '/ajuda',
+  settings: '/configuracoes',
+  notifications: '/notificacoes',
   backoffice: {
     root: '/backoffice',
     dashboard: '/backoffice/dashboard',
@@ -39,4 +47,8 @@ export const loginAfterPasswordChangedPath = `${paths.login}?${PASSWORD_CHANGED_
 
 export function checkEmailPathFor(email: string): string {
   return `${paths.checkEmail}?${new URLSearchParams({ email }).toString()}`;
+}
+
+export function searchPathFor(term: string, scope: string): string {
+  return `${paths.search}?${new URLSearchParams({ q: term, tipo: scope }).toString()}`;
 }

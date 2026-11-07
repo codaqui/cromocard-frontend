@@ -69,6 +69,8 @@
 
   --size-control: 2.5rem;
   --size-topbar: 4rem;
+  --size-brand-logo: 2.25rem;
+  --size-avatar: 2.5rem;
   --size-sidebar: 14rem;
   --size-dialog: 32rem;
   --size-drawer: 28rem;
@@ -80,7 +82,8 @@
   --z-toast: 200;
 }
 
-[data-theme='backoffice'] {
+[data-theme='backoffice'],
+[data-theme='site'] {
   --color-primary: #3291ff;
   --color-primary-hover: #2577d5;
   --color-primary-contrast: #002a55;
@@ -160,6 +163,11 @@
   color: var(--color-text);
   background: var(--color-background);
   font-family: var(--font-family);
+}
+
+[data-theme='site'] {
+  --size-sidebar: 15rem;
+  --size-search: 32rem;
 }
 
 [data-theme='auth'] {

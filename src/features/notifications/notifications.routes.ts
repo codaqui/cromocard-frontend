@@ -10,3 +10,7 @@ export const notificationsBackofficeRoutes: RouteObject[] = [
     story: 'CCD060',
   }),
 ];
+
+export const notificationsRoutes: RouteObject[] = [
+  underConstructionRoute({ path: paths.notifications, title: 'Notificações', story: 'CCD053' }),
+];

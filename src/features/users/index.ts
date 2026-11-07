@@ -1,1 +1,2 @@
-export { usersBackofficeRoutes, usersRoutes } from './users.routes';
+export { roleLabels } from './users.labels';
+export { usersBackofficeRoutes, usersPublicRoutes, usersRoutes } from './users.routes';
