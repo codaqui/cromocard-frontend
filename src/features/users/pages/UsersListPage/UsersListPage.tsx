@@ -9,7 +9,7 @@ import { Select, type SelectOption } from '@/components/Select/Select';
 import { TextField } from '@/components/TextField/TextField';
 import { Toast } from '@/components/Toast/Toast';
 import type { PaginatedResponse } from '@/types/api';
-import { USER_ROLES, type UserRole } from '@/types/authenticated-user';
+import type { UserRole } from '@/types/authenticated-user';
 
 import { DeleteUserDialog } from '../../components/DeleteUserDialog/DeleteUserDialog';
 import { SuspendUserDialog } from '../../components/SuspendUserDialog/SuspendUserDialog';
@@ -18,17 +18,12 @@ import { UsersTable } from '../../components/UsersTable/UsersTable';
 import { useUserActionDialogs } from '../../hooks/useUserActionDialogs';
 import { useUserFormModal } from '../../hooks/useUserFormModal';
 import { useUsersListFilters } from '../../hooks/useUsersListFilters';
-import { roleLabels, statusLabels } from '../../users.labels';
+import { roleSelectOptions, statusLabels } from '../../users.labels';
 import { useUsersList } from '../../users.queries';
 import { USER_STATUSES, type UserStatus, type UserSummary } from '../../users.types';
 import styles from './UsersListPage.module.css';
 
 const PAGE_SIZE = 20;
-
-const roleOptions: SelectOption[] = USER_ROLES.map((role) => ({
-  value: role,
-  label: roleLabels[role],
-}));
 
 const statusOptions: SelectOption[] = USER_STATUSES.map((status) => ({
   value: status,
@@ -53,7 +48,7 @@ function RoleFilter({ role, changeRole }: Pick<UsersListFilters, 'role' | 'chang
     <Select
       label="Papel"
       placeholder="Todos"
-      options={roleOptions}
+      options={roleSelectOptions}
       value={role}
       onChange={(event) => changeRole(event.target.value as UserRole | '')}
     />

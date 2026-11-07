@@ -3,21 +3,15 @@ import { useId } from 'react';
 import { Button } from '@/components/Button/Button';
 import { FormError } from '@/components/FormError/FormError';
 import { Modal } from '@/components/Modal/Modal';
-import { Select, type SelectOption } from '@/components/Select/Select';
+import { Select } from '@/components/Select/Select';
 import { TextField } from '@/components/TextField/TextField';
-import { USER_ROLES } from '@/types/authenticated-user';
 
 import { useUserForm } from '../../hooks/useUserForm';
-import { roleLabels } from '../../users.labels';
+import { roleSelectOptions } from '../../users.labels';
 import { useCreateUser, useUpdateUser } from '../../users.queries';
 import type { CreateUserInput } from '../../users.schemas';
 import type { UserSummary } from '../../users.types';
 import styles from './UserFormModal.module.css';
-
-const roleOptions: SelectOption[] = USER_ROLES.map((role) => ({
-  value: role,
-  label: roleLabels[role],
-}));
 
 function defaultValuesFor(user: UserSummary | null): CreateUserInput {
   return {
@@ -62,7 +56,7 @@ function UserFormFields({ register, errors, formError }: UserFormFields) {
       <IdentityFields register={register} errors={errors} />
       <Select
         label="Papel"
-        options={roleOptions}
+        options={roleSelectOptions}
         error={errors.role?.message}
         {...register('role')}
       />
@@ -90,7 +84,7 @@ function UserFormModalActions({ formId, isSaving, onClose }: UserFormModalAction
   );
 }
 
-function useUserFormModal(user: UserSummary | null, onSaved: () => void) {
+function useUserFormSubmission(user: UserSummary | null, onSaved: () => void) {
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
   const mutation = user ? updateUser : createUser;
@@ -107,7 +101,7 @@ function useUserFormModal(user: UserSummary | null, onSaved: () => void) {
 
 function UserFormModalContent({ user, onClose, onSaved }: Omit<UserFormModalProps, 'open'>) {
   const formId = useId();
-  const { mutation, form } = useUserFormModal(user, onSaved);
+  const { mutation, form } = useUserFormSubmission(user, onSaved);
 
   return (
     <Modal

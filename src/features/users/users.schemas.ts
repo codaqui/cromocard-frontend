@@ -13,6 +13,7 @@ const emailSchema = z
   .trim()
   .toLowerCase()
   .min(1, { error: 'Informe o e-mail' })
+  .max(160, { error: 'O e-mail pode ter no máximo 160 caracteres' })
   .pipe(z.email({ error: 'Informe um e-mail válido' }));
 
 const userRoleSchema = z.enum(USER_ROLES, { error: 'Selecione um papel' });
