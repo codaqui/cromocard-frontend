@@ -110,6 +110,32 @@ describe('UserFormModal', () => {
     ).toBeInTheDocument();
   });
 
+  it('R11: mostra o erro por campo no 400 e permite corrigir e reenviar', async () => {
+    vi.mocked(usersApi.create)
+      .mockRejectedValueOnce(
+        new ApiError({
+          status: 400,
+          code: 'VALIDATION_ERROR',
+          message: 'Dados inválidos',
+          details: [{ field: 'email', message: 'Domínio de e-mail não permitido' }],
+        }),
+      )
+      .mockResolvedValueOnce(buildUser({ email: 'bia@gmail.com', role: 'SELLER' }));
+    const { onSaved } = renderModal(null);
+
+    await fillIdentity('Bia', 'bia@dominio-bloqueado.dev');
+    await userEvent.selectOptions(screen.getByLabelText('Papel'), 'SELLER');
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+
+    expect(await screen.findByText('Domínio de e-mail não permitido')).toBeInTheDocument();
+
+    await userEvent.clear(screen.getByLabelText('E-mail'));
+    await userEvent.type(screen.getByLabelText('E-mail'), 'bia@gmail.com');
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+
+    await vi.waitFor(() => expect(onSaved).toHaveBeenCalled());
+  });
+
   it('CA8: cancelar fecha sem gravar', async () => {
     const { onClose } = renderModal(null);
 
