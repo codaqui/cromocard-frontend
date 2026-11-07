@@ -4,8 +4,20 @@
   gap: var(--space-6);
 }
 
+.eyebrow {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-caps);
+  text-transform: uppercase;
+  color: var(--color-label);
+}
+
 .title {
   font-size: var(--font-size-xl);
+}
+
+.subtitle {
+  color: var(--color-text-muted);
 }
 
 .header {
@@ -24,4 +36,11 @@
 
 .filters > * {
   min-width: var(--size-card-min);
+}
+
+@media (max-width: 48rem) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

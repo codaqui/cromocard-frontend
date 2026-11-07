@@ -1,6 +1,8 @@
 import { Badge, type BadgeTone } from '@/components/Badge/Badge';
 import { Button } from '@/components/Button/Button';
 import { DataTable, type DataTableColumn } from '@/components/DataTable/DataTable';
+import { Icon } from '@/components/Icon/Icon';
+import type { IconName } from '@/components/Icon/icon-paths';
 import type { UserRole } from '@/types/authenticated-user';
 import { formatDate } from '@/utils/formatDate';
 
@@ -38,25 +40,69 @@ function RoleBadge({ role }: { role: UserRole }) {
 }
 
 function StatusBadge({ status }: { status: UserStatus }) {
-  return <Badge tone={statusTones[status]}>{statusLabels[status]}</Badge>;
+  return (
+    <span className={styles.status} data-tone={statusTones[status]}>
+      <span className={styles.statusDot} aria-hidden="true" />
+      {statusLabels[status]}
+    </span>
+  );
 }
 
-function toggleStatusLabel(status: UserStatus): string {
-  return status === 'ACTIVE' ? 'Suspender' : 'Reativar';
+interface ToggleStatusCopy {
+  label: string;
+  icon: IconName;
+}
+
+function toggleStatusCopy(status: UserStatus): ToggleStatusCopy {
+  return status === 'ACTIVE'
+    ? { label: 'Suspender', icon: 'pause' }
+    : { label: 'Reativar', icon: 'playArrow' };
+}
+
+interface ActionIconButtonProps {
+  label: string;
+  icon: IconName;
+  variant: 'secondary' | 'danger';
+  onClick: () => void;
+}
+
+function ActionIconButton({ label, icon, variant, onClick }: ActionIconButtonProps) {
+  return (
+    <Button
+      variant={variant}
+      className={styles.iconButton}
+      aria-label={label}
+      title={label}
+      onClick={onClick}
+    >
+      <Icon name={icon} size={16} />
+    </Button>
+  );
 }
 
 function RowActions({ user, onEdit, onToggleStatus, onDelete }: RowActionsProps) {
+  const toggleStatus = toggleStatusCopy(user.status);
+
   return (
     <div className={styles.actions}>
-      <Button variant="secondary" onClick={() => onEdit(user)}>
-        Editar
-      </Button>
-      <Button variant="secondary" onClick={() => onToggleStatus(user)}>
-        {toggleStatusLabel(user.status)}
-      </Button>
-      <Button variant="danger" onClick={() => onDelete(user)}>
-        Excluir
-      </Button>
+      <ActionIconButton
+        label="Editar"
+        icon="edit"
+        variant="secondary"
+        onClick={() => onEdit(user)}
+      />
+      <ActionIconButton
+        label={toggleStatus.label}
+        icon={toggleStatus.icon}
+        variant="secondary"
+        onClick={() => onToggleStatus(user)}
+      />
+      <ActionIconButton
+        label="Excluir"
+        icon="delete"
+        variant="danger"
+        onClick={() => onDelete(user)}
+      />
     </div>
   );
 }

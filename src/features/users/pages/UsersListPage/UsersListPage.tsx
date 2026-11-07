@@ -103,7 +103,13 @@ function UsersListResult({ query, onPageChange, ...actions }: UsersListResultPro
 function UsersListHeader({ onNewUser }: { onNewUser: () => void }) {
   return (
     <div className={styles.header}>
-      <h1 className={styles.title}>Usuários</h1>
+      <div>
+        <p className={styles.eyebrow}>BackOffice · Administração</p>
+        <h1 className={styles.title}>Usuários</h1>
+        <p className={styles.subtitle}>
+          Crie, edite, suspenda, reative e exclua contas de usuários da plataforma.
+        </p>
+      </div>
       <Button onClick={onNewUser}>Novo usuário</Button>
     </div>
   );
