@@ -115,6 +115,18 @@ describe('http', () => {
     stop();
   });
 
+  it('envia o corpo de DELETE em config.data', async () => {
+    let sent: InternalAxiosRequestConfig | undefined;
+    useFakeApi((config) => {
+      sent = config;
+      return { status: 204, data: { data: null } };
+    });
+
+    await api.delete('/users/user-1', { reason: 'Pedido do titular' });
+
+    expect(JSON.parse(sent?.data as string)).toEqual({ reason: 'Pedido do titular' });
+  });
+
   it('renova dentro de um lock entre abas, para duas abas não gastarem o mesmo refresh', async () => {
     const lockNames: string[] = [];
     const request = vi.fn((name: string, task: () => Promise<boolean>) => {

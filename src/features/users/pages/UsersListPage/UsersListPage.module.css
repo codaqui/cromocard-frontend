@@ -7,3 +7,21 @@
 .title {
   font-size: var(--font-size-xl);
 }
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-4);
+}
+
+.filters > * {
+  min-width: var(--size-card-min);
+}
