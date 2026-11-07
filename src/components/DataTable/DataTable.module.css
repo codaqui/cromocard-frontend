@@ -44,6 +44,14 @@
   background: var(--color-surface-raised);
 }
 
+.clickable {
+  cursor: pointer;
+}
+
+.clickable:hover td {
+  background: var(--color-surface-high);
+}
+
 .empty {
   text-align: center;
   color: var(--color-text-muted);

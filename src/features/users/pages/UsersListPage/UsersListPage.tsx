@@ -3,6 +3,7 @@ import type { UseQueryResult } from '@tanstack/react-query';
 import { Button } from '@/components/Button/Button';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
+import { Icon } from '@/components/Icon/Icon';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { Pagination } from '@/components/Pagination/Pagination';
 import { Select, type SelectOption } from '@/components/Select/Select';
@@ -36,6 +37,7 @@ function SearchFilter({ search, changeSearch }: Pick<UsersListFilters, 'search' 
   return (
     <TextField
       label="Buscar por nome ou e-mail"
+      icon="search"
       type="search"
       value={search}
       onChange={(event) => changeSearch(event.target.value)}
@@ -47,6 +49,7 @@ function RoleFilter({ role, changeRole }: Pick<UsersListFilters, 'role' | 'chang
   return (
     <Select
       label="Papel"
+      icon="shield"
       placeholder="Todos"
       options={roleSelectOptions}
       value={role}
@@ -59,6 +62,7 @@ function StatusFilter({ status, changeStatus }: Pick<UsersListFilters, 'status' 
   return (
     <Select
       label="Status"
+      icon="checkCircle"
       placeholder="Todos"
       options={statusOptions}
       value={status}
@@ -85,6 +89,18 @@ interface UsersListResultProps {
   onDelete: (user: UserSummary) => void;
 }
 
+function TableHeading({ count }: { count: number }) {
+  return (
+    <div className={styles.tableHeading}>
+      <span>
+        Mesa de usuários registrados
+        <span className={styles.countPill}>{count} registros carregados</span>
+      </span>
+      <span className={styles.inspectHint}>Clique na linha para inspecionar</span>
+    </div>
+  );
+}
+
 function UsersListResult({ query, onPageChange, ...actions }: UsersListResultProps) {
   if (query.isPending) return <LoadingState />;
   if (query.isError) return <ErrorState message={query.error.message} />;
@@ -94,13 +110,25 @@ function UsersListResult({ query, onPageChange, ...actions }: UsersListResultPro
 
   return (
     <>
+      <TableHeading count={query.data.data.length} />
       <UsersTable users={query.data.data} {...actions} />
-      <Pagination page={meta.page} totalPages={meta.totalPages} onPageChange={onPageChange} />
+      <Pagination
+        page={meta.page}
+        totalPages={meta.totalPages}
+        total={meta.total}
+        pageSize={meta.pageSize}
+        onPageChange={onPageChange}
+      />
     </>
   );
 }
 
-function UsersListHeader({ onNewUser }: { onNewUser: () => void }) {
+interface UsersListHeaderProps {
+  total: number | undefined;
+  onNewUser: () => void;
+}
+
+function UsersListHeader({ total, onNewUser }: UsersListHeaderProps) {
   return (
     <div className={styles.header}>
       <div>
@@ -110,7 +138,15 @@ function UsersListHeader({ onNewUser }: { onNewUser: () => void }) {
           Crie, edite, suspenda, reative e exclua contas de usuários da plataforma.
         </p>
       </div>
-      <Button onClick={onNewUser}>Novo usuário</Button>
+      <div className={styles.headerActions}>
+        {total !== undefined && (
+          <span className={styles.totalBadge}>
+            <Icon name="shield" size={16} />
+            Total: {total}
+          </span>
+        )}
+        <Button onClick={onNewUser}>Novo usuário</Button>
+      </div>
     </div>
   );
 }
@@ -169,7 +205,7 @@ export function UsersListPage() {
 
   return (
     <section className={styles.page}>
-      <UsersListHeader onNewUser={formModal.openCreate} />
+      <UsersListHeader total={usersQuery.data?.meta.total} onNewUser={formModal.openCreate} />
       <UsersListFilterFields {...filters} />
       <UsersListResult
         query={usersQuery}

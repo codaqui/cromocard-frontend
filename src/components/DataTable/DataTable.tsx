@@ -14,6 +14,7 @@ interface DataTableProps<T> {
   rows: T[];
   getRowKey: (row: T) => string;
   emptyMessage?: string;
+  onRowClick?: (row: T) => void;
 }
 
 function EmptyRow({ colSpan, message }: { colSpan: number; message: string }) {
@@ -42,12 +43,22 @@ function DataTableHead<T>({ columns }: { columns: DataTableColumn<T>[] }) {
 
 type DataTableBodyProps<T> = Omit<DataTableProps<T>, 'caption'> & { emptyMessage: string };
 
-function DataTableBody<T>({ columns, rows, getRowKey, emptyMessage }: DataTableBodyProps<T>) {
+function DataTableBody<T>({
+  columns,
+  rows,
+  getRowKey,
+  emptyMessage,
+  onRowClick,
+}: DataTableBodyProps<T>) {
   return (
     <tbody>
       {rows.length === 0 && <EmptyRow colSpan={columns.length} message={emptyMessage} />}
       {rows.map((row) => (
-        <tr key={getRowKey(row)}>
+        <tr
+          key={getRowKey(row)}
+          className={onRowClick && styles.clickable}
+          onClick={onRowClick && (() => onRowClick(row))}
+        >
           {columns.map((column) => (
             <td key={column.key}>{column.render(row)}</td>
           ))}

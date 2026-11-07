@@ -40,6 +40,8 @@ export const iconPaths = {
   pause: 'M6 19h4V5H6v14zm8-14v14h4V5h-4z',
   playArrow: 'M8 5v14l11-7z',
   delete: 'M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z',
+  search:
+    'M15.5 14h-.79l-.28-.27a6.47 6.47 0 0 0 1.57-4.23 6.5 6.5 0 1 0-6.5 6.5c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z',
 } as const;
 
 export type IconName = keyof typeof iconPaths;

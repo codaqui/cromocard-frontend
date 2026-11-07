@@ -1,3 +1,5 @@
+import type { MouseEventHandler } from 'react';
+
 import { Badge, type BadgeTone } from '@/components/Badge/Badge';
 import { Button } from '@/components/Button/Button';
 import { DataTable, type DataTableColumn } from '@/components/DataTable/DataTable';
@@ -39,6 +41,29 @@ function RoleBadge({ role }: { role: UserRole }) {
   return <Badge tone={roleTones[role]}>{roleLabels[role]}</Badge>;
 }
 
+function initialsOf(name: string): string {
+  const [first, second] = name.trim().split(/\s+/);
+  return `${first?.[0] ?? ''}${second?.[0] ?? ''}`.toUpperCase();
+}
+
+function shortIdOf(id: string): string {
+  return `#USR-${id.slice(-6).toUpperCase()}`;
+}
+
+function NameCell({ user }: { user: UserSummary }) {
+  return (
+    <div className={styles.nameCell}>
+      <span className={styles.avatar} aria-hidden="true">
+        {initialsOf(user.name)}
+      </span>
+      <div>
+        <div>{user.name}</div>
+        <div className={styles.userId}>{shortIdOf(user.id)}</div>
+      </div>
+    </div>
+  );
+}
+
 function StatusBadge({ status }: { status: UserStatus }) {
   return (
     <span className={styles.status} data-tone={statusTones[status]}>
@@ -67,13 +92,18 @@ interface ActionIconButtonProps {
 }
 
 function ActionIconButton({ label, icon, variant, onClick }: ActionIconButtonProps) {
+  const handleClick: MouseEventHandler = (event) => {
+    event.stopPropagation();
+    onClick();
+  };
+
   return (
     <Button
       variant={variant}
       className={styles.iconButton}
       aria-label={label}
       title={label}
-      onClick={onClick}
+      onClick={handleClick}
     >
       <Icon name={icon} size={16} />
     </Button>
@@ -109,7 +139,7 @@ function RowActions({ user, onEdit, onToggleStatus, onDelete }: RowActionsProps)
 
 function buildColumns(actions: Omit<RowActionsProps, 'user'>): DataTableColumn<UserSummary>[] {
   return [
-    { key: 'name', header: 'Nome', render: (user) => user.name },
+    { key: 'name', header: 'Nome', render: (user) => <NameCell user={user} /> },
     { key: 'email', header: 'E-mail', render: (user) => user.email },
     { key: 'role', header: 'Tipo', render: (user) => <RoleBadge role={user.role} /> },
     { key: 'status', header: 'Situação', render: (user) => <StatusBadge status={user.status} /> },
@@ -126,6 +156,7 @@ export function UsersTable({ users, onEdit, onToggleStatus, onDelete }: UsersTab
       rows={users}
       getRowKey={(user) => user.id}
       emptyMessage="Nenhum usuário encontrado"
+      onRowClick={onEdit}
     />
   );
 }
