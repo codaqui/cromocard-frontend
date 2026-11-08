@@ -61,6 +61,8 @@ export type GroupAction = 'suspend' | 'reactivate' | 'delete';
 
 export type ReportAction = 'removeMessage' | 'dismiss';
 
+export type ModerationKind = GroupAction | ReportAction;
+
 export type CommunityAction =
   | { kind: 'group'; action: GroupAction; group: AdminGroupSummary }
   | { kind: 'report'; action: ReportAction; report: GroupMessageReport };

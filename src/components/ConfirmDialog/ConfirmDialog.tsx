@@ -26,11 +26,17 @@ interface ConfirmDialogProps {
   errorMessage?: string;
   onConfirm: (reason?: string) => void;
   onCancel: () => void;
+  icon?: ReactNode;
+  eyebrow?: ReactNode;
+  cancelLabel?: string;
+  actionsLayout?: 'end' | 'spread';
 }
 
 interface ConfirmDialogActionsProps {
   formId: string;
   confirmLabel: string;
+  cancelLabel: string;
+  actionsLayout: 'end' | 'spread';
   tone: ConfirmTone;
   isConfirming: boolean;
   disabled: boolean;
@@ -41,14 +47,21 @@ function ConfirmDialogActions({
   formId,
   confirmLabel,
   tone,
+  cancelLabel,
+  actionsLayout,
   isConfirming,
   disabled,
   onCancel,
 }: ConfirmDialogActionsProps) {
   return (
     <>
-      <Button variant="secondary" disabled={isConfirming} onClick={onCancel}>
-        Cancelar
+      <Button
+        variant="secondary"
+        className={actionsLayout === 'spread' ? styles.cancelStart : undefined}
+        disabled={isConfirming}
+        onClick={onCancel}
+      >
+        {cancelLabel}
       </Button>
       <Button type="submit" form={formId} variant={tone} disabled={disabled}>
         {isConfirming ? 'Aguarde…' : confirmLabel}
@@ -152,6 +165,8 @@ const confirmDialogDefaults = {
   requireReason: false,
   reasonLabel: 'Motivo',
   canConfirm: true,
+  cancelLabel: 'Cancelar',
+  actionsLayout: 'end',
 } satisfies Partial<ConfirmDialogProps>;
 
 function useConfirmDialog(props: Omit<ConfirmDialogProps, 'open'>) {
@@ -162,12 +177,14 @@ function useConfirmDialog(props: Omit<ConfirmDialogProps, 'open'>) {
 }
 
 function ConfirmDialogContent(props: Omit<ConfirmDialogProps, 'open'>) {
-  const { title, messageId, isConfirming, onCancel, ...rest } = useConfirmDialog(props);
+  const { title, icon, eyebrow, messageId, isConfirming, onCancel, ...rest } =
+    useConfirmDialog(props);
+  const heading = { title, icon, eyebrow };
 
   return (
     <Modal
       open
-      title={title}
+      {...heading}
       role="alertdialog"
       descriptionId={messageId}
       dismissible={!isConfirming}

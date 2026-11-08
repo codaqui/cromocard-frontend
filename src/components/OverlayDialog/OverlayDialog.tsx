@@ -16,8 +16,10 @@ export interface OverlayDialogProps {
   dismissible?: boolean;
   role?: 'dialog' | 'alertdialog';
   descriptionId?: string;
-  /** Ícone num quadro à esquerda do título, como nos modais do Figma. */
-  icon?: IconName;
+  /** Um `IconName` entra no quadro padrão à esquerda do título; um `ReactNode` renderiza como veio, para ícones com estilo próprio (como o selo colorido por gravidade dos diálogos de moderação). */
+  icon?: IconName | ReactNode;
+  /** Linha de apoio acima do título, como nos diálogos de moderação do Figma. */
+  eyebrow?: ReactNode;
   /** Linha de apoio abaixo do título, como nos formulários do catálogo no Figma. */
   subtitle?: string;
   /**
@@ -45,24 +47,40 @@ const keepOpen = () => undefined;
 const closeOnBackdropClick = (onClose: () => void) => (event: MouseEvent) =>
   event.target === event.currentTarget && onClose();
 
-interface DialogHeaderProps {
+interface DialogHeaderProps extends Pick<OverlayDialogProps, 'title' | 'icon' | 'eyebrow'> {
   titleId: string;
-  title: string;
   subtitle?: string;
-  icon?: IconName;
   dismissible: boolean;
   /** O modal compacto do Figma não tem o botão de fechar: fecha pelos botões ou pelo Esc. */
   closable: boolean;
   onClose: () => void;
 }
 
+function isIconName(icon: OverlayDialogProps['icon']): icon is IconName {
+  return typeof icon === 'string';
+}
+
+function DialogIcon({ icon }: Pick<DialogHeaderProps, 'icon'>) {
+  if (!icon) return null;
+  if (isIconName(icon)) {
+    return (
+      <span className={styles.headerIcon} aria-hidden="true">
+        <Icon name={icon} size={22} />
+      </span>
+    );
+  }
+  return icon;
+}
+
 function DialogTitles({
   titleId,
   title,
   subtitle,
-}: Pick<DialogHeaderProps, 'titleId' | 'title' | 'subtitle'>) {
+  eyebrow,
+}: Pick<DialogHeaderProps, 'titleId' | 'title' | 'subtitle' | 'eyebrow'>) {
   return (
     <div className={styles.titles}>
+      {eyebrow}
       <h2 id={titleId} className={styles.title}>
         {title}
       </h2>
@@ -85,16 +103,12 @@ function CloseButton({ dismissible, onClose }: Pick<DialogHeaderProps, 'dismissi
   );
 }
 
-function DialogHeader({ titleId, title, subtitle, icon, closable, ...close }: DialogHeaderProps) {
+function DialogHeader({ titleId, title, subtitle, icon, eyebrow, closable, ...close }: DialogHeaderProps) {
   return (
     <header className={styles.header}>
       <div className={styles.heading}>
-        {icon && (
-          <span className={styles.headerIcon} aria-hidden="true">
-            <Icon name={icon} size={22} />
-          </span>
-        )}
-        <DialogTitles titleId={titleId} title={title} subtitle={subtitle} />
+        <DialogIcon icon={icon} />
+        <DialogTitles titleId={titleId} title={title} subtitle={subtitle} eyebrow={eyebrow} />
       </div>
       {closable && <CloseButton {...close} />}
     </header>
