@@ -24,11 +24,17 @@ interface ConfirmDialogProps {
   errorMessage?: string;
   onConfirm: (reason?: string) => void;
   onCancel: () => void;
+  icon?: ReactNode;
+  eyebrow?: ReactNode;
+  cancelLabel?: string;
+  actionsLayout?: 'end' | 'spread';
 }
 
 interface ConfirmDialogActionsProps {
   formId: string;
   confirmLabel: string;
+  cancelLabel: string;
+  actionsLayout: 'end' | 'spread';
   tone: ConfirmTone;
   isConfirming: boolean;
   onCancel: () => void;
@@ -38,13 +44,19 @@ function ConfirmDialogActions({
   formId,
   confirmLabel,
   tone,
-  isConfirming,
-  onCancel,
+  ...cancel
 }: ConfirmDialogActionsProps) {
+  const { cancelLabel, actionsLayout, isConfirming, onCancel } = cancel;
+
   return (
     <>
-      <Button variant="secondary" disabled={isConfirming} onClick={onCancel}>
-        Cancelar
+      <Button
+        variant="secondary"
+        className={actionsLayout === 'spread' ? styles.cancelStart : undefined}
+        disabled={isConfirming}
+        onClick={onCancel}
+      >
+        {cancelLabel}
       </Button>
       <Button type="submit" form={formId} variant={tone} disabled={isConfirming}>
         {isConfirming ? 'Aguarde…' : confirmLabel}
@@ -118,26 +130,31 @@ const confirmDialogDefaults = {
   isConfirming: false,
   requireReason: false,
   reasonLabel: 'Motivo',
+  cancelLabel: 'Cancelar',
+  actionsLayout: 'end',
 } satisfies Partial<ConfirmDialogProps>;
 
+function splitConfirmDialogProps(props: Omit<ConfirmDialogProps, 'open'>) {
+  const { title, icon, eyebrow, ...rest } = { ...confirmDialogDefaults, ...props };
+  const { confirmLabel, cancelLabel, actionsLayout, tone, isConfirming, onCancel, ...form } = rest;
+  const actions = { confirmLabel, cancelLabel, actionsLayout, tone, isConfirming, onCancel };
+  return { heading: { title, icon, eyebrow }, actions, form };
+}
+
 function ConfirmDialogContent(props: Omit<ConfirmDialogProps, 'open'>) {
-  const { title, confirmLabel, tone, isConfirming, onCancel, ...form } = {
-    ...confirmDialogDefaults,
-    ...props,
-  };
+  const { heading, actions, form } = splitConfirmDialogProps(props);
   const formId = useId();
   const messageId = useId();
-  const actions = { formId, confirmLabel, tone, isConfirming, onCancel };
 
   return (
     <Modal
       open
-      title={title}
+      {...heading}
       role="alertdialog"
       descriptionId={messageId}
-      dismissible={!isConfirming}
-      onClose={onCancel}
-      footer={<ConfirmDialogActions {...actions} />}
+      dismissible={!actions.isConfirming}
+      onClose={actions.onCancel}
+      footer={<ConfirmDialogActions formId={formId} {...actions} />}
     >
       <ConfirmDialogForm formId={formId} messageId={messageId} {...form} />
     </Modal>

@@ -14,6 +14,7 @@ vi.mock('../../community-admin.api', () => ({
     getSummary: vi.fn(),
     listGroups: vi.fn(),
     listGroupMessageReports: vi.fn(),
+    suspendGroup: vi.fn(),
   },
 }));
 
@@ -152,5 +153,25 @@ describe('CommunityAdminPage', () => {
     expect(screen.getByText('Carregando os grupos…')).toBeInTheDocument();
     expect(await screen.findByText('Falha ao carregar os grupos')).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: 'Tentar de novo' })).toHaveLength(1);
+  });
+  it('CA2: suspende pelo diálogo, mostra a mensagem e recarrega a lista', async () => {
+    vi.mocked(communityAdminApi.suspendGroup).mockResolvedValue({
+      ...groups[0]!,
+      status: 'SUSPENDED',
+      description: null,
+      coverImageUrl: null,
+      createdAt: '2026-10-01T12:00:00Z',
+    });
+    renderPage();
+    const table = await screen.findByRole('table', { name: 'Grupos da comunidade' });
+    const [active] = within(table).getAllByRole('row').slice(1);
+
+    await userEvent.click(within(active!).getByRole('button', { name: 'Suspender' }));
+    await userEvent.type(screen.getByRole('textbox', { name: 'Motivo' }), 'Spam repetido no grupo');
+    await userEvent.click(screen.getByRole('button', { name: 'Sim, Suspender Grupo' }));
+
+    expect(await screen.findByText('Grupo suspenso com sucesso.')).toBeInTheDocument();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    await vi.waitFor(() => expect(communityAdminApi.listGroups).toHaveBeenCalledTimes(2));
   });
 });

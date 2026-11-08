@@ -14,6 +14,8 @@ export interface OverlayDialogProps {
   dismissible?: boolean;
   role?: 'dialog' | 'alertdialog';
   descriptionId?: string;
+  icon?: ReactNode;
+  eyebrow?: ReactNode;
 }
 
 interface OverlayDialogWithPlacementProps extends OverlayDialogProps {
@@ -25,19 +27,35 @@ const keepOpen = () => undefined;
 const closeOnBackdropClick = (onClose: () => void) => (event: MouseEvent) =>
   event.target === event.currentTarget && onClose();
 
-interface DialogHeaderProps {
+interface DialogHeaderProps extends Pick<OverlayDialogProps, 'title' | 'icon' | 'eyebrow'> {
   titleId: string;
-  title: string;
   dismissible: boolean;
   onClose: () => void;
 }
 
-function DialogHeader({ titleId, title, dismissible, onClose }: DialogHeaderProps) {
+function DialogHeading({
+  titleId,
+  title,
+  icon,
+  eyebrow,
+}: Omit<DialogHeaderProps, 'dismissible' | 'onClose'>) {
+  return (
+    <div className={styles.heading}>
+      {icon}
+      <div>
+        {eyebrow}
+        <h2 id={titleId} className={styles.title}>
+          {title}
+        </h2>
+      </div>
+    </div>
+  );
+}
+
+function DialogHeader({ dismissible, onClose, ...heading }: DialogHeaderProps) {
   return (
     <header className={styles.header}>
-      <h2 id={titleId} className={styles.title}>
-        {title}
-      </h2>
+      <DialogHeading {...heading} />
       <button
         type="button"
         className={styles.close}
@@ -58,7 +76,8 @@ interface DialogPanelProps extends Omit<OverlayDialogWithPlacementProps, 'open'>
 }
 
 function DialogPanel({ ref, titleId, placement, role = 'dialog', ...content }: DialogPanelProps) {
-  const { title, dismissible, onClose, children, footer } = content;
+  const { title, icon, eyebrow, dismissible, onClose, children, footer } = content;
+  const heading = { titleId, title, icon, eyebrow };
 
   return (
     <div
@@ -70,7 +89,7 @@ function DialogPanel({ ref, titleId, placement, role = 'dialog', ...content }: D
       tabIndex={-1}
       className={cn(styles.dialog, styles[`${placement}Dialog`])}
     >
-      <DialogHeader titleId={titleId} title={title} dismissible={dismissible} onClose={onClose} />
+      <DialogHeader {...heading} dismissible={dismissible} onClose={onClose} />
       <div className={styles.body}>{children}</div>
       {footer && <footer className={styles.footer}>{footer}</footer>}
     </div>
