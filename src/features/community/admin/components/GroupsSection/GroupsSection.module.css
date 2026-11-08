@@ -254,10 +254,3 @@
 .suspendedRow .groupIcon {
   color: var(--color-text-muted);
 }
-
-.feedback {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-3);
-}

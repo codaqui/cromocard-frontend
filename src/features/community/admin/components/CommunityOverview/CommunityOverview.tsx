@@ -2,9 +2,10 @@ import { Icon } from '@/components/Icon/Icon';
 import type { IconName } from '@/components/Icon/icon-paths';
 import { cn } from '@/utils/cn';
 
-import { formatCount } from '../../community-admin.format';
+import { formatCount, formatPendingAlerts } from '../../community-admin.format';
 import { useCommunitySummary } from '../../community-admin.queries';
 import type { CommunitySummary } from '../../community-admin.types';
+import { RetryableError } from '../RetryableError/RetryableError';
 import styles from './CommunityOverview.module.css';
 
 const PLACEHOLDER = '—';
@@ -13,7 +14,7 @@ interface OverviewTileProps {
   label: string;
   icon: IconName;
   value: string;
-  hint: string;
+  hint?: string;
   tone?: 'default' | 'alert';
 }
 
@@ -25,7 +26,7 @@ function OverviewTile({ label, icon, value, hint, tone = 'default' }: OverviewTi
         <Icon name={icon} size={16} />
       </header>
       <p className={styles.tileValue}>{value}</p>
-      <p className={styles.tileHint}>{hint}</p>
+      {hint && <p className={styles.tileHint}>{hint}</p>}
     </article>
   );
 }
@@ -48,14 +49,13 @@ function Identity() {
 
 function toOverviewTiles(summary?: CommunitySummary): OverviewTileProps[] {
   const count = (value?: number) => (value === undefined ? PLACEHOLDER : formatCount(value));
-  const pending = summary ? `${count(summary.pendingReports)} Pendentes` : PLACEHOLDER;
+  const pending = summary ? formatPendingAlerts(summary.pendingReports) : PLACEHOLDER;
 
   return [
     {
       label: 'Grupos Ativos',
       icon: 'users',
       value: count(summary?.activeGroups),
-      hint: 'Sem suspensão nem exclusão',
     },
     {
       label: 'Mensagens Monitoradas',
@@ -74,11 +74,15 @@ function toOverviewTiles(summary?: CommunitySummary): OverviewTileProps[] {
 }
 
 function OverviewTiles() {
-  const { data } = useCommunitySummary();
+  const query = useCommunitySummary();
+
+  if (query.isError) {
+    return <RetryableError message={query.error.message} onRetry={() => void query.refetch()} />;
+  }
 
   return (
     <div className={styles.tiles}>
-      {toOverviewTiles(data).map((tile) => (
+      {toOverviewTiles(query.data).map((tile) => (
         <OverviewTile key={tile.label} {...tile} />
       ))}
     </div>

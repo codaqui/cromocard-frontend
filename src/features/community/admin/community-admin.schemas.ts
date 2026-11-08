@@ -1,6 +1,8 @@
 import { reasonSchema } from '@/lib/reason';
 import { z } from '@/lib/zod';
 
+export const GROUP_NAME_MAX_LENGTH = 120;
+
 export const moderationReasonSchema = z.object({ reason: reasonSchema });
 
 export type ModerationReasonInput = z.infer<typeof moderationReasonSchema>;

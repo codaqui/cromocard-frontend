@@ -10,7 +10,6 @@ export const communityAdminKeys = {
   groups: () => [...communityAdminKeys.all, 'groups'] as const,
   groupList: (params: ListGroupsParams) =>
     [...communityAdminKeys.groups(), 'list', params] as const,
-  group: (id: string) => [...communityAdminKeys.groups(), 'detail', id] as const,
   reports: () => [...communityAdminKeys.all, 'reports'] as const,
   reportList: (params: ListGroupMessageReportsParams) =>
     [...communityAdminKeys.reports(), 'list', params] as const,
@@ -43,13 +42,6 @@ export function useAdminGroups(params: ListGroupsParams) {
     queryKey: communityAdminKeys.groupList(params),
     queryFn: () => communityAdminApi.listGroups(params),
     placeholderData: keepPreviousData,
-  });
-}
-
-export function useAdminGroup(id: string) {
-  return useQuery({
-    queryKey: communityAdminKeys.group(id),
-    queryFn: () => communityAdminApi.getGroup(id),
   });
 }
 

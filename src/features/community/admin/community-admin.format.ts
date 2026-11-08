@@ -1,4 +1,5 @@
 const BRASILIA_TIME_ZONE = 'America/Sao_Paulo';
+const GROUP_CODE_LENGTH = 6;
 
 const countFormatter = new Intl.NumberFormat('pt-BR');
 
@@ -28,8 +29,12 @@ export function formatPendingCases(count: number): string {
   return `${formatCount(count)} ${count === 1 ? 'Caso Pendente' : 'Casos Pendentes'}`;
 }
 
+export function formatPendingAlerts(count: number): string {
+  return `${formatCount(count)} ${count === 1 ? 'Pendente' : 'Pendentes'}`;
+}
+
 export function formatGroupCode(id: string): string {
-  return `#GRP-${id.replaceAll('-', '').slice(-4).toUpperCase()}`;
+  return `#GRP-${id.replaceAll('-', '').slice(-GROUP_CODE_LENGTH).toUpperCase()}`;
 }
 
 export function formatReportedAt(isoDate: string, now: Date = new Date()): string {

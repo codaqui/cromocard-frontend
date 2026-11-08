@@ -89,7 +89,7 @@ describe('ModerationDialog', () => {
     const { onDone } = renderDialog({ kind: 'group', action, group });
 
     expect(screen.getByRole('alertdialog')).toHaveTextContent('Leilões Noturnos Pokémon SP');
-    expect(screen.getByRole('alertdialog')).toHaveTextContent('#GRP-9821');
+    expect(screen.getByRole('alertdialog')).toHaveTextContent('#GRP-009821');
     await confirmWith(REASON, moderationTexts[action].confirmLabel);
 
     await vi.waitFor(() => expect(onDone).toHaveBeenCalledWith(done));

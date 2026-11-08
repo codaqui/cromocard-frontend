@@ -1,8 +1,6 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
-import { Button } from '@/components/Button/Button';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
-import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { Icon } from '@/components/Icon/Icon';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { Pagination } from '@/components/Pagination/Pagination';
@@ -10,6 +8,7 @@ import { Pagination } from '@/components/Pagination/Pagination';
 import { formatPendingCases } from '../../community-admin.format';
 import { useGroupMessageReports } from '../../community-admin.queries';
 import type { OnCommunityAction } from '../../community-admin.types';
+import { RetryableError } from '../RetryableError/RetryableError';
 import styles from './ModerationQueue.module.css';
 import { ReportCard } from './ReportCard';
 
@@ -19,14 +18,14 @@ interface ModerationQueueProps {
   onAction: OnCommunityAction;
 }
 
-function QueueHeading({ total }: { total?: number }) {
+function QueueHeading({ total, titleId }: { total?: number; titleId: string }) {
   return (
     <header className={styles.heading}>
       <span className={styles.headingIcon} aria-hidden="true">
         <Icon name="gavel" size={16} />
       </span>
       <div>
-        <h2 id="moderation-queue-title" className={styles.title}>
+        <h2 id={titleId} className={styles.title}>
           Fila de Moderação
           {total !== undefined && (
             <span className={styles.pending}>{formatPendingCases(total)}</span>
@@ -49,14 +48,7 @@ interface QueueListProps {
 function QueueList({ query, onAction, onPageChange }: QueueListProps) {
   if (query.isPending) return <LoadingState message="Carregando as denúncias…" />;
   if (query.isError) {
-    return (
-      <div className={styles.feedback}>
-        <ErrorState message={query.error.message} />
-        <Button variant="secondary" onClick={() => void query.refetch()}>
-          Tentar de novo
-        </Button>
-      </div>
-    );
+    return <RetryableError message={query.error.message} onRetry={() => void query.refetch()} />;
   }
   if (query.data.data.length === 0) return <EmptyState title="Nenhuma denúncia pendente" />;
 
@@ -75,10 +67,11 @@ function QueueList({ query, onAction, onPageChange }: QueueListProps) {
 export function ModerationQueue({ onAction }: ModerationQueueProps) {
   const [page, setPage] = useState(1);
   const query = useGroupMessageReports({ status: 'PENDING', page, pageSize: REPORTS_PAGE_SIZE });
+  const titleId = useId();
 
   return (
-    <section className={styles.section} aria-labelledby="moderation-queue-title">
-      <QueueHeading total={query.data?.meta.total} />
+    <section className={styles.section} aria-labelledby={titleId}>
+      <QueueHeading total={query.data?.meta.total} titleId={titleId} />
       <QueueList query={query} onAction={onAction} onPageChange={setPage} />
     </section>
   );

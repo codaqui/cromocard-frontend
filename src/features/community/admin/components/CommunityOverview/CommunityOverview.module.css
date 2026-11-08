@@ -99,15 +99,6 @@
   font-size: var(--font-size-caption);
 }
 
-.tile:first-child .tileHint {
-  color: var(--color-success);
-}
-
-.tile:first-child .tileHint::before {
-  margin-right: var(--space-1);
-  content: '•';
-}
-
 .alert {
   background: var(--color-alert);
   color: var(--color-alert-text);
