@@ -71,7 +71,7 @@ function moderationDialogLook(action: CommunityAction, text: ModerationText) {
     message: <ModerationMessage action={action} text={text} />,
     confirmLabel: text.confirmLabel,
     cancelLabel: text.cancelLabel,
-    tone: text.tone === 'info' ? ('primary' as const) : ('danger' as const),
+    tone: text.confirmTone,
   };
 }
 
@@ -79,11 +79,8 @@ function ModerationDialogContent({ action, onClose, onDone }: ModerationDialogCo
   const mutation = useModerationMutations()[action.action];
   const text = moderationTexts[action.action];
 
-  const confirm = (reason?: string) =>
-    mutation.mutate(
-      { id: targetIdOf(action), reason: reason ?? '' },
-      { onSuccess: () => onDone(text.done) },
-    );
+  const confirm = (reason = '') =>
+    mutation.mutate({ id: targetIdOf(action), reason }, { onSuccess: () => onDone(text.done) });
 
   return (
     <ConfirmDialog
@@ -91,7 +88,6 @@ function ModerationDialogContent({ action, onClose, onDone }: ModerationDialogCo
       {...moderationDialogLook(action, text)}
       actionsLayout="spread"
       requireReason
-      reasonLabel="Motivo"
       isConfirming={mutation.isPending}
       errorMessage={mutation.error?.message}
       onConfirm={confirm}

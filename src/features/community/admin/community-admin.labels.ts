@@ -1,10 +1,27 @@
 import type { IconName } from '@/components/Icon/icon-paths';
 
-import type { GroupStatus, ModerationKind } from './community-admin.types';
+import type { GroupStatus, GroupToggleAction, ModerationKind } from './community-admin.types';
 
-export const groupStatusLabels: Record<GroupStatus, string> = {
-  ACTIVE: 'Ativo',
-  SUSPENDED: 'Suspenso',
+interface GroupStatusLook {
+  label: string;
+  icon: IconName;
+  dimmed: boolean;
+  toggle: { action: GroupToggleAction; label: string; icon: IconName };
+}
+
+export const groupStatusLooks: Record<GroupStatus, GroupStatusLook> = {
+  ACTIVE: {
+    label: 'Ativo',
+    icon: 'users',
+    dimmed: false,
+    toggle: { action: 'suspend', label: 'Suspender', icon: 'pauseCircle' },
+  },
+  SUSPENDED: {
+    label: 'Suspenso',
+    icon: 'block',
+    dimmed: true,
+    toggle: { action: 'reactivate', label: 'Reativar', icon: 'refresh' },
+  },
 };
 
 export const groupStatusFilterOptions: { value: GroupStatus | ''; label: string }[] = [
@@ -23,6 +40,7 @@ export interface ModerationText {
   cancelLabel: string;
   done: string;
   tone: ModerationTone;
+  confirmTone: 'primary' | 'danger';
   icon: IconName;
 }
 
@@ -35,6 +53,7 @@ export const moderationTexts: Record<ModerationKind, ModerationText> = {
     cancelLabel: 'Cancelar e Manter Grupo',
     done: 'Grupo suspenso com sucesso.',
     tone: 'warning',
+    confirmTone: 'danger',
     icon: 'pauseCircle',
   },
   reactivate: {
@@ -45,6 +64,7 @@ export const moderationTexts: Record<ModerationKind, ModerationText> = {
     cancelLabel: 'Cancelar e Manter Suspenso',
     done: 'Grupo reativado com sucesso.',
     tone: 'info',
+    confirmTone: 'primary',
     icon: 'refresh',
   },
   delete: {
@@ -55,6 +75,7 @@ export const moderationTexts: Record<ModerationKind, ModerationText> = {
     cancelLabel: 'Cancelar e Manter Grupo',
     done: 'Grupo excluído com sucesso.',
     tone: 'danger',
+    confirmTone: 'danger',
     icon: 'delete',
   },
   removeMessage: {
@@ -65,6 +86,7 @@ export const moderationTexts: Record<ModerationKind, ModerationText> = {
     cancelLabel: 'Cancelar e Manter Mensagem',
     done: 'Mensagem removida e denúncia resolvida.',
     tone: 'warning',
+    confirmTone: 'danger',
     icon: 'warning',
   },
   dismiss: {
@@ -75,6 +97,7 @@ export const moderationTexts: Record<ModerationKind, ModerationText> = {
     cancelLabel: 'Cancelar e Manter na Fila',
     done: 'Denúncia dispensada com sucesso.',
     tone: 'info',
+    confirmTone: 'primary',
     icon: 'checkCircle',
   },
 };

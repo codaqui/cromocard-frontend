@@ -57,7 +57,9 @@ export interface ListGroupMessageReportsParams extends PaginationParams {
   status?: ReportStatus;
 }
 
-export type GroupAction = 'suspend' | 'reactivate' | 'delete';
+export type GroupToggleAction = 'suspend' | 'reactivate';
+
+export type GroupAction = GroupToggleAction | 'delete';
 
 export type ReportAction = 'removeMessage' | 'dismiss';
 

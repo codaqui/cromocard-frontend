@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   formatGroupCode,
   formatMembers,
+  formatPendingAlerts,
   formatPendingCases,
   formatReportedAt,
 } from './community-admin.format';
@@ -13,10 +14,12 @@ describe('formatação da administração de comunidade', () => {
     expect(formatMembers(3840)).toBe('3.840 membros');
     expect(formatPendingCases(1)).toBe('1 Caso Pendente');
     expect(formatPendingCases(3)).toBe('3 Casos Pendentes');
+    expect(formatPendingAlerts(1)).toBe('1 Pendente');
+    expect(formatPendingAlerts(2)).toBe('2 Pendentes');
   });
 
-  it('monta o ID curto do grupo com o fim do UUID', () => {
-    expect(formatGroupCode('0199a000-0000-7000-8000-000000009821')).toBe('#GRP-9821');
+  it('monta o código curto do grupo com o fim do UUID', () => {
+    expect(formatGroupCode('0199a000-0000-7000-8000-00000a9f9821')).toBe('#GRP-9F9821');
   });
 
   it('mostra "Hoje" para uma denúncia do dia, no horário de Brasília', () => {

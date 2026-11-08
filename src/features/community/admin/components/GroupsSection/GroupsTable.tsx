@@ -1,8 +1,9 @@
 import { Icon } from '@/components/Icon/Icon';
+import type { IconName } from '@/components/Icon/icon-paths';
 import { cn } from '@/utils/cn';
 
 import { formatGroupCode, formatMembers } from '../../community-admin.format';
-import { groupStatusLabels } from '../../community-admin.labels';
+import { groupStatusLooks } from '../../community-admin.labels';
 import type {
   AdminGroupSummary,
   GroupAction,
@@ -21,12 +22,10 @@ interface GroupRowProps {
 }
 
 function GroupIdentity({ group }: { group: AdminGroupSummary }) {
-  const isSuspended = group.status === 'SUSPENDED';
-
   return (
     <div className={styles.identity}>
       <span className={styles.groupIcon} aria-hidden="true">
-        <Icon name={isSuspended ? 'block' : 'users'} size={16} />
+        <Icon name={groupStatusLooks[group.status].icon} size={16} />
       </span>
       <div>
         <p className={styles.groupName}>{group.name}</p>
@@ -51,39 +50,59 @@ function GroupMembers({ group }: { group: AdminGroupSummary }) {
 function GroupStatusBadge({ group }: { group: AdminGroupSummary }) {
   return (
     <span className={cn(styles.status, styles[group.status])}>
-      {groupStatusLabels[group.status]}
+      {groupStatusLooks[group.status].label}
     </span>
+  );
+}
+
+interface ActionButtonProps {
+  label: string;
+  icon: IconName;
+  groupName: string;
+  className?: string;
+  onClick: () => void;
+}
+
+function ActionButton({ label, icon, groupName, className, onClick }: ActionButtonProps) {
+  return (
+    <button
+      type="button"
+      className={className}
+      aria-label={`${label} ${groupName}`}
+      onClick={onClick}
+    >
+      <Icon name={icon} size={14} />
+      {label}
+    </button>
   );
 }
 
 function GroupActions({ group, onAction }: GroupRowProps) {
   const act = (action: GroupAction) => () => onAction({ kind: 'group', action, group });
-  const isSuspended = group.status === 'SUSPENDED';
+  const { toggle } = groupStatusLooks[group.status];
 
   return (
     <div className={styles.actions}>
-      {isSuspended ? (
-        <button type="button" className={styles.reactivate} onClick={act('reactivate')}>
-          <Icon name="refresh" size={14} />
-          Reativar
-        </button>
-      ) : (
-        <button type="button" className={styles.suspend} onClick={act('suspend')}>
-          <Icon name="pauseCircle" size={14} />
-          Suspender
-        </button>
-      )}
-      <button type="button" className={styles.remove} onClick={act('delete')}>
-        <Icon name="delete" size={14} />
-        Excluir
-      </button>
+      <ActionButton
+        {...toggle}
+        groupName={group.name}
+        className={styles[toggle.action]}
+        onClick={act(toggle.action)}
+      />
+      <ActionButton
+        label="Excluir"
+        icon="delete"
+        groupName={group.name}
+        className={styles.remove}
+        onClick={act('delete')}
+      />
     </div>
   );
 }
 
 function GroupRow({ group, onAction }: GroupRowProps) {
   return (
-    <tr className={cn(group.status === 'SUSPENDED' && styles.suspendedRow)}>
+    <tr className={cn(groupStatusLooks[group.status].dimmed && styles.suspendedRow)}>
       <td>
         <GroupIdentity group={group} />
       </td>

@@ -92,9 +92,11 @@ describe('CommunityAdminPage', () => {
     expect(active).toHaveTextContent('Leilões Noturnos Pokémon SP');
     expect(active).toHaveTextContent('3.840 membros');
     expect(active).toHaveTextContent('Ativo');
-    expect(within(active!).getByRole('button', { name: 'Suspender' })).toBeInTheDocument();
+    expect(within(active!).getByRole('button', { name: /^Suspender/ })).toBeInTheDocument();
     expect(suspended).toHaveTextContent('Suspenso');
-    expect(within(suspended!).getByRole('button', { name: 'Reativar' })).toBeInTheDocument();
+    expect(
+      within(suspended!).getByRole('button', { name: 'Reativar Vendas Paralelas' }),
+    ).toBeInTheDocument();
   });
 
   it('CA1: busca pelo nome e filtra pelo status, voltando para a primeira página', async () => {
@@ -166,12 +168,34 @@ describe('CommunityAdminPage', () => {
     const table = await screen.findByRole('table', { name: 'Grupos da comunidade' });
     const [active] = within(table).getAllByRole('row').slice(1);
 
-    await userEvent.click(within(active!).getByRole('button', { name: 'Suspender' }));
+    await userEvent.click(within(active!).getByRole('button', { name: /^Suspender/ }));
     await userEvent.type(screen.getByRole('textbox', { name: 'Motivo' }), 'Spam repetido no grupo');
     await userEvent.click(screen.getByRole('button', { name: 'Sim, Suspender Grupo' }));
 
     expect(await screen.findByText('Grupo suspenso com sucesso.')).toBeInTheDocument();
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     await vi.waitFor(() => expect(communityAdminApi.listGroups).toHaveBeenCalledTimes(2));
+  });
+  it('mostra o erro dos indicadores com tentar de novo', async () => {
+    vi.mocked(communityAdminApi.getSummary).mockRejectedValue(
+      new ApiError({ status: 500, code: 'INTERNAL_ERROR', message: 'Falha nos indicadores' }),
+    );
+
+    renderPage();
+
+    expect(await screen.findByText('Falha nos indicadores')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Tentar de novo' })).toBeInTheDocument();
+  });
+
+  it('mostra "1 Pendente" no singular', async () => {
+    vi.mocked(communityAdminApi.getSummary).mockResolvedValue({
+      activeGroups: 1,
+      messagesLast7Days: 1,
+      pendingReports: 1,
+    });
+
+    renderPage();
+
+    expect(await screen.findByText('1 Pendente')).toBeInTheDocument();
   });
 });

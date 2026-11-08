@@ -17,29 +17,27 @@ describe('communityAdminApi', () => {
     await communityAdminApi.listGroups({ q: 'copa', status: 'SUSPENDED', page: 2 });
     await communityAdminApi.listGroupMessageReports({ status: 'PENDING' });
 
-    expect(api.getPage).toHaveBeenNthCalledWith(1, '/admin/groups', {
+    expect(api.getPage).toHaveBeenNthCalledWith(1, '/admin/community/groups', {
       q: 'copa',
       status: 'SUSPENDED',
       page: 2,
     });
-    expect(api.getPage).toHaveBeenNthCalledWith(2, '/admin/reports/group-messages', {
+    expect(api.getPage).toHaveBeenNthCalledWith(2, '/admin/community/reports', {
       status: 'PENDING',
     });
   });
 
-  it('busca os indicadores e o detalhe do grupo', async () => {
+  it('busca os indicadores', async () => {
     await communityAdminApi.getSummary();
-    await communityAdminApi.getGroup('group-1');
 
-    expect(api.get).toHaveBeenNthCalledWith(1, '/admin/groups/summary');
-    expect(api.get).toHaveBeenNthCalledWith(2, '/admin/groups/group-1');
+    expect(api.get).toHaveBeenCalledWith('/admin/community/groups/summary');
   });
 
   it.each([
-    ['suspendGroup', '/admin/groups/group-1/suspend'],
-    ['reactivateGroup', '/admin/groups/group-1/reactivate'],
-    ['removeReportedMessage', '/admin/reports/group-1/remove-message'],
-    ['dismissReport', '/admin/reports/group-1/dismiss'],
+    ['suspendGroup', '/admin/community/groups/group-1/suspend'],
+    ['reactivateGroup', '/admin/community/groups/group-1/reactivate'],
+    ['removeReportedMessage', '/admin/community/reports/group-1/remove-message'],
+    ['dismissReport', '/admin/community/reports/group-1/dismiss'],
   ] as const)('%s envia só o motivo no corpo', async (method, url) => {
     await communityAdminApi[method](action);
 
@@ -49,6 +47,8 @@ describe('communityAdminApi', () => {
   it('exclui o grupo mandando o motivo no corpo do DELETE', async () => {
     await communityAdminApi.deleteGroup(action);
 
-    expect(api.delete).toHaveBeenCalledWith('/admin/groups/group-1', { reason: 'Spam no grupo' });
+    expect(api.delete).toHaveBeenCalledWith('/admin/community/groups/group-1', {
+      reason: 'Spam no grupo',
+    });
   });
 });
