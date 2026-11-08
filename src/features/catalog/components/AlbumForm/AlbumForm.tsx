@@ -64,6 +64,7 @@ export function AlbumForm({ formId, album, apiError, onSubmit }: AlbumFormProps)
         name="coverUrl"
         label="Capa (opcional)"
         folder="albums"
+        removable
       />
       <FormError message={formError} />
     </form>

@@ -8,6 +8,7 @@ interface ImageUploadControllerProps<TValues extends FieldValues, TOutput extend
   name: Path<TValues>;
   label: string;
   folder: UploadFolder;
+  removable?: boolean;
 }
 
 export function ImageUploadController<TValues extends FieldValues, TOutput extends FieldValues>({
@@ -15,6 +16,7 @@ export function ImageUploadController<TValues extends FieldValues, TOutput exten
   name,
   label,
   folder,
+  removable,
 }: ImageUploadControllerProps<TValues, TOutput>) {
   return (
     <Controller
@@ -27,6 +29,7 @@ export function ImageUploadController<TValues extends FieldValues, TOutput exten
           value={typeof field.value === 'string' ? field.value : ''}
           onChange={field.onChange}
           error={fieldState.error?.message}
+          removable={removable}
         />
       )}
     />

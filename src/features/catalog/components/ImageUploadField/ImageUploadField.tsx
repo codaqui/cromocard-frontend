@@ -1,5 +1,6 @@
 import type { ChangeEvent } from 'react';
 
+import { Button } from '@/components/Button/Button';
 import { FileUpload } from '@/components/FileUpload/FileUpload';
 
 import { useUploadImage } from '../../catalog.queries';
@@ -15,15 +16,31 @@ interface ImageUploadFieldProps {
   value: string;
   onChange: (url: string) => void;
   error?: string;
+  removable?: boolean;
 }
 
-export function ImageUploadField({ label, folder, value, onChange, error }: ImageUploadFieldProps) {
+function useImageSelection(folder: UploadFolder, onChange: (url: string) => void) {
   const upload = useUploadImage();
 
   const selectFile = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) upload.mutate({ folder, file }, { onSuccess: (image) => onChange(image.url) });
   };
+
+  return { upload, selectFile };
+}
+
+function RemoveImageButton({ disabled, onRemove }: { disabled: boolean; onRemove: () => void }) {
+  return (
+    <Button variant="secondary" className={styles.remove} disabled={disabled} onClick={onRemove}>
+      Remover imagem
+    </Button>
+  );
+}
+
+export function ImageUploadField({ removable = false, ...field }: ImageUploadFieldProps) {
+  const { label, folder, value, onChange, error } = field;
+  const { upload, selectFile } = useImageSelection(folder, onChange);
 
   return (
     <div className={styles.field}>
@@ -35,6 +52,9 @@ export function ImageUploadField({ label, folder, value, onChange, error }: Imag
         onChange={selectFile}
       />
       {value && <img className={styles.preview} src={value} alt={`Prévia: ${label}`} />}
+      {removable && value && (
+        <RemoveImageButton disabled={upload.isPending} onRemove={() => onChange('')} />
+      )}
     </div>
   );
 }

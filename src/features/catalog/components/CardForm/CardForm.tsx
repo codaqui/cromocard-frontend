@@ -115,6 +115,7 @@ export function CardForm({ formId, card, apiError, onSubmit }: CardFormProps) {
         name="backImageUrl"
         label="Imagem do verso (opcional)"
         folder="cards"
+        removable
       />
       <FormError message={formError} />
     </form>
