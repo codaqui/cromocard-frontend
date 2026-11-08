@@ -56,3 +56,13 @@ export interface ListGroupsParams extends PaginationParams {
 export interface ListGroupMessageReportsParams extends PaginationParams {
   status?: ReportStatus;
 }
+
+export type GroupAction = 'suspend' | 'reactivate' | 'delete';
+
+export type ReportAction = 'removeMessage' | 'dismiss';
+
+export type CommunityAction =
+  | { kind: 'group'; action: GroupAction; group: AdminGroupSummary }
+  | { kind: 'report'; action: ReportAction; report: GroupMessageReport };
+
+export type OnCommunityAction = (action: CommunityAction) => void;
