@@ -146,7 +146,7 @@ function UsersListHeader({ total, onNewUser }: UsersListHeaderProps) {
             Total: {total}
           </span>
         )}
-        <Button onClick={onNewUser}>Novo usuário</Button>
+        <Button onClick={onNewUser}>+ Novo Usuário no Sistema</Button>
       </div>
     </div>
   );

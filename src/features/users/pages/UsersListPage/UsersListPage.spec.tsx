@@ -139,12 +139,12 @@ describe('UsersListPage - toasts das ações administrativas', () => {
     renderPage();
     await screen.findByText('Nenhum usuário encontrado');
 
-    await userEvent.click(screen.getByRole('button', { name: 'Novo usuário' }));
+    await userEvent.click(screen.getByRole('button', { name: '+ Novo Usuário no Sistema' }));
     const dialog = screen.getByRole('dialog');
     await userEvent.type(within(dialog).getByLabelText('Nome'), 'Bia Vendedora');
     await userEvent.type(within(dialog).getByLabelText('E-mail'), 'bia@cromocard.dev');
     await userEvent.selectOptions(within(dialog).getByLabelText('Papel'), 'SELLER');
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Salvar' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Cadastrar Usuário' }));
 
     expect(await screen.findByText('Usuário cadastrado com sucesso.')).toBeInTheDocument();
   });

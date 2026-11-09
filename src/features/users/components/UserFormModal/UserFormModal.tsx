@@ -72,10 +72,21 @@ function UserFormFields({ register, errors, formError }: UserFormFields) {
 interface UserFormModalActionsProps {
   formId: string;
   isSaving: boolean;
+  isCreating: boolean;
   onClose: () => void;
 }
 
-function UserFormModalActions({ formId, isSaving, onClose }: UserFormModalActionsProps) {
+function submitLabelFor(isCreating: boolean, isSaving: boolean): string {
+  if (isCreating) return isSaving ? 'Cadastrando…' : 'Cadastrar Usuário';
+  return isSaving ? 'Salvando…' : 'Salvar';
+}
+
+function UserFormModalActions({
+  formId,
+  isSaving,
+  isCreating,
+  onClose,
+}: UserFormModalActionsProps) {
   return (
     <div className={styles.footer}>
       <span className={styles.protected}>
@@ -87,7 +98,7 @@ function UserFormModalActions({ formId, isSaving, onClose }: UserFormModalAction
           Cancelar
         </Button>
         <Button type="submit" form={formId} disabled={isSaving}>
-          {isSaving ? 'Salvando…' : 'Salvar'}
+          {submitLabelFor(isCreating, isSaving)}
         </Button>
       </div>
     </div>
@@ -130,7 +141,12 @@ function UserFormModalContent({ user, onClose, onSaved }: Omit<UserFormModalProp
       onClose={onClose}
       dismissible={!mutation.isPending}
       footer={
-        <UserFormModalActions formId={formId} isSaving={mutation.isPending} onClose={onClose} />
+        <UserFormModalActions
+          formId={formId}
+          isSaving={mutation.isPending}
+          isCreating={!user}
+          onClose={onClose}
+        />
       }
     >
       <UserFormModalSubtitle user={user} />

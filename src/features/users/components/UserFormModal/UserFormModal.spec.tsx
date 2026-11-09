@@ -59,7 +59,7 @@ describe('UserFormModal', () => {
 
     await fillIdentity('Bia Vendedora', 'bia@cromocard.dev');
     await userEvent.selectOptions(screen.getByLabelText('Papel'), 'SELLER');
-    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Cadastrar Usuário' }));
 
     await vi.waitFor(() =>
       expect(usersApi.create).toHaveBeenCalledWith(
@@ -103,7 +103,7 @@ describe('UserFormModal', () => {
 
     await fillIdentity('Bia', 'bia@cromocard.dev');
     await userEvent.selectOptions(screen.getByLabelText('Papel'), 'SELLER');
-    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Cadastrar Usuário' }));
 
     expect(
       await screen.findByText('Já existe um usuário cadastrado com este e-mail'),
@@ -125,13 +125,13 @@ describe('UserFormModal', () => {
 
     await fillIdentity('Bia', 'bia@dominio-bloqueado.dev');
     await userEvent.selectOptions(screen.getByLabelText('Papel'), 'SELLER');
-    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Cadastrar Usuário' }));
 
     expect(await screen.findByText('Domínio de e-mail não permitido')).toBeInTheDocument();
 
     await userEvent.clear(screen.getByLabelText('E-mail'));
     await userEvent.type(screen.getByLabelText('E-mail'), 'bia@gmail.com');
-    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Cadastrar Usuário' }));
 
     await vi.waitFor(() => expect(onSaved).toHaveBeenCalled());
   });
