@@ -1,1 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect x="6" y="3" width="20" height="26" rx="3" fill="#4f46e5"/><rect x="9" y="6" width="14" height="12" rx="2" fill="#eef2ff"/><rect x="9" y="21" width="14" height="2" rx="1" fill="#eef2ff"/><rect x="9" y="25" width="9" height="2" rx="1" fill="#eef2ff"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="11.17 2.74 48 48">
+  <defs>
+    <radialGradient id="star" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(35.1742 26.7363) scale(19.2042 25.835)">
+      <stop stop-color="#1250FF"/>
+      <stop offset="0.55" stop-color="#2B6BFF"/>
+      <stop offset="1" stop-color="#9DB6FF"/>
+    </radialGradient>
+  </defs>
+  <path fill-rule="evenodd" clip-rule="evenodd" fill="url(#star)" d="M35.1742 3.25C37.8123 15.3846 43.6318 23.2134 52.6325 26.7363C43.6318 30.2593 37.8123 38.0881 35.1742 50.2227C32.536 38.0881 26.7166 30.2593 17.7158 26.7363C26.7166 23.2134 32.536 15.3846 35.1742 3.25ZM35.1742 21.8042L37.5019 26.7363L35.1742 31.6685L32.8464 26.7363L35.1742 21.8042Z"/>
+</svg>
