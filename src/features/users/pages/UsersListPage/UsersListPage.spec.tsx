@@ -42,7 +42,10 @@ function mockList(users: UserSummary[]) {
 
 function renderPage() {
   renderWithProviders({
-    routes: [{ path: paths.backoffice.users, element: <UsersListPage /> }],
+    routes: [
+      { path: paths.backoffice.users, element: <UsersListPage /> },
+      { path: paths.backoffice.userDetail, element: <div>Tela de detalhe</div> },
+    ],
     initialPath: paths.backoffice.users,
   });
 }
@@ -93,6 +96,28 @@ describe('UsersListPage', () => {
     await userEvent.selectOptions(screen.getByLabelText('Status'), 'SUSPENDED');
 
     await vi.waitFor(() => expect(lastListCall()).toMatchObject({ status: 'SUSPENDED' }));
+  });
+
+  it('R4: o botão Visualizar leva para a tela de detalhe', async () => {
+    const user = buildUser();
+    mockList([user]);
+    renderPage();
+    await screen.findByText(user.name);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Visualizar' }));
+
+    expect(await screen.findByText('Tela de detalhe')).toBeInTheDocument();
+  });
+
+  it('R4: clicar na linha leva para a tela de detalhe', async () => {
+    const user = buildUser();
+    mockList([user]);
+    renderPage();
+    await screen.findByText(user.name);
+
+    await userEvent.click(screen.getByText(user.email));
+
+    expect(await screen.findByText('Tela de detalhe')).toBeInTheDocument();
   });
 });
 

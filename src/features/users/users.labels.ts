@@ -1,3 +1,5 @@
+import type { BadgeTone } from '@/components/Badge/Badge';
+import type { IconName } from '@/components/Icon/icon-paths';
 import type { SelectOption } from '@/components/Select/Select';
 import { USER_ROLES, type UserRole } from '@/types/authenticated-user';
 
@@ -14,10 +16,32 @@ export const roleSelectOptions: SelectOption[] = USER_ROLES.map((role) => ({
   label: roleLabels[role],
 }));
 
+export const roleTones: Record<UserRole, BadgeTone> = {
+  CUSTOMER: 'neutral',
+  SELLER: 'neutral',
+  ADMIN: 'info',
+};
+
 export const statusLabels: Record<UserStatus, string> = {
   ACTIVE: 'Ativo',
   SUSPENDED: 'Suspenso',
 };
+
+export const statusTones: Record<UserStatus, BadgeTone> = {
+  ACTIVE: 'success',
+  SUSPENDED: 'danger',
+};
+
+export interface ToggleStatusCopy {
+  label: string;
+  icon: IconName;
+}
+
+export function toggleStatusCopyFor(status: UserStatus): ToggleStatusCopy {
+  return status === 'ACTIVE'
+    ? { label: 'Suspender', icon: 'pause' }
+    : { label: 'Reativar', icon: 'playArrow' };
+}
 
 export const userActionMessages = {
   created: 'Usuário cadastrado com sucesso.',

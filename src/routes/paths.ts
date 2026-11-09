@@ -13,6 +13,7 @@ export const paths = {
     root: '/backoffice',
     dashboard: '/backoffice/dashboard',
     users: '/backoffice/users',
+    userDetail: '/backoffice/users/:id',
     notifications: '/backoffice/notifications',
     catalog: '/backoffice/catalog',
     communities: '/backoffice/communities',
@@ -39,4 +40,8 @@ export const loginAfterPasswordChangedPath = `${paths.login}?${PASSWORD_CHANGED_
 
 export function checkEmailPathFor(email: string): string {
   return `${paths.checkEmail}?${new URLSearchParams({ email }).toString()}`;
+}
+
+export function userDetailPathFor(id: string): string {
+  return `${paths.backoffice.users}/${id}`;
 }

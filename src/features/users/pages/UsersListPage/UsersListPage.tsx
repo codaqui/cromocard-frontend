@@ -1,4 +1,5 @@
 import type { UseQueryResult } from '@tanstack/react-query';
+import { useNavigate } from 'react-router';
 
 import { Button } from '@/components/Button/Button';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
@@ -8,13 +9,12 @@ import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { Pagination } from '@/components/Pagination/Pagination';
 import { Select, type SelectOption } from '@/components/Select/Select';
 import { TextField } from '@/components/TextField/TextField';
-import { Toast } from '@/components/Toast/Toast';
+import { userDetailPathFor } from '@/routes/paths';
 import type { PaginatedResponse } from '@/types/api';
 import type { UserRole } from '@/types/authenticated-user';
 
-import { DeleteUserDialog } from '../../components/DeleteUserDialog/DeleteUserDialog';
-import { SuspendUserDialog } from '../../components/SuspendUserDialog/SuspendUserDialog';
-import { UserFormModal } from '../../components/UserFormModal/UserFormModal';
+import { UserActionDialogsWithToast } from '../../components/UserActionDialogsWithToast/UserActionDialogsWithToast';
+import { UserFormModalWithToast } from '../../components/UserFormModalWithToast/UserFormModalWithToast';
 import { UsersTable } from '../../components/UsersTable/UsersTable';
 import { useUserActionDialogs } from '../../hooks/useUserActionDialogs';
 import { useUserFormModal } from '../../hooks/useUserFormModal';
@@ -84,6 +84,7 @@ function UsersListFilterFields(filters: UsersListFilters) {
 interface UsersListResultProps {
   query: UseQueryResult<PaginatedResponse<UserSummary>>;
   onPageChange: (page: number) => void;
+  onView: (user: UserSummary) => void;
   onEdit: (user: UserSummary) => void;
   onToggleStatus: (user: UserSummary) => void;
   onDelete: (user: UserSummary) => void;
@@ -151,42 +152,6 @@ function UsersListHeader({ total, onNewUser }: UsersListHeaderProps) {
   );
 }
 
-type FormModal = ReturnType<typeof useUserFormModal>;
-
-function UserFormModalWithToast(formModal: FormModal) {
-  return (
-    <>
-      <UserFormModal
-        open={formModal.isOpen}
-        user={formModal.editingUser}
-        onClose={formModal.close}
-        onSaved={formModal.saved}
-      />
-      <Toast message={formModal.toastMessage} onDismiss={formModal.dismissToast} />
-    </>
-  );
-}
-
-type ActionDialogs = ReturnType<typeof useUserActionDialogs>;
-
-function UserActionDialogsWithToast(dialogs: ActionDialogs) {
-  return (
-    <>
-      <SuspendUserDialog
-        user={dialogs.suspendTarget}
-        onClose={dialogs.close}
-        onSaved={dialogs.savedSuspend}
-      />
-      <DeleteUserDialog
-        user={dialogs.deleteTarget}
-        onClose={dialogs.close}
-        onSaved={dialogs.savedDelete}
-      />
-      <Toast message={dialogs.toastMessage} onDismiss={dialogs.dismissToast} />
-    </>
-  );
-}
-
 function useFilteredUsersList(filters: UsersListFilters) {
   return useUsersList({
     page: filters.page,
@@ -198,6 +163,7 @@ function useFilteredUsersList(filters: UsersListFilters) {
 }
 
 export function UsersListPage() {
+  const navigate = useNavigate();
   const filters = useUsersListFilters();
   const formModal = useUserFormModal();
   const actionDialogs = useUserActionDialogs();
@@ -210,12 +176,13 @@ export function UsersListPage() {
       <UsersListResult
         query={usersQuery}
         onPageChange={filters.changePage}
+        onView={(user) => void navigate(userDetailPathFor(user.id))}
         onEdit={formModal.openEdit}
         onToggleStatus={actionDialogs.openSuspend}
         onDelete={actionDialogs.openDelete}
       />
-      <UserFormModalWithToast {...formModal} />
-      <UserActionDialogsWithToast {...actionDialogs} />
+      <UserFormModalWithToast formModal={formModal} />
+      <UserActionDialogsWithToast dialogs={actionDialogs} />
     </section>
   );
 }

@@ -9,6 +9,7 @@ export const usersKeys = {
   all: ['users'] as const,
   me: () => [...usersKeys.all, 'me'] as const,
   list: (params: ListUsersParams) => [...usersKeys.all, 'list', params] as const,
+  detail: (id: string) => [...usersKeys.all, 'detail', id] as const,
 };
 
 function invalidateUsersList(queryClient: QueryClient) {
@@ -21,6 +22,10 @@ export function useUsersList(params: ListUsersParams) {
     queryFn: () => usersApi.list(params),
     placeholderData: keepPreviousData,
   });
+}
+
+export function useUser(id: string) {
+  return useQuery({ queryKey: usersKeys.detail(id), queryFn: () => usersApi.getById(id) });
 }
 
 export function useMe() {

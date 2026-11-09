@@ -11,6 +11,7 @@ import type { ListUsersParams, UserSummary } from './users.types';
 export const usersApi = {
   list: (params: ListUsersParams) => api.getPage<UserSummary>('/users', params),
   getMe: () => api.get<UserSummary>('/users/me'),
+  getById: (id: string) => api.get<UserSummary>(`/users/${id}`),
   updateMe: (input: UpdateUserInput) => api.patch<UserSummary>('/users/me', input),
   deleteMe: () => api.delete('/users/me'),
   create: (input: CreateUserInput) => api.post<UserSummary>('/users', input),

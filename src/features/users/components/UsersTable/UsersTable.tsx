@@ -1,6 +1,6 @@
 import type { MouseEventHandler } from 'react';
 
-import { Badge, type BadgeTone } from '@/components/Badge/Badge';
+import { Badge } from '@/components/Badge/Badge';
 import { Button } from '@/components/Button/Button';
 import { DataTable, type DataTableColumn } from '@/components/DataTable/DataTable';
 import { Icon } from '@/components/Icon/Icon';
@@ -8,12 +8,19 @@ import type { IconName } from '@/components/Icon/icon-paths';
 import type { UserRole } from '@/types/authenticated-user';
 import { formatDate } from '@/utils/formatDate';
 
-import { roleLabels, statusLabels } from '../../users.labels';
+import {
+  roleLabels,
+  roleTones,
+  statusLabels,
+  statusTones,
+  toggleStatusCopyFor,
+} from '../../users.labels';
 import type { UserStatus, UserSummary } from '../../users.types';
 import styles from './UsersTable.module.css';
 
 interface UsersTableProps {
   users: UserSummary[];
+  onView: (user: UserSummary) => void;
   onEdit: (user: UserSummary) => void;
   onToggleStatus: (user: UserSummary) => void;
   onDelete: (user: UserSummary) => void;
@@ -21,21 +28,11 @@ interface UsersTableProps {
 
 interface RowActionsProps {
   user: UserSummary;
+  onView: (user: UserSummary) => void;
   onEdit: (user: UserSummary) => void;
   onToggleStatus: (user: UserSummary) => void;
   onDelete: (user: UserSummary) => void;
 }
-
-const statusTones: Record<UserStatus, BadgeTone> = {
-  ACTIVE: 'success',
-  SUSPENDED: 'danger',
-};
-
-const roleTones: Record<UserRole, BadgeTone> = {
-  CUSTOMER: 'neutral',
-  SELLER: 'neutral',
-  ADMIN: 'info',
-};
 
 function RoleBadge({ role }: { role: UserRole }) {
   return <Badge tone={roleTones[role]}>{roleLabels[role]}</Badge>;
@@ -73,17 +70,6 @@ function StatusBadge({ status }: { status: UserStatus }) {
   );
 }
 
-interface ToggleStatusCopy {
-  label: string;
-  icon: IconName;
-}
-
-function toggleStatusCopy(status: UserStatus): ToggleStatusCopy {
-  return status === 'ACTIVE'
-    ? { label: 'Suspender', icon: 'pause' }
-    : { label: 'Reativar', icon: 'playArrow' };
-}
-
 interface ActionIconButtonProps {
   label: string;
   icon: IconName;
@@ -110,29 +96,29 @@ function ActionIconButton({ label, icon, variant, onClick }: ActionIconButtonPro
   );
 }
 
-function RowActions({ user, onEdit, onToggleStatus, onDelete }: RowActionsProps) {
-  const toggleStatus = toggleStatusCopy(user.status);
+function rowActionsFor({
+  user,
+  onView,
+  onEdit,
+  onToggleStatus,
+  onDelete,
+}: RowActionsProps): ActionIconButtonProps[] {
+  const toggleStatus = toggleStatusCopyFor(user.status);
 
+  return [
+    { label: 'Visualizar', icon: 'visibility', variant: 'secondary', onClick: () => onView(user) },
+    { label: 'Editar', icon: 'edit', variant: 'secondary', onClick: () => onEdit(user) },
+    { ...toggleStatus, variant: 'secondary', onClick: () => onToggleStatus(user) },
+    { label: 'Excluir', icon: 'delete', variant: 'danger', onClick: () => onDelete(user) },
+  ];
+}
+
+function RowActions(props: RowActionsProps) {
   return (
     <div className={styles.actions}>
-      <ActionIconButton
-        label="Editar"
-        icon="edit"
-        variant="secondary"
-        onClick={() => onEdit(user)}
-      />
-      <ActionIconButton
-        label={toggleStatus.label}
-        icon={toggleStatus.icon}
-        variant="secondary"
-        onClick={() => onToggleStatus(user)}
-      />
-      <ActionIconButton
-        label="Excluir"
-        icon="delete"
-        variant="danger"
-        onClick={() => onDelete(user)}
-      />
+      {rowActionsFor(props).map((action) => (
+        <ActionIconButton key={action.label} {...action} />
+      ))}
     </div>
   );
 }
@@ -148,15 +134,15 @@ function buildColumns(actions: Omit<RowActionsProps, 'user'>): DataTableColumn<U
   ];
 }
 
-export function UsersTable({ users, onEdit, onToggleStatus, onDelete }: UsersTableProps) {
+export function UsersTable({ users, onView, onEdit, onToggleStatus, onDelete }: UsersTableProps) {
   return (
     <DataTable
       caption="Usuários"
-      columns={buildColumns({ onEdit, onToggleStatus, onDelete })}
+      columns={buildColumns({ onView, onEdit, onToggleStatus, onDelete })}
       rows={users}
       getRowKey={(user) => user.id}
       emptyMessage="Nenhum usuário encontrado"
-      onRowClick={onEdit}
+      onRowClick={onView}
     />
   );
 }
