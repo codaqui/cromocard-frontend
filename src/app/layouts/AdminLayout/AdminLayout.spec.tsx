@@ -96,7 +96,7 @@ describe('AdminLayout', () => {
     });
 
     await userEvent.click(await screen.findByRole('button', { name: /Administrador/ }));
-    await userEvent.click(screen.getByRole('button', { name: 'Sair' }));
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Sair' }));
 
     expect(signOut).toHaveBeenCalledOnce();
     expect(await screen.findByText('Área pública')).toBeInTheDocument();

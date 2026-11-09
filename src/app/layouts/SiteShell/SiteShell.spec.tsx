@@ -48,10 +48,11 @@ describe('SiteShell', () => {
     );
   });
 
-  it('para o visitante, oferece Entrar e Cadastrar', () => {
+  it('para o visitante, oferece Login, Cadastrar e os atalhos', () => {
     renderShell();
 
-    expect(screen.getByRole('link', { name: 'Entrar' })).toHaveAttribute('href', paths.login);
+    expect(screen.getByRole('navigation', { name: 'Atalhos' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Login' })).toHaveAttribute('href', paths.login);
     expect(screen.getByRole('link', { name: 'Cadastrar' })).toHaveAttribute('href', paths.register);
   });
 
@@ -69,10 +70,11 @@ describe('SiteShell', () => {
     const signOut = vi.fn();
     renderShell({ id: '1', role: 'CUSTOMER' }, signOut);
 
-    expect(screen.queryByRole('link', { name: 'Entrar' })).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: /Minha conta/ }));
-    expect(screen.queryByRole('button', { name: 'BackOffice' })).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Sair' }));
+    expect(screen.queryByRole('link', { name: 'Login' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: 'Atalhos' })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Cliente' }));
+    expect(screen.queryByRole('menuitem', { name: 'BackOffice' })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Sair' }));
 
     expect(signOut).toHaveBeenCalledOnce();
   });
@@ -80,8 +82,8 @@ describe('SiteShell', () => {
   it('para o administrador, o menu da conta leva ao BackOffice', async () => {
     renderShell({ id: '1', role: 'ADMIN' });
 
-    await userEvent.click(screen.getByRole('button', { name: /Minha conta/ }));
+    await userEvent.click(screen.getByRole('button', { name: 'Administrador' }));
 
-    expect(screen.getByRole('button', { name: 'BackOffice' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'BackOffice' })).toBeInTheDocument();
   });
 });

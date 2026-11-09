@@ -4,6 +4,7 @@
 
 .trigger {
   display: flex;
+  flex-direction: row-reverse;
   flex-shrink: 0;
   align-items: center;
   gap: var(--space-3);
@@ -14,6 +15,10 @@
   color: var(--color-label);
   font: inherit;
   cursor: pointer;
+}
+
+.avatarFirst {
+  flex-direction: row;
 }
 
 .trigger:hover,
@@ -27,6 +32,10 @@
   flex-direction: column;
   text-align: right;
   white-space: nowrap;
+}
+
+.avatarFirst .identity {
+  text-align: left;
 }
 
 .name {
@@ -51,6 +60,8 @@
   border-radius: var(--radius-pill);
   background: var(--color-info-soft);
   color: var(--color-info);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
 }
 
 .menu {
@@ -82,9 +93,11 @@
   cursor: pointer;
 }
 
-.item:hover {
+.item:hover,
+.item:focus-visible {
   background: var(--color-surface-raised);
   color: var(--color-text);
+  outline: none;
 }
 
 @media (max-width: 48rem) {

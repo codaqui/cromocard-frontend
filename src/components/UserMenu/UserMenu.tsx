@@ -1,7 +1,16 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import {
+  type KeyboardEvent,
+  type RefObject,
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from 'react';
 
 import { Icon } from '@/components/Icon/Icon';
 import type { IconName } from '@/components/Icon/icon-paths';
+import { cn } from '@/utils/cn';
 
 import styles from './UserMenu.module.css';
 
@@ -11,9 +20,14 @@ export interface UserMenuAction {
   onSelect: () => void;
 }
 
-interface UserMenuProps {
+interface UserMenuIdentity {
   name: string;
-  caption: string;
+  caption?: string;
+  initial?: string;
+  avatarFirst?: boolean;
+}
+
+interface UserMenuProps extends UserMenuIdentity {
   actions: UserMenuAction[];
 }
 
@@ -26,7 +40,7 @@ function useDismiss(isOpen: boolean, close: () => void) {
       if (event.target instanceof Node && ref.current?.contains(event.target)) return;
       close();
     };
-    const onKeyDown = (event: KeyboardEvent) => event.key === 'Escape' && close();
+    const onKeyDown = (event: globalThis.KeyboardEvent) => event.key === 'Escape' && close();
     document.addEventListener('pointerdown', onPointerDown);
     document.addEventListener('keydown', onKeyDown);
     return () => {
@@ -38,53 +52,97 @@ function useDismiss(isOpen: boolean, close: () => void) {
   return ref;
 }
 
-function UserMenuItems({ actions, close }: { actions: UserMenuAction[]; close: () => void }) {
-  return actions.map(({ label, icon, onSelect }) => (
+const ARROW_STEPS: Record<string, number> = { ArrowDown: 1, ArrowUp: -1 };
+
+function moveFocus(menu: HTMLElement, event: KeyboardEvent) {
+  const step = ARROW_STEPS[event.key];
+  if (!step) return;
+  event.preventDefault();
+  const items = Array.from(menu.querySelectorAll<HTMLElement>('[role="menuitem"]'));
+  const current = items.findIndex((item) => item === document.activeElement);
+  items.at((current + step) % items.length)?.focus();
+}
+
+interface UserMenuListProps {
+  id: string;
+  actions: UserMenuAction[];
+  close: () => void;
+}
+
+function UserMenuItem({ action, close }: { action: UserMenuAction; close: () => void }) {
+  return (
     <button
-      key={label}
       type="button"
+      role="menuitem"
       className={styles.item}
       onClick={() => {
         close();
-        onSelect();
+        action.onSelect();
       }}
     >
-      <Icon name={icon} />
-      {label}
+      <Icon name={action.icon} />
+      {action.label}
     </button>
-  ));
+  );
+}
+
+function UserMenuList({ id, actions, close }: UserMenuListProps) {
+  const menuRef = useRef<HTMLDivElement>(null);
+  useFocusFirstItem(menuRef);
+
+  return (
+    <div
+      ref={menuRef}
+      id={id}
+      role="menu"
+      className={styles.menu}
+      onKeyDown={(event) => menuRef.current && moveFocus(menuRef.current, event)}
+    >
+      {actions.map((action) => (
+        <UserMenuItem key={action.label} action={action} close={close} />
+      ))}
+    </div>
+  );
+}
+
+function useFocusFirstItem(menuRef: RefObject<HTMLDivElement | null>) {
+  useEffect(() => {
+    menuRef.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
+  }, [menuRef]);
 }
 
 interface UserMenuTriggerProps {
-  name: string;
-  caption: string;
+  identity: UserMenuIdentity;
   isOpen: boolean;
   menuId: string;
   onToggle: () => void;
 }
 
-function UserMenuTrigger({ name, caption, isOpen, menuId, onToggle }: UserMenuTriggerProps) {
+function UserMenuTrigger({ identity, isOpen, menuId, onToggle }: UserMenuTriggerProps) {
+  const { name, caption, initial, avatarFirst } = identity;
+
   return (
     <button
       type="button"
-      className={styles.trigger}
+      className={cn(styles.trigger, avatarFirst && styles.avatarFirst)}
+      aria-label={name}
+      aria-haspopup="menu"
       aria-expanded={isOpen}
       aria-controls={menuId}
       onClick={onToggle}
     >
+      <span className={styles.avatar} aria-hidden="true">
+        {initial ?? <Icon name="person" size={18} />}
+      </span>
       <span className={styles.identity}>
         <span className={styles.name}>{name}</span>
-        <span className={styles.caption}>{caption}</span>
+        {caption && <span className={styles.caption}>{caption}</span>}
       </span>
-      <span className={styles.avatar} aria-hidden="true">
-        <Icon name="person" size={18} />
-      </span>
-      <Icon name="expandMore" />
     </button>
   );
 }
 
-export function UserMenu({ name, caption, actions }: UserMenuProps) {
+export function UserMenu({ actions, ...identity }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const close = useCallback(() => setIsOpen(false), []);
   const ref = useDismiss(isOpen, close);
@@ -93,17 +151,12 @@ export function UserMenu({ name, caption, actions }: UserMenuProps) {
   return (
     <div ref={ref} className={styles.root}>
       <UserMenuTrigger
-        name={name}
-        caption={caption}
+        identity={identity}
         isOpen={isOpen}
         menuId={menuId}
         onToggle={() => setIsOpen((open) => !open)}
       />
-      {isOpen && (
-        <div id={menuId} className={styles.menu}>
-          <UserMenuItems actions={actions} close={close} />
-        </div>
-      )}
+      {isOpen && <UserMenuList id={menuId} actions={actions} close={close} />}
     </div>
   );
 }

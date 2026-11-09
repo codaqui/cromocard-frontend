@@ -9,26 +9,43 @@ function renderMenu(onSelect = vi.fn()) {
     <>
       <UserMenu
         name="Ana"
-        caption="Cliente"
-        actions={[{ label: 'Sair', icon: 'logout', onSelect }]}
+        initial="A"
+        avatarFirst
+        actions={[
+          { label: 'Meu perfil', icon: 'person', onSelect: vi.fn() },
+          { label: 'Sair', icon: 'logout', onSelect },
+        ]}
       />
       <p>fora</p>
     </>,
   );
-  return screen.getByRole('button', { name: /Ana/ });
+  return screen.getByRole('button', { name: 'Ana' });
 }
 
 describe('UserMenu', () => {
-  it('abre as ações no clique e fecha ao escolher uma', async () => {
+  it('abre o menu com o foco no primeiro item e fecha ao escolher uma ação', async () => {
     const onSelect = vi.fn();
     const trigger = renderMenu(onSelect);
 
     await userEvent.click(trigger);
     expect(trigger).toHaveAttribute('aria-expanded', 'true');
-    await userEvent.click(screen.getByRole('button', { name: 'Sair' }));
+    expect(screen.getByRole('menuitem', { name: 'Meu perfil' })).toHaveFocus();
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Sair' }));
 
     expect(onSelect).toHaveBeenCalledOnce();
-    expect(screen.queryByRole('button', { name: 'Sair' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  it('navega pelos itens com as setas', async () => {
+    renderMenu();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Ana' }));
+    await userEvent.keyboard('{ArrowDown}');
+    expect(screen.getByRole('menuitem', { name: 'Sair' })).toHaveFocus();
+    await userEvent.keyboard('{ArrowDown}');
+    expect(screen.getByRole('menuitem', { name: 'Meu perfil' })).toHaveFocus();
+    await userEvent.keyboard('{ArrowUp}');
+    expect(screen.getByRole('menuitem', { name: 'Sair' })).toHaveFocus();
   });
 
   it('fecha com Esc e com clique fora', async () => {
@@ -36,10 +53,10 @@ describe('UserMenu', () => {
 
     await userEvent.click(trigger);
     await userEvent.keyboard('{Escape}');
-    expect(screen.queryByRole('button', { name: 'Sair' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
 
     await userEvent.click(trigger);
     await userEvent.click(screen.getByText('fora'));
-    expect(screen.queryByRole('button', { name: 'Sair' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 });

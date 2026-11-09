@@ -7,12 +7,12 @@
 .links {
   display: flex;
   align-items: center;
-  gap: var(--space-5);
+  gap: var(--space-6);
   margin-left: auto;
 }
 
 .link {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-md);
   font-weight: 700;
   color: var(--color-text);
   text-decoration: none;
@@ -59,6 +59,7 @@
 
 .iconButton {
   display: inline-flex;
+  margin-left: auto;
   align-items: center;
   justify-content: center;
   width: var(--size-avatar);
@@ -77,6 +78,57 @@
   flex: 1;
 }
 
+.sidebar > a {
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-caption);
+  white-space: nowrap;
+}
+
+.sidebar svg {
+  flex-shrink: 0;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+  color: var(--color-label);
+  font-size: var(--font-size-caption);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.profile:hover,
+.profileActive {
+  border-color: var(--color-primary);
+  color: var(--color-text);
+}
+
+.profileAvatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-profile-avatar);
+  height: var(--size-profile-avatar);
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+}
+
+.chevron {
+  display: inline-flex;
+  margin-left: auto;
+  color: var(--color-text-muted);
+}
+
 .sidebar {
   position: sticky;
   top: var(--size-topbar);
@@ -86,7 +138,7 @@
   width: var(--size-sidebar);
   height: calc(100vh - var(--size-topbar));
   flex-shrink: 0;
-  padding: var(--space-4) var(--space-2);
+  padding: var(--space-3) var(--space-2);
   border-right: 1px solid var(--color-border);
   background: var(--color-sidebar);
 }

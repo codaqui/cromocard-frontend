@@ -15,17 +15,16 @@ interface SiteLink {
 }
 
 export const siteMainMenu: SiteMenuItem[] = [
-  { to: paths.home, label: 'Início', icon: 'home', end: true },
-  { to: paths.search, label: 'Pesquisar', icon: 'explore' },
-  { to: paths.categories, label: 'Categorias', icon: 'category' },
-  { to: paths.albums, label: 'Álbuns', icon: 'menuBook' },
-  { to: paths.communities, label: 'Comunidades', icon: 'users' },
-  { to: paths.profile, label: 'Perfil', icon: 'person' },
+  { to: paths.home, label: 'Início', icon: 'homeOutline', end: true },
+  { to: paths.search, label: 'Pesquisar', icon: 'exploreOutline' },
+  { to: paths.categories, label: 'Categorias', icon: 'gridView' },
+  { to: paths.albums, label: 'Álbuns', icon: 'bookOutline' },
+  { to: paths.communities, label: 'Comunidades', icon: 'peopleOutline' },
 ];
 
 export const siteSecondaryMenu: SiteMenuItem[] = [
-  { to: paths.settings, label: 'Configurações', icon: 'settings' },
-  { to: paths.help, label: 'Suporte', icon: 'help' },
+  { to: paths.settings, label: 'Configurações', icon: 'settingsOutline' },
+  { to: paths.help, label: 'Suporte', icon: 'infoOutline' },
 ];
 
 export const siteLinks: SiteLink[] = [

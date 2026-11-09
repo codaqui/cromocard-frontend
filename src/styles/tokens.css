@@ -167,8 +167,10 @@
 }
 
 [data-theme='site'] {
-  --size-sidebar: 15rem;
-  --size-search: 32rem;
+  --size-sidebar: 10rem;
+  --size-search: 34rem;
+  --size-brand-logo: 1.5rem;
+  --size-profile-avatar: 1.375rem;
 }
 
 [data-theme='auth'] {
