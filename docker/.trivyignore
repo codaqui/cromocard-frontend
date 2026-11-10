@@ -1,0 +1,10 @@
+# CVE-2026-87636 e CVE-2026-9947 (libxslt, HIGH): vulnerabilidades descritas
+# como "chromium-browser: confusão de tipo / use-after-free processando XML".
+# Esta imagem só serve os arquivos estáticos do build via nginx — não roda
+# Chromium nem processa XML de terceiros, então o cenário de exploração não
+# se aplica. A correção (libxslt 1.1.43-r4) já existe, mas ainda não chegou
+# no índice do Alpine 3.24 usado nesta imagem (apenas atraso de propagação).
+# Remover estas duas linhas quando o pacote corrigido estiver disponível —
+# o scan volta a passar sozinho, e ficam inofensivas até lá.
+CVE-2026-87636
+CVE-2026-9947
