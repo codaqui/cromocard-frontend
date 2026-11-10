@@ -117,13 +117,16 @@ jobs:
 
       - name: Scan de vulnerabilidades (Trivy)
         # Falha o pipeline se houver vulnerabilidade HIGH/CRITICAL que já tenha correção disponível.
+        # Exceções pontuais (fix ainda não propagado no índice da distro) ficam em docker/.trivyignore.
         run: |
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
             -v "${HOME}/.cache/trivy:/root/.cache/trivy" \
+            -v "${PWD}/docker/.trivyignore:/.trivyignore:ro" \
             "${TRIVY_IMAGE}" image \
               --severity CRITICAL,HIGH \
               --ignore-unfixed \
+              --ignorefile /.trivyignore \
               --exit-code 1 \
               --no-progress \
               "${{ steps.meta.outputs.tag }}"
