@@ -22,6 +22,11 @@ function buildUser(overrides: Partial<UserSummary> = {}): UserSummary {
     status: 'ACTIVE',
     emailVerified: true,
     createdAt: '2026-10-01T00:00:00.000Z',
+    username: null,
+    phone: null,
+    cpf: null,
+    lastLoginAt: null,
+    lastLoginIp: null,
     ...overrides,
   };
 }

@@ -29,7 +29,7 @@ function rejectWith(status: number, code: string, message: string) {
 }
 
 async function submitLogin() {
-  await userEvent.type(screen.getByLabelText('E-mail'), 'ana@cromocard.dev');
+  await userEvent.type(screen.getByLabelText('E-mail ou nome de usuário'), 'ana@cromocard.dev');
   await userEvent.type(screen.getByLabelText('Senha'), 'Senha@Forte1');
   await userEvent.click(screen.getByRole('button', { name: 'Entrar na Plataforma' }));
 }
@@ -47,7 +47,7 @@ describe('LoginPanel', () => {
 
     expect(await screen.findByText('Home do cliente')).toBeInTheDocument();
     expect(vi.mocked(authApi.login).mock.calls[0]?.[0]).toEqual({
-      email: 'ana@cromocard.dev',
+      login: 'ana@cromocard.dev',
       password: 'Senha@Forte1',
       rememberMe: false,
     });
@@ -92,15 +92,29 @@ describe('LoginPanel', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('E-mail ou senha incorretos');
   });
 
-  it('CA5: mostra o erro no campo e não chama a API com e-mail inválido e senha vazia', async () => {
+  it('CA5: mostra o erro no campo e não chama a API com login e senha vazios', async () => {
     renderWithProviders({ routes, initialPath: paths.login });
 
-    await userEvent.type(screen.getByLabelText('E-mail'), 'nao-e-email');
     await userEvent.click(screen.getByRole('button', { name: 'Entrar na Plataforma' }));
 
-    expect(await screen.findByText('Informe um e-mail válido')).toBeInTheDocument();
+    expect(await screen.findByText('Informe o e-mail ou o nome de usuário')).toBeInTheDocument();
     expect(screen.getByText('Informe a senha')).toBeInTheDocument();
     expect(authApi.login).not.toHaveBeenCalled();
+  });
+
+  it('R10: entra com o @ de usuário em vez de e-mail', async () => {
+    vi.mocked(authApi.login).mockResolvedValue(sessionFor('SELLER'));
+    renderWithProviders({ routes, initialPath: paths.login });
+
+    await userEvent.type(screen.getByLabelText('E-mail ou nome de usuário'), '@bia.vendas');
+    await userEvent.type(screen.getByLabelText('Senha'), 'Senha@Forte1');
+    await userEvent.click(screen.getByRole('button', { name: 'Entrar na Plataforma' }));
+
+    expect(vi.mocked(authApi.login).mock.calls[0]?.[0]).toEqual({
+      login: '@bia.vendas',
+      password: 'Senha@Forte1',
+      rememberMe: false,
+    });
   });
 
   it('CA6: mostra a mensagem de conta suspensa', async () => {

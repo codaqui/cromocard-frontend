@@ -19,7 +19,7 @@ function useLoginActions() {
 
   return {
     isPending: login.isPending || googleLogin.isPending,
-    email: login.variables?.email ?? '',
+    login: login.variables?.login ?? '',
     error: login.error ?? googleLogin.error,
     submit: (input: LoginInput) => login.mutate(input, { onSuccess }),
     submitGoogle: (idToken: string, rememberMe: boolean) =>
@@ -28,13 +28,13 @@ function useLoginActions() {
 }
 
 export function LoginPanel() {
-  const { isPending, error, email, submit, submitGoogle } = useLoginActions();
+  const { isPending, error, login, submit, submitGoogle } = useLoginActions();
   const formError = error?.code === authErrorCodes.emailNotVerified ? null : error;
   const [rememberMe, setRememberMe] = useState(false);
 
   return (
     <>
-      <LoginNotice error={error} email={email} />
+      <LoginNotice error={error} login={login} />
       <LoginForm
         isSubmitting={isPending}
         apiError={formError}

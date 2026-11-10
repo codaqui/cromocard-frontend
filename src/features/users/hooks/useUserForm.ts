@@ -5,12 +5,16 @@ import { useForm } from 'react-hook-form';
 import { useApiFieldErrors } from '@/hooks/useApiFieldErrors';
 import type { ApiError } from '@/lib/api-error';
 
-import { type CreateUserInput, createUserSchema } from '../users.schemas';
+import {
+  type CreateUserFormValues,
+  type CreateUserInput,
+  createUserSchema,
+} from '../users.schemas';
 
-const userFormFields = ['name', 'email', 'role'] as const;
+const userFormFields = ['name', 'email', 'role', 'username', 'cpf', 'phone'] as const;
 
 export function useUserForm(
-  defaultValues: CreateUserInput,
+  defaultValues: CreateUserFormValues,
   onSubmit: (input: CreateUserInput) => void,
   apiError: ApiError | null,
 ) {

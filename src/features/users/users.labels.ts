@@ -49,4 +49,5 @@ export const userActionMessages = {
   suspended: 'Usuário suspenso com sucesso.',
   reactivated: 'Usuário reativado com sucesso.',
   removed: 'Usuário excluído com sucesso.',
+  activationResent: 'Link de ativação reenviado com sucesso.',
 } as const;

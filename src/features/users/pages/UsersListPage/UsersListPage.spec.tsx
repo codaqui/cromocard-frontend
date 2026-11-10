@@ -29,6 +29,11 @@ function buildUser(overrides: Partial<UserSummary> = {}): UserSummary {
     status: 'ACTIVE',
     emailVerified: true,
     createdAt: '2026-10-01T00:00:00.000Z',
+    username: null,
+    phone: null,
+    cpf: null,
+    lastLoginAt: null,
+    lastLoginIp: null,
     ...overrides,
   };
 }
@@ -59,6 +64,32 @@ describe('UsersListPage', () => {
     vi.mocked(usersApi.list).mockReset();
   });
 
+  it('CA1 (CCD098): lista mostra @, telefone e último acesso', async () => {
+    mockList([
+      buildUser({
+        name: 'Bia Vendedora',
+        username: 'bia.vendas',
+        phone: '11912345678',
+        lastLoginAt: '2026-11-01T10:00:00.000Z',
+        lastLoginIp: '189.40.12.91',
+      }),
+    ]);
+    renderPage();
+
+    expect(await screen.findByText(/@bia\.vendas/)).toBeInTheDocument();
+    expect(screen.getByText('(11) 91234-5678')).toBeInTheDocument();
+    expect(screen.getByText('189.40.12.91')).toBeInTheDocument();
+  });
+
+  it('CA1 (CCD098): sem @, telefone ou último acesso mostra os vazios', async () => {
+    mockList([buildUser({ name: 'Sem Dados' })]);
+    renderPage();
+
+    expect(await screen.findByText('Sem Dados')).toBeInTheDocument();
+    expect(screen.getByText('—')).toBeInTheDocument();
+    expect(screen.getByText('Nunca')).toBeInTheDocument();
+  });
+
   it('CA1: lista os usuários com papel e status', async () => {
     mockList([buildUser({ name: 'Bia Vendedora', role: 'SELLER', status: 'SUSPENDED' })]);
     renderPage();
@@ -73,7 +104,7 @@ describe('UsersListPage', () => {
     renderPage();
     await screen.findByText('Nenhum usuário encontrado');
 
-    await userEvent.type(screen.getByLabelText('Buscar por nome ou e-mail'), 'ana');
+    await userEvent.type(screen.getByLabelText('Buscar por nome, @, e-mail, CPF ou ID'), 'ana');
 
     await vi.waitFor(() => expect(lastListCall()).toMatchObject({ q: 'ana' }));
   });
@@ -207,8 +238,11 @@ describe('UsersListPage - toasts das ações administrativas', () => {
     const dialog = screen.getByRole('alertdialog');
     await userEvent.type(within(dialog).getByLabelText('Motivo'), 'Pedido do titular');
     await userEvent.type(
-      within(dialog).getByLabelText(`Digite "${user.name}" para confirmar`),
-      user.name,
+      within(dialog).getByLabelText('Digite "EXCLUIR-ANA" para confirmar'),
+      'EXCLUIR-ANA',
+    );
+    await userEvent.click(
+      within(dialog).getByLabelText(`Estou ciente de que a conta de ${user.name} será excluída`),
     );
     await userEvent.click(within(dialog).getByRole('button', { name: 'Excluir' }));
 

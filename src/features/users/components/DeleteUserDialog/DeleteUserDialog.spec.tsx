@@ -22,6 +22,11 @@ function buildUser(overrides: Partial<UserSummary> = {}): UserSummary {
     status: 'ACTIVE',
     emailVerified: true,
     createdAt: '2026-10-01T00:00:00.000Z',
+    username: null,
+    phone: null,
+    cpf: null,
+    lastLoginAt: null,
+    lastLoginIp: null,
     ...overrides,
   };
 }
@@ -62,26 +67,49 @@ describe('DeleteUserDialog', () => {
     expect(screen.queryByText(/irrevers/i)).not.toBeInTheDocument();
   });
 
-  it('exige digitar o nome e o motivo antes de confirmar', async () => {
+  it('exige digitar o texto de confirmação e o motivo antes de confirmar', async () => {
     const user = buildUser({ name: 'Ana Colecionadora' });
     renderDialog(user);
 
+    await userEvent.click(
+      screen.getByLabelText('Estou ciente de que a conta de Ana Colecionadora será excluída'),
+    );
     await userEvent.click(screen.getByRole('button', { name: 'Excluir' }));
 
     expect(await screen.findByText('O texto digitado não confere')).toBeInTheDocument();
     expect(usersApi.remove).not.toHaveBeenCalled();
   });
 
-  it('CA6: exclui com o nome digitado e o motivo', async () => {
+  it('exige marcar "Estou ciente" antes de confirmar', async () => {
+    const user = buildUser({ name: 'Ana Colecionadora' });
+    renderDialog(user);
+
+    await userEvent.type(
+      screen.getByLabelText('Digite "EXCLUIR-ANA" para confirmar'),
+      'EXCLUIR-ANA',
+    );
+    await userEvent.type(screen.getByLabelText('Motivo'), 'Pedido do titular');
+    await userEvent.click(screen.getByRole('button', { name: 'Excluir' }));
+
+    expect(
+      await screen.findByText('Marque que está ciente da exclusão antes de confirmar'),
+    ).toBeInTheDocument();
+    expect(usersApi.remove).not.toHaveBeenCalled();
+  });
+
+  it('CA6: exclui com o texto de confirmação, o motivo e "Estou ciente" marcado', async () => {
     const user = buildUser({ name: 'Ana Colecionadora' });
     vi.mocked(usersApi.remove).mockResolvedValue(undefined);
     const { onSaved } = renderDialog(user);
 
     await userEvent.type(
-      screen.getByLabelText('Digite "Ana Colecionadora" para confirmar'),
-      'Ana Colecionadora',
+      screen.getByLabelText('Digite "EXCLUIR-ANA" para confirmar'),
+      'EXCLUIR-ANA',
     );
     await userEvent.type(screen.getByLabelText('Motivo'), 'Pedido do titular');
+    await userEvent.click(
+      screen.getByLabelText('Estou ciente de que a conta de Ana Colecionadora será excluída'),
+    );
     await userEvent.click(screen.getByRole('button', { name: 'Excluir' }));
 
     await vi.waitFor(() =>

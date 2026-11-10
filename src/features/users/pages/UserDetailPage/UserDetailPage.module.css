@@ -131,6 +131,11 @@
   overflow-wrap: anywhere;
 }
 
+.fieldHint {
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
 @media (max-width: 48rem) {
   .headerCard {
     flex-direction: column;

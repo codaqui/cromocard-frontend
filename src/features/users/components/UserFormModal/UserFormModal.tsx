@@ -1,6 +1,7 @@
 import { useId } from 'react';
 
 import { Button } from '@/components/Button/Button';
+import { Checkbox } from '@/components/Checkbox/Checkbox';
 import { FormError } from '@/components/FormError/FormError';
 import { Icon } from '@/components/Icon/Icon';
 import { Modal } from '@/components/Modal/Modal';
@@ -10,15 +11,19 @@ import { TextField } from '@/components/TextField/TextField';
 import { useUserForm } from '../../hooks/useUserForm';
 import { roleSelectOptions } from '../../users.labels';
 import { useCreateUser, useUpdateUser } from '../../users.queries';
-import type { CreateUserInput } from '../../users.schemas';
+import type { CreateUserFormValues, CreateUserInput } from '../../users.schemas';
 import type { UserSummary } from '../../users.types';
 import styles from './UserFormModal.module.css';
 
-function defaultValuesFor(user: UserSummary | null): CreateUserInput {
+function defaultValuesFor(user: UserSummary | null): CreateUserFormValues {
   return {
     name: user?.name ?? '',
     email: user?.email ?? '',
     role: user?.role ?? 'CUSTOMER',
+    username: user?.username ?? '',
+    cpf: user?.cpf ?? '',
+    phone: user?.phone ?? '',
+    sendActivation: true,
   };
 }
 
@@ -53,10 +58,23 @@ function IdentityFields({ register, errors }: Pick<UserFormFields, 'register' | 
   );
 }
 
-function UserFormFields({ register, errors, formError }: UserFormFields) {
+function ComplementaryFields({ register, errors }: Pick<UserFormFields, 'register' | 'errors'>) {
+  return (
+    <div className={styles.grid}>
+      <TextField label="CPF" error={errors.cpf?.message} {...register('cpf')} />
+      <TextField
+        label="Telefone"
+        icon="phone"
+        error={errors.phone?.message}
+        {...register('phone')}
+      />
+    </div>
+  );
+}
+
+function RoleAndUsernameFields({ register, errors }: Pick<UserFormFields, 'register' | 'errors'>) {
   return (
     <>
-      <IdentityFields register={register} errors={errors} />
       <Select
         label="Papel"
         icon="shield"
@@ -64,6 +82,42 @@ function UserFormFields({ register, errors, formError }: UserFormFields) {
         error={errors.role?.message}
         {...register('role')}
       />
+      <TextField
+        label="Nome de usuário (@)"
+        icon="mail"
+        error={errors.username?.message}
+        {...register('username')}
+      />
+    </>
+  );
+}
+
+function ActivationField({
+  register,
+  isCreating,
+}: Pick<UserFormFields, 'register'> & { isCreating: boolean }) {
+  if (!isCreating) return null;
+  return (
+    <Checkbox
+      label="Enviar link de ativação de conta por e-mail"
+      hint="O link vale por 24 horas. Sem marcar, a conta é criada sem enviar e-mail."
+      {...register('sendActivation')}
+    />
+  );
+}
+
+function UserFormFields({
+  register,
+  errors,
+  formError,
+  isCreating,
+}: UserFormFields & { isCreating: boolean }) {
+  return (
+    <>
+      <IdentityFields register={register} errors={errors} />
+      <RoleAndUsernameFields register={register} errors={errors} />
+      <ComplementaryFields register={register} errors={errors} />
+      <ActivationField register={register} isCreating={isCreating} />
       <FormError message={formError} />
     </>
   );
@@ -151,7 +205,7 @@ function UserFormModalContent({ user, onClose, onSaved }: Omit<UserFormModalProp
     >
       <UserFormModalSubtitle user={user} />
       <form id={formId} className={styles.form} noValidate onSubmit={form.submit}>
-        <UserFormFields {...form} />
+        <UserFormFields {...form} isCreating={!user} />
       </form>
     </Modal>
   );

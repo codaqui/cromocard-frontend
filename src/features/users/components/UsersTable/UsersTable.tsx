@@ -7,6 +7,7 @@ import { Icon } from '@/components/Icon/Icon';
 import type { IconName } from '@/components/Icon/icon-paths';
 import type { UserRole } from '@/types/authenticated-user';
 import { formatDate } from '@/utils/formatDate';
+import { formatPhone } from '@/utils/formatPhone';
 
 import {
   roleLabels,
@@ -48,6 +49,10 @@ function shortIdOf(id: string): string {
 }
 
 function NameCell({ user }: { user: UserSummary }) {
+  const idLine = [user.username && `@${user.username}`, shortIdOf(user.id)]
+    .filter(Boolean)
+    .join(' ');
+
   return (
     <div className={styles.nameCell}>
       <span className={styles.avatar} aria-hidden="true">
@@ -55,8 +60,19 @@ function NameCell({ user }: { user: UserSummary }) {
       </span>
       <div>
         <div>{user.name}</div>
-        <div className={styles.userId}>{shortIdOf(user.id)}</div>
+        <div className={styles.userId}>{idLine}</div>
       </div>
+    </div>
+  );
+}
+
+function LastLoginCell({ user }: { user: UserSummary }) {
+  if (!user.lastLoginAt) return <span className={styles.userId}>Nunca</span>;
+
+  return (
+    <div>
+      <div>{formatDate(user.lastLoginAt)}</div>
+      {user.lastLoginIp && <div className={styles.userId}>{user.lastLoginIp}</div>}
     </div>
   );
 }
@@ -127,9 +143,19 @@ function buildColumns(actions: Omit<RowActionsProps, 'user'>): DataTableColumn<U
   return [
     { key: 'name', header: 'Nome', render: (user) => <NameCell user={user} /> },
     { key: 'email', header: 'E-mail', render: (user) => user.email },
+    {
+      key: 'phone',
+      header: 'Telefone',
+      render: (user) => (user.phone ? formatPhone(user.phone) : '—'),
+    },
     { key: 'role', header: 'Tipo', render: (user) => <RoleBadge role={user.role} /> },
     { key: 'status', header: 'Situação', render: (user) => <StatusBadge status={user.status} /> },
     { key: 'createdAt', header: 'Cadastro', render: (user) => formatDate(user.createdAt) },
+    {
+      key: 'lastLogin',
+      header: 'Último acesso',
+      render: (user) => <LastLoginCell user={user} />,
+    },
     { key: 'actions', header: 'Ações', render: (user) => <RowActions user={user} {...actions} /> },
   ];
 }

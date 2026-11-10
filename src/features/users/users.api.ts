@@ -21,4 +21,5 @@ export const usersApi = {
   reactivate: (id: string, input: ReasonInput) =>
     api.post<UserSummary>(`/users/${id}/reactivate`, input),
   remove: (id: string, input: ReasonInput) => api.delete(`/users/${id}`, input),
+  resendActivation: (id: string) => api.postEmpty(`/users/${id}/resend-activation`),
 };

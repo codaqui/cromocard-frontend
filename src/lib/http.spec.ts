@@ -127,6 +127,12 @@ describe('http', () => {
     expect(JSON.parse(sent?.data as string)).toEqual({ reason: 'Pedido do titular' });
   });
 
+  it('postEmpty não quebra numa resposta 202 sem corpo', async () => {
+    useFakeApi(() => ({ status: 202, data: undefined }));
+
+    await expect(api.postEmpty('/users/user-1/resend-activation')).resolves.toBeUndefined();
+  });
+
   it('renova dentro de um lock entre abas, para duas abas não gastarem o mesmo refresh', async () => {
     const lockNames: string[] = [];
     const request = vi.fn((name: string, task: () => Promise<boolean>) => {

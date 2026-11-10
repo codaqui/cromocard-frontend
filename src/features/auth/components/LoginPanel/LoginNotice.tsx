@@ -8,16 +8,16 @@ import styles from './LoginPanel.module.css';
 
 interface LoginNoticeProps {
   error: ApiError | null;
-  email: string;
+  login: string;
 }
 
-export function LoginNotice({ error, email }: LoginNoticeProps) {
+export function LoginNotice({ error, login }: LoginNoticeProps) {
   const [searchParams] = useSearchParams();
 
   if (error?.code === authErrorCodes.emailNotVerified) {
     return (
       <p className={styles.notice} data-tone="warning" role="alert">
-        {error.message}. <Link to={checkEmailPathFor(email)}>Reenviar confirmação</Link>
+        {error.message}. <Link to={checkEmailPathFor(login)}>Reenviar confirmação</Link>
       </p>
     );
   }

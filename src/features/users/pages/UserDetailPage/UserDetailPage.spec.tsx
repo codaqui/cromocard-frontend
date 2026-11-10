@@ -31,6 +31,11 @@ function buildUser(overrides: Partial<UserSummary> = {}): UserSummary {
     status: 'ACTIVE',
     emailVerified: true,
     createdAt: '2026-10-01T00:00:00.000Z',
+    username: null,
+    phone: null,
+    cpf: null,
+    lastLoginAt: null,
+    lastLoginIp: null,
     ...overrides,
   };
 }
@@ -64,6 +69,32 @@ describe('UserDetailPage', () => {
     expect(screen.getByText('Vendedor')).toBeInTheDocument();
     expect(screen.getByText('Suspenso')).toBeInTheDocument();
     expect(screen.getByText(formatDate(user.createdAt))).toBeInTheDocument();
+  });
+
+  it('CCD098: mostra @, telefone, CPF e último acesso', async () => {
+    const user = buildUser({
+      username: 'ana.colecionadora',
+      phone: '11912345678',
+      cpf: '52998224725',
+      lastLoginAt: '2026-11-01T10:00:00.000Z',
+      lastLoginIp: '189.40.12.91',
+    });
+    renderDetail(user);
+
+    expect(await screen.findByText('@ana.colecionadora')).toBeInTheDocument();
+    expect(screen.getByText('(11) 91234-5678')).toBeInTheDocument();
+    expect(screen.getByText('529.982.247-25')).toBeInTheDocument();
+    expect(screen.getByText('189.40.12.91', { exact: false })).toBeInTheDocument();
+  });
+
+  it('CCD098: sem @, telefone, CPF ou último acesso mostra os vazios', async () => {
+    const user = buildUser();
+    renderDetail(user);
+
+    await screen.findByRole('heading', { name: user.name });
+
+    expect(screen.getAllByText('—')).toHaveLength(3);
+    expect(screen.getByText('Nunca')).toBeInTheDocument();
   });
 
   it('R4: a trilha de navegação leva para a lista', async () => {
@@ -123,8 +154,11 @@ describe('UserDetailPage', () => {
     const dialog = screen.getByRole('alertdialog');
     await userEvent.type(within(dialog).getByLabelText('Motivo'), 'Pedido do titular');
     await userEvent.type(
-      within(dialog).getByLabelText(`Digite "${user.name}" para confirmar`),
-      user.name,
+      within(dialog).getByLabelText('Digite "EXCLUIR-ANA" para confirmar'),
+      'EXCLUIR-ANA',
+    );
+    await userEvent.click(
+      within(dialog).getByLabelText(`Estou ciente de que a conta de ${user.name} será excluída`),
     );
     await userEvent.click(within(dialog).getByRole('button', { name: 'Excluir' }));
 

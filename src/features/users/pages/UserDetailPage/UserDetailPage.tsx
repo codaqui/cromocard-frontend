@@ -7,7 +7,9 @@ import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { Icon } from '@/components/Icon/Icon';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { paths } from '@/routes/paths';
+import { formatCpf } from '@/utils/formatCpf';
 import { formatDate } from '@/utils/formatDate';
+import { formatPhone } from '@/utils/formatPhone';
 
 import { UserActionDialogsWithToast } from '../../components/UserActionDialogsWithToast/UserActionDialogsWithToast';
 import { UserFormModalWithToast } from '../../components/UserFormModalWithToast/UserFormModalWithToast';
@@ -113,6 +115,35 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
+function LastAccessValue({ user }: { user: UserSummary }) {
+  if (!user.lastLoginAt) return <>Nunca</>;
+
+  return (
+    <>
+      {formatDate(user.lastLoginAt)}
+      {user.lastLoginIp && <span className={styles.fieldHint}> · {user.lastLoginIp}</span>}
+    </>
+  );
+}
+
+function UserDataFields({ user }: { user: UserSummary }) {
+  return (
+    <div className={styles.fields}>
+      <Field label="E-mail">{user.email}</Field>
+      <Field label="Nome de usuário">{user.username ? `@${user.username}` : '—'}</Field>
+      <Field label="Papel">
+        <Badge tone={roleTones[user.role]}>{roleLabels[user.role]}</Badge>
+      </Field>
+      <Field label="Telefone">{user.phone ? formatPhone(user.phone) : '—'}</Field>
+      <Field label="CPF">{user.cpf ? formatCpf(user.cpf) : '—'}</Field>
+      <Field label="Cadastro">{formatDate(user.createdAt)}</Field>
+      <Field label="Último acesso">
+        <LastAccessValue user={user} />
+      </Field>
+    </div>
+  );
+}
+
 function UserDataSection({ user }: { user: UserSummary }) {
   return (
     <section className={styles.section} aria-labelledby="user-data-heading">
@@ -124,13 +155,7 @@ function UserDataSection({ user }: { user: UserSummary }) {
           Dados do usuário
         </h2>
       </div>
-      <div className={styles.fields}>
-        <Field label="E-mail">{user.email}</Field>
-        <Field label="Papel">
-          <Badge tone={roleTones[user.role]}>{roleLabels[user.role]}</Badge>
-        </Field>
-        <Field label="Cadastro">{formatDate(user.createdAt)}</Field>
-      </div>
+      <UserDataFields user={user} />
     </section>
   );
 }

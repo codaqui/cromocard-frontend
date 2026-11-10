@@ -23,6 +23,11 @@ function buildUser(overrides: Partial<UserSummary> = {}): UserSummary {
     status: 'ACTIVE',
     emailVerified: true,
     createdAt: '2026-10-01T00:00:00.000Z',
+    username: null,
+    phone: null,
+    cpf: null,
+    lastLoginAt: null,
+    lastLoginIp: null,
     ...overrides,
   };
 }
@@ -63,7 +68,15 @@ describe('UserFormModal', () => {
 
     await vi.waitFor(() =>
       expect(usersApi.create).toHaveBeenCalledWith(
-        { name: 'Bia Vendedora', email: 'bia@cromocard.dev', role: 'SELLER' },
+        {
+          name: 'Bia Vendedora',
+          email: 'bia@cromocard.dev',
+          role: 'SELLER',
+          username: undefined,
+          cpf: undefined,
+          phone: undefined,
+          sendActivation: true,
+        },
         expect.anything(),
       ),
     );
@@ -85,6 +98,10 @@ describe('UserFormModal', () => {
         name: 'Ana Silva',
         email: user.email,
         role: user.role,
+        username: undefined,
+        cpf: undefined,
+        phone: undefined,
+        sendActivation: true,
       }),
     );
     await vi.waitFor(() => expect(onSaved).toHaveBeenCalled());
@@ -134,6 +151,77 @@ describe('UserFormModal', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar Usuário' }));
 
     await vi.waitFor(() => expect(onSaved).toHaveBeenCalled());
+  });
+
+  it('R4: cria com @, CPF e telefone normalizados', async () => {
+    vi.mocked(usersApi.create).mockResolvedValue(buildUser({ role: 'SELLER' }));
+    renderModal(null);
+
+    await fillIdentity('Bia Vendedora', 'bia@cromocard.dev');
+    await userEvent.selectOptions(screen.getByLabelText('Papel'), 'SELLER');
+    await userEvent.type(screen.getByLabelText('Nome de usuário (@)'), '@bia.vendas');
+    await userEvent.type(screen.getByLabelText('CPF'), '529.982.247-25');
+    await userEvent.type(screen.getByLabelText('Telefone'), '(11) 91234-5678');
+    await userEvent.click(screen.getByRole('button', { name: 'Cadastrar Usuário' }));
+
+    await vi.waitFor(() =>
+      expect(usersApi.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          username: 'bia.vendas',
+          cpf: '52998224725',
+          phone: '11912345678',
+        }),
+        expect.anything(),
+      ),
+    );
+  });
+
+  it('R5: desmarcar o envio do link manda sendActivation false', async () => {
+    vi.mocked(usersApi.create).mockResolvedValue(buildUser({ role: 'SELLER' }));
+    renderModal(null);
+
+    await fillIdentity('Bia Vendedora', 'bia@cromocard.dev');
+    await userEvent.selectOptions(screen.getByLabelText('Papel'), 'SELLER');
+    await userEvent.click(screen.getByLabelText('Enviar link de ativação de conta por e-mail'));
+    await userEvent.click(screen.getByRole('button', { name: 'Cadastrar Usuário' }));
+
+    await vi.waitFor(() =>
+      expect(usersApi.create).toHaveBeenCalledWith(
+        expect.objectContaining({ sendActivation: false }),
+        expect.anything(),
+      ),
+    );
+  });
+
+  it('R6: @ já cadastrado mostra o erro no campo', async () => {
+    vi.mocked(usersApi.create).mockRejectedValue(
+      new ApiError({
+        status: 409,
+        code: 'USERNAME_TAKEN',
+        message: 'Este nome de usuário já está em uso',
+        details: [{ field: 'username', message: 'Este nome de usuário já está em uso' }],
+      }),
+    );
+    renderModal(null);
+
+    await fillIdentity('Bia', 'bia@cromocard.dev');
+    await userEvent.selectOptions(screen.getByLabelText('Papel'), 'SELLER');
+    await userEvent.type(screen.getByLabelText('Nome de usuário (@)'), 'bia');
+    await userEvent.click(screen.getByRole('button', { name: 'Cadastrar Usuário' }));
+
+    expect(await screen.findByText('Este nome de usuário já está em uso')).toBeInTheDocument();
+  });
+
+  it('R7: CPF inválido não envia e mostra o erro no campo', async () => {
+    renderModal(null);
+
+    await fillIdentity('Bia', 'bia@cromocard.dev');
+    await userEvent.selectOptions(screen.getByLabelText('Papel'), 'SELLER');
+    await userEvent.type(screen.getByLabelText('CPF'), '111.111.111-11');
+    await userEvent.click(screen.getByRole('button', { name: 'Cadastrar Usuário' }));
+
+    expect(await screen.findByText('CPF inválido')).toBeInTheDocument();
+    expect(usersApi.create).not.toHaveBeenCalled();
   });
 
   it('CA8: cancelar fecha sem gravar', async () => {

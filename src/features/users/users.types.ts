@@ -13,6 +13,11 @@ export interface UserSummary {
   status: UserStatus;
   emailVerified: boolean;
   createdAt: string;
+  username: string | null;
+  phone: string | null;
+  cpf: string | null;
+  lastLoginAt: string | null;
+  lastLoginIp: string | null;
 }
 
 export interface ListUsersParams extends PaginationParams {

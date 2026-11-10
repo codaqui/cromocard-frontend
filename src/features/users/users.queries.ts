@@ -91,3 +91,7 @@ export function useRemoveUser() {
     onSuccess: () => invalidateUsersList(queryClient),
   });
 }
+
+export function useResendActivation() {
+  return useMutation({ mutationFn: usersApi.resendActivation });
+}

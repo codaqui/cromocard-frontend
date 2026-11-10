@@ -20,8 +20,14 @@ export const passwordSchema = z
 
 export const SIGN_UP_ROLES = ['CUSTOMER', 'SELLER'] as const;
 
+export const loginIdentifierSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(1, { error: 'Informe o e-mail ou o nome de usuário' });
+
 export const loginSchema = z.object({
-  email: emailSchema,
+  login: loginIdentifierSchema,
   password: z.string().min(1, { error: 'Informe a senha' }),
   rememberMe: z.boolean(),
 });
