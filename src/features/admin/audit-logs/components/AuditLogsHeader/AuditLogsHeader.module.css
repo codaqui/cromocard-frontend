@@ -1,0 +1,41 @@
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border-top: 2px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  background:
+    radial-gradient(120% 140% at 0% 0%, var(--color-glow-primary) 0%, transparent 55%),
+    var(--color-surface-glass);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(var(--blur-glass));
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.title {
+  font-size: var(--font-size-display);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--color-text);
+}
+
+.subtitle {
+  max-width: 28rem;
+  font-size: var(--font-size-md);
+  line-height: 1.6;
+  color: var(--color-label);
+}
+
+.export {
+  display: inline-flex;
+  cursor: not-allowed;
+}
