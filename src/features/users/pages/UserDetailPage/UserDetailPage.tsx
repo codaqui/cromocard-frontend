@@ -1,4 +1,5 @@
-import { useNavigate, useParams } from 'react-router';
+import type { ReactNode } from 'react';
+import { Link, useNavigate, useParams } from 'react-router';
 
 import { Badge } from '@/components/Badge/Badge';
 import { Button } from '@/components/Button/Button';
@@ -23,55 +24,51 @@ import { useUser } from '../../users.queries';
 import type { UserSummary } from '../../users.types';
 import styles from './UserDetailPage.module.css';
 
-function DetailHeader({ user }: { user: UserSummary }) {
-  const navigate = useNavigate();
+function initialsOf(name: string): string {
+  const [first, second] = name.trim().split(/\s+/);
+  return `${first?.[0] ?? ''}${second?.[0] ?? ''}`.toUpperCase();
+}
 
+function shortIdOf(id: string): string {
+  return `#USR-${id.slice(-6).toUpperCase()}`;
+}
+
+function Breadcrumb({ name }: { name: string }) {
   return (
-    <div className={styles.header}>
-      <div>
-        <Button
-          variant="secondary"
-          className={styles.backButton}
-          onClick={() => void navigate(paths.backoffice.users)}
-        >
-          <Icon name="arrowBack" size={16} />
-          Voltar para usuários
-        </Button>
-        <p className={styles.eyebrow}>BackOffice · Administração</p>
-        <h1 className={styles.title}>{user.name}</h1>
+    <nav className={styles.breadcrumb} aria-label="Navegação">
+      <Link to={paths.backoffice.users} className={styles.breadcrumbLink}>
+        Usuários
+      </Link>
+      <span aria-hidden="true">/</span>
+      <span>{name}</span>
+    </nav>
+  );
+}
+
+function Identity({ user }: { user: UserSummary }) {
+  return (
+    <div className={styles.identity}>
+      <span className={styles.avatar} aria-hidden="true">
+        {initialsOf(user.name)}
+      </span>
+      <div className={styles.identityText}>
+        <h1 className={styles.name}>{user.name}</h1>
+        <span className={styles.userId}>{shortIdOf(user.id)}</span>
+        <Badge tone={statusTones[user.status]}>{statusLabels[user.status]}</Badge>
       </div>
     </div>
   );
 }
 
-function UserDetails({ user }: { user: UserSummary }) {
-  return (
-    <dl className={styles.details}>
-      <dt>E-mail</dt>
-      <dd>{user.email}</dd>
-      <dt>Papel</dt>
-      <dd>
-        <Badge tone={roleTones[user.role]}>{roleLabels[user.role]}</Badge>
-      </dd>
-      <dt>Situação</dt>
-      <dd>
-        <Badge tone={statusTones[user.status]}>{statusLabels[user.status]}</Badge>
-      </dd>
-      <dt>Cadastro</dt>
-      <dd>{formatDate(user.createdAt)}</dd>
-    </dl>
-  );
-}
-
-interface DetailActionsProps {
-  user: UserSummary;
+interface HeaderActionsProps {
+  status: UserSummary['status'];
   onEdit: () => void;
   onToggleStatus: () => void;
   onDelete: () => void;
 }
 
-function DetailActions({ user, onEdit, onToggleStatus, onDelete }: DetailActionsProps) {
-  const toggleStatus = toggleStatusCopyFor(user.status);
+function HeaderActions({ status, onEdit, onToggleStatus, onDelete }: HeaderActionsProps) {
+  const toggleStatus = toggleStatusCopyFor(status);
 
   return (
     <div className={styles.actions}>
@@ -91,6 +88,53 @@ function DetailActions({ user, onEdit, onToggleStatus, onDelete }: DetailActions
   );
 }
 
+interface HeaderCardProps {
+  user: UserSummary;
+  onEdit: () => void;
+  onToggleStatus: () => void;
+  onDelete: () => void;
+}
+
+function HeaderCard({ user, ...actions }: HeaderCardProps) {
+  return (
+    <div className={styles.headerCard}>
+      <Identity user={user} />
+      <HeaderActions status={user.status} {...actions} />
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div>
+      <p className={styles.fieldLabel}>{label}</p>
+      <p className={styles.fieldValue}>{children}</p>
+    </div>
+  );
+}
+
+function UserDataSection({ user }: { user: UserSummary }) {
+  return (
+    <section className={styles.section} aria-labelledby="user-data-heading">
+      <div className={styles.sectionHeader}>
+        <span className={styles.sectionIcon} aria-hidden="true">
+          <Icon name="person" size={18} />
+        </span>
+        <h2 id="user-data-heading" className={styles.sectionTitle}>
+          Dados do usuário
+        </h2>
+      </div>
+      <div className={styles.fields}>
+        <Field label="E-mail">{user.email}</Field>
+        <Field label="Papel">
+          <Badge tone={roleTones[user.role]}>{roleLabels[user.role]}</Badge>
+        </Field>
+        <Field label="Cadastro">{formatDate(user.createdAt)}</Field>
+      </div>
+    </section>
+  );
+}
+
 function UserDetailContent({ user }: { user: UserSummary }) {
   const navigate = useNavigate();
   const formModal = useUserFormModal();
@@ -99,14 +143,14 @@ function UserDetailContent({ user }: { user: UserSummary }) {
 
   return (
     <section className={styles.page}>
-      <DetailHeader user={user} />
-      <UserDetails user={user} />
-      <DetailActions
+      <Breadcrumb name={user.name} />
+      <HeaderCard
         user={user}
         onEdit={() => formModal.openEdit(user)}
         onToggleStatus={() => actionDialogs.openSuspend(user)}
         onDelete={() => actionDialogs.openDelete(user)}
       />
+      <UserDataSection user={user} />
       <UserFormModalWithToast formModal={formModal} />
       <UserActionDialogsWithToast dialogs={actionDialogs} onDeleted={backToList} />
     </section>

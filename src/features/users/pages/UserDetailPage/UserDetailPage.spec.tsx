@@ -66,7 +66,7 @@ describe('UserDetailPage', () => {
     expect(screen.getByText(formatDate(user.createdAt))).toBeInTheDocument();
   });
 
-  it('R4: o botão voltar leva para a lista', async () => {
+  it('R4: a trilha de navegação leva para a lista', async () => {
     const user = buildUser();
     vi.mocked(usersApi.list).mockResolvedValue({
       data: [],
@@ -75,7 +75,7 @@ describe('UserDetailPage', () => {
     renderDetail(user);
     await screen.findByRole('heading', { name: user.name });
 
-    await userEvent.click(screen.getByRole('button', { name: 'Voltar para usuários' }));
+    await userEvent.click(screen.getByRole('link', { name: 'Usuários' }));
 
     expect(await screen.findByText('Nenhum usuário encontrado')).toBeInTheDocument();
   });
