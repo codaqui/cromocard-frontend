@@ -14,6 +14,12 @@ export interface AlbumReference {
   title: string;
 }
 
+export interface CardAlbum extends AlbumReference {
+  publisher: string | null;
+  year: number | null;
+  totalCards: number;
+}
+
 export interface Album {
   id: string;
   title: string;
@@ -39,7 +45,7 @@ export interface Card {
   categoryId: string | null;
   rarityId: string | null;
   languageId: string | null;
-  album: AlbumReference | null;
+  album: CardAlbum | null;
   category: CatalogReference | null;
   rarity: CatalogReference | null;
   language: CatalogReference | null;
@@ -73,6 +79,11 @@ export interface ListCardsParams extends SearchParams {
 }
 
 export type ListCategoriesParams = SearchParams;
+
+export interface CatalogTabProps {
+  pageSize: number;
+  notify: (message: string) => void;
+}
 
 export type CatalogItemKind = 'card' | 'album' | 'category';
 

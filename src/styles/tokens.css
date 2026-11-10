@@ -78,6 +78,11 @@
   --size-table-thumbnail: 2rem;
   --size-image-preview: 6rem;
   --size-scroll-list: 16rem;
+  --size-catalog-subtitle: 29rem;
+  --size-catalog-thumbnail-width: 3.5rem;
+  --size-catalog-thumbnail-height: 4.75rem;
+  --size-catalog-icon-button: 2.25rem;
+  --size-catalog-search: 22rem;
 
   --z-overlay: 100;
   --z-toast: 200;

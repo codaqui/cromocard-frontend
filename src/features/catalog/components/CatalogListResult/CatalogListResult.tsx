@@ -6,9 +6,9 @@ import { DataTable, type DataTableColumn } from '@/components/DataTable/DataTabl
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
-import { Pagination } from '@/components/Pagination/Pagination';
 import type { PaginatedResponse } from '@/types/api';
 
+import { CatalogPagination } from '../CatalogPagination/CatalogPagination';
 import styles from './CatalogListResult.module.css';
 
 export interface CatalogTable<T> {
@@ -65,16 +65,16 @@ export function CatalogListResult<T extends { id: string }>({
   }
   if (query.data.data.length === 0) return <EmptyState title={table.emptyTitle} />;
 
-  const { meta } = query.data;
+  const { data: rows, meta } = query.data;
   return (
-    <>
+    <div className={styles.result}>
       <DataTable
         caption={table.caption}
         columns={table.columns}
-        rows={query.data.data}
+        rows={rows}
         getRowKey={(row) => row.id}
       />
-      <Pagination page={meta.page} totalPages={meta.totalPages} onPageChange={onPageChange} />
-    </>
+      <CatalogPagination meta={meta} shown={rows.length} onPageChange={onPageChange} />
+    </div>
   );
 }

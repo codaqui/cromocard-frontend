@@ -11,7 +11,7 @@ export function catalogActionsColumn<T extends { id: string }>(
 ): DataTableColumn<T> {
   return {
     key: 'actions',
-    header: 'Ações',
+    header: 'Ações de gestão',
     render: (row) => (
       <CatalogRowActions
         name={nameOf(row)}

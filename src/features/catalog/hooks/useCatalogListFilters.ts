@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
 
 const SEARCH_DELAY_IN_MS = 400;
-const PAGE_SIZE = 20;
 
 function filledFilters<TFilters extends Record<string, string>>(filters: TFilters) {
   return Object.fromEntries(
@@ -11,33 +10,52 @@ function filledFilters<TFilters extends Record<string, string>>(filters: TFilter
   ) as Partial<TFilters>;
 }
 
-export function useCatalogListFilters<TFilters extends Record<string, string>>(
+function usePaging(pageSize: number) {
+  const [paging, setPaging] = useState({ page: 1, pageSize });
+  const page = paging.pageSize === pageSize ? paging.page : 1;
+  const changePage = (next: number) =>
+    setPaging((current) =>
+      current.page === next && current.pageSize === pageSize ? current : { page: next, pageSize },
+    );
+  return { page, changePage };
+}
+
+function useFilterValues<TFilters extends Record<string, string>>(
   initialFilters: TFilters,
+  onChange: () => void,
 ) {
   const [search, setSearch] = useState('');
-  const [page, setPage] = useState(1);
   const [filters, setFilters] = useState(initialFilters);
-  const debouncedSearch = useDebounce(search.trim(), SEARCH_DELAY_IN_MS);
-  const params = { page, pageSize: PAGE_SIZE, q: debouncedSearch || undefined };
-
-  const changeSearch = (value: string) => {
-    setSearch(value);
-    setPage(1);
-  };
-
-  const changeFilter = (name: keyof TFilters, value: string) => {
-    setFilters((current) => ({ ...current, [name]: value }));
-    setPage(1);
-  };
 
   return {
     search,
     filters,
-    params: { ...params, ...filledFilters(filters) },
-    changeSearch,
-    changeFilter,
-    changePage: setPage,
+    changeSearch: (value: string) => {
+      setSearch(value);
+      onChange();
+    },
+    changeFilter: (name: keyof TFilters, value: string) => {
+      setFilters((current) => ({ ...current, [name]: value }));
+      onChange();
+    },
+    clearAll: () => {
+      setSearch('');
+      setFilters(initialFilters);
+      onChange();
+    },
   };
+}
+
+export function useCatalogListFilters<TFilters extends Record<string, string>>(
+  initialFilters: TFilters,
+  pageSize: number,
+) {
+  const { page, changePage } = usePaging(pageSize);
+  const values = useFilterValues(initialFilters, () => changePage(1));
+  const debouncedSearch = useDebounce(values.search.trim(), SEARCH_DELAY_IN_MS);
+  const params = { page, pageSize, q: debouncedSearch || undefined };
+
+  return { ...values, params: { ...params, ...filledFilters(values.filters) }, changePage };
 }
 
 export type CatalogListFilters<TFilters extends Record<string, string>> = ReturnType<

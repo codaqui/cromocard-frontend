@@ -56,7 +56,7 @@ export const card: Card = {
   categoryId: cardCategory.id,
   rarityId: rarity.id,
   languageId: null,
-  album: { id: album.id, title: album.title },
+  album: { id: album.id, title: album.title, publisher: 'Panini', year: 2026, totalCards: 670 },
   category: { id: cardCategory.id, name: cardCategory.name },
   rarity,
   language: null,

@@ -1,10 +1,9 @@
-import { useState } from 'react';
+import type { SelectOption } from '@/components/Select/Select';
 
-import { Button } from '@/components/Button/Button';
-
-import { EMPTY_VALUE_LABEL } from '../../catalog.labels';
+import { filtersStateOf, listSummary, selectChips } from '../../catalog.filter-chips';
+import { formatEdition } from '../../catalog.format';
 import { useCardsList } from '../../catalog.queries';
-import type { Card } from '../../catalog.types';
+import type { Card, CatalogTabProps } from '../../catalog.types';
 import {
   useAlbumOptions,
   useCategoryOptions,
@@ -13,15 +12,21 @@ import {
 import { type CatalogItemDialogs, useCatalogItemDialogs } from '../../hooks/useCatalogItemDialogs';
 import { type CatalogListFilters, useCatalogListFilters } from '../../hooks/useCatalogListFilters';
 import {
-  type CatalogFilterSelect,
-  CatalogFilterSelects,
-} from '../CatalogFilterSelects/CatalogFilterSelects';
+  AlbumNumberCell,
+  EditionCell,
+  FranchiseBadge,
+  Thumbnail,
+  TitleCell,
+} from '../CatalogCells/CatalogCells';
+import { CatalogDialogs } from '../CatalogDialogs/CatalogDialogs';
+import {
+  CatalogFilterSelect,
+  type CatalogFilterSelectConfig,
+} from '../CatalogFilterSelect/CatalogFilterSelect';
 import { CatalogFilters } from '../CatalogFilters/CatalogFilters';
 import { CatalogListResult, type CatalogTable } from '../CatalogListResult/CatalogListResult';
-import { CatalogDialogs } from '../CatalogDialogs/CatalogDialogs';
 import { catalogActionsColumn } from '../CatalogRowActions/catalogActionsColumn';
 import { CardFormModal } from '../CardFormModal/CardFormModal';
-import { ImportCsvModal } from '../ImportCsvModal/ImportCsvModal';
 import styles from './CardsTab.module.css';
 
 const cardsTable: CatalogTable<Card> = {
@@ -30,36 +35,45 @@ const cardsTable: CatalogTable<Card> = {
   columns: [
     {
       key: 'image',
-      header: 'Imagem',
-      render: (card) =>
-        card.frontImageUrl ? (
-          <img className={styles.thumbnail} src={card.frontImageUrl} alt="" />
-        ) : (
-          EMPTY_VALUE_LABEL
-        ),
+      header: 'Carta & imagem',
+      render: (card) => <Thumbnail imageUrl={card.frontImageUrl} badge={card.rarity?.name} />,
     },
-    { key: 'number', header: 'Nº', render: (card) => card.number ?? EMPTY_VALUE_LABEL },
-    { key: 'name', header: 'Nome', render: (card) => card.name },
-    { key: 'album', header: 'Álbum', render: (card) => card.album?.title ?? EMPTY_VALUE_LABEL },
+    {
+      key: 'name',
+      header: 'Nome oficial & idioma',
+      render: (card) => <TitleCell title={card.name} tags={[card.language?.name]} />,
+    },
+    {
+      key: 'album',
+      header: 'Álbum / coleção vinculada',
+      render: ({ album }) => (
+        <EditionCell title={album?.title} edition={album && formatEdition(album)} />
+      ),
+    },
     {
       key: 'category',
-      header: 'Categoria',
-      render: (card) => card.category?.name ?? EMPTY_VALUE_LABEL,
+      header: 'Franquia',
+      render: (card) => <FranchiseBadge name={card.category?.name} />,
     },
-    { key: 'rarity', header: 'Raridade', render: (card) => card.rarity?.name ?? EMPTY_VALUE_LABEL },
     {
-      key: 'language',
-      header: 'Idioma',
-      render: (card) => card.language?.name ?? EMPTY_VALUE_LABEL,
+      key: 'number',
+      header: 'Nº álbum',
+      render: (card) => <AlbumNumberCell number={card.number} total={card.album?.totalCards} />,
     },
   ],
 };
 
-const cardFiltersTexts = { label: 'Filtros das cartas', searchLabel: 'Buscar carta pelo nome' };
+const cardFiltersTexts = {
+  label: 'Filtros das cartas',
+  searchLabel: 'Buscar carta pelo nome ou número',
+  searchPlaceholder: 'Buscar por nome ou número da carta…',
+};
 
-const initialFilters = { albumId: '', categoryId: '', rarityId: '' };
+const initialFilters = { categoryId: '', rarityId: '', albumId: '' };
 
 type CardFilterName = keyof typeof initialFilters;
+
+type CardFilterSelect = CatalogFilterSelectConfig<CardFilterName>;
 
 function cardsTableWith(dialogs: CatalogItemDialogs<Card>): CatalogTable<Card> {
   const actions = catalogActionsColumn<Card>('card', (card) => card.name, dialogs);
@@ -72,70 +86,77 @@ function renderCardForm(dialogs: CatalogItemDialogs<Card>) {
   );
 }
 
-function useCardFilterSelects(): CatalogFilterSelect<CardFilterName>[] {
+function franchiseSelect(options: SelectOption[]): CardFilterSelect {
+  return {
+    name: 'categoryId',
+    label: 'Franquia',
+    chipLabel: 'Franquia',
+    placeholder: 'Todas as Franquias',
+    icon: 'gamepad',
+    options,
+  };
+}
+
+function useCardFilterSelects(): CardFilterSelect[] {
   return [
-    { name: 'albumId', label: 'Álbum', placeholder: 'Todos os álbuns', options: useAlbumOptions() },
-    {
-      name: 'categoryId',
-      label: 'Categoria',
-      placeholder: 'Todas as categorias',
-      options: useCategoryOptions('CARD'),
-    },
+    franchiseSelect(useCategoryOptions('CARD')),
     {
       name: 'rarityId',
       label: 'Raridade',
-      placeholder: 'Todas as raridades',
+      chipLabel: 'Raridade',
+      placeholder: 'Todas as Raridades',
+      icon: 'diamond',
       options: useRarityOptions(),
+    },
+    {
+      name: 'albumId',
+      label: 'Álbum',
+      chipLabel: 'Álbum',
+      placeholder: 'Todos os Álbuns',
+      icon: 'calendar',
+      options: useAlbumOptions(),
     },
   ];
 }
 
-function CardFilters({ list }: { list: CatalogListFilters<typeof initialFilters> }) {
+interface CardFiltersProps {
+  list: CatalogListFilters<typeof initialFilters>;
+  summary?: string;
+}
+
+function CardFilters({ list, summary }: CardFiltersProps) {
   const selects = useCardFilterSelects();
+  const onRemove = (name: CardFilterName) => list.changeFilter(name, '');
+  const chips = selectChips({ selects, values: list.filters, onRemove });
+  const state = filtersStateOf(list, chips, summary);
 
   return (
-    <CatalogFilters
-      texts={cardFiltersTexts}
-      search={list.search}
-      onSearchChange={list.changeSearch}
-    >
-      <CatalogFilterSelects selects={selects} values={list.filters} onChange={list.changeFilter} />
+    <CatalogFilters texts={cardFiltersTexts} state={state}>
+      {selects.map((select) => (
+        <CatalogFilterSelect
+          key={select.name}
+          select={select}
+          value={list.filters[select.name]}
+          onChange={list.changeFilter}
+        />
+      ))}
     </CatalogFilters>
   );
 }
 
-function CardImport({ onImported }: { onImported: (message: string) => void }) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const finish = (message: string) => {
-    setIsOpen(false);
-    onImported(message);
-  };
-
-  return (
-    <>
-      <Button variant="secondary" onClick={() => setIsOpen(true)}>
-        Importar CSV
-      </Button>
-      {isOpen && <ImportCsvModal onClose={() => setIsOpen(false)} onImported={finish} />}
-    </>
-  );
-}
-
-export function CardsTab() {
-  const list = useCatalogListFilters(initialFilters);
+export function CardsTab({ pageSize, notify }: CatalogTabProps) {
+  const list = useCatalogListFilters(initialFilters, pageSize);
   const cardsQuery = useCardsList(list.params);
-  const dialogs = useCatalogItemDialogs<Card>();
+  const dialogs = useCatalogItemDialogs<Card>(notify);
+  const result = cardsQuery.data;
 
   return (
     <div className={styles.tab}>
-      <CatalogDialogs
-        createLabel="+ Cadastrar Carta"
-        dialogs={dialogs}
-        renderForm={renderCardForm(dialogs)}
-        actions={<CardImport onImported={dialogs.finish} />}
+      <CatalogDialogs dialogs={dialogs} renderForm={renderCardForm(dialogs)} />
+      <CardFilters
+        list={list}
+        summary={listSummary(result?.data.length, result?.meta.total, 'cartas')}
       />
-      <CardFilters list={list} />
       <CatalogListResult
         query={cardsQuery}
         table={cardsTableWith(dialogs)}

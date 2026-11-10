@@ -1,9 +1,7 @@
-import type { FieldErrors, UseFormRegister } from 'react-hook-form';
+import type { Control, FieldErrors, UseFormRegister } from 'react-hook-form';
 
 import { FormError } from '@/components/FormError/FormError';
-import { Select } from '@/components/Select/Select';
 import { Textarea } from '@/components/Textarea/Textarea';
-import { TextField } from '@/components/TextField/TextField';
 import type { ApiError } from '@/lib/api-error';
 
 import type { CardFormValues, CardInput } from '../../catalog.schemas';
@@ -17,6 +15,7 @@ import {
   useLanguageOptions,
   useRarityOptions,
 } from '../../hooks/useCatalogFilterOptions';
+import { IconInput, IconSelect, WideRow } from '../CatalogFields/CatalogFields';
 import { ImageUploadController } from '../ImageUploadController/ImageUploadController';
 import styles from './CardForm.module.css';
 
@@ -37,12 +36,14 @@ function usePlacementSelects(card?: Card) {
     {
       name: 'albumId',
       label: 'Álbum',
+      icon: 'menuBook',
       placeholder: 'Sem álbum',
       options: useAlbumOptions(optionOfAlbum(card?.album)),
     },
     {
       name: 'categoryId',
       label: 'Categoria',
+      icon: 'gamepad',
       placeholder: 'Sem categoria',
       options: useCategoryOptions('CARD', optionOfReference(card?.category)),
     },
@@ -54,12 +55,14 @@ function useClassificationSelects() {
     {
       name: 'rarityId',
       label: 'Raridade',
+      icon: 'diamond',
       placeholder: 'Sem raridade',
       options: useRarityOptions(),
     },
     {
       name: 'languageId',
       label: 'Idioma',
+      icon: 'language',
       placeholder: 'Sem idioma',
       options: useLanguageOptions(),
     },
@@ -72,9 +75,10 @@ function useCardReferenceSelects(card?: Card) {
 
 function CardReferenceFields({ register, errors, card }: CardFieldsProps & { card?: Card }) {
   return useCardReferenceSelects(card).map((select) => (
-    <Select
+    <IconSelect
       key={select.name}
       label={select.label}
+      icon={select.icon}
       placeholder={select.placeholder}
       options={select.options}
       error={errors[select.name]?.message}
@@ -86,24 +90,15 @@ function CardReferenceFields({ register, errors, card }: CardFieldsProps & { car
 function CardDetailsFields({ register, errors }: CardFieldsProps) {
   return (
     <>
-      <TextField label="Nome" error={errors.name?.message} {...register('name')} />
-      <TextField label="Número" error={errors.number?.message} {...register('number')} />
-      <Textarea
-        label="Descrição"
-        error={errors.description?.message}
-        {...register('description')}
-      />
+      <IconInput label="Nome" icon="title" error={errors.name?.message} {...register('name')} />
+      <IconInput label="Número" icon="tag" error={errors.number?.message} {...register('number')} />
     </>
   );
 }
 
-export function CardForm({ formId, card, apiError, onSubmit }: CardFormProps) {
-  const { register, control, errors, formError, submit } = useCardForm(card, onSubmit, apiError);
-
+function CardImageFields({ control }: { control: Control<CardFormValues, unknown, CardInput> }) {
   return (
-    <form id={formId} className={styles.form} noValidate onSubmit={submit}>
-      <CardDetailsFields register={register} errors={errors} />
-      <CardReferenceFields register={register} errors={errors} card={card} />
+    <>
       <ImageUploadController
         control={control}
         name="frontImageUrl"
@@ -117,7 +112,28 @@ export function CardForm({ formId, card, apiError, onSubmit }: CardFormProps) {
         folder="cards"
         removable
       />
-      <FormError message={formError} />
+    </>
+  );
+}
+
+export function CardForm({ formId, card, apiError, onSubmit }: CardFormProps) {
+  const { register, control, errors, formError, submit } = useCardForm(card, onSubmit, apiError);
+
+  return (
+    <form id={formId} className={styles.form} noValidate onSubmit={submit}>
+      <CardDetailsFields register={register} errors={errors} />
+      <CardReferenceFields register={register} errors={errors} card={card} />
+      <WideRow>
+        <Textarea
+          label="Descrição"
+          error={errors.description?.message}
+          {...register('description')}
+        />
+      </WideRow>
+      <CardImageFields control={control} />
+      <WideRow>
+        <FormError message={formError} />
+      </WideRow>
     </form>
   );
 }

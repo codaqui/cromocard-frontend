@@ -1,0 +1,110 @@
+.thumbnail {
+  position: relative;
+  display: inline-flex;
+  width: var(--size-catalog-thumbnail-width);
+  height: var(--size-catalog-thumbnail-height);
+}
+
+.image,
+.placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-xs);
+  background: var(--color-surface-high);
+}
+
+.image {
+  object-fit: cover;
+}
+
+.placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+}
+
+.rarity {
+  position: absolute;
+  right: calc(-1 * var(--space-1));
+  bottom: var(--space-1);
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-xs);
+  background: var(--color-warning);
+  color: var(--color-warning-soft);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.titleCell,
+.edition {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+}
+
+.title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.detail {
+  color: var(--color-success);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.tag {
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-xs);
+  background: var(--color-surface-high);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.editionTitle {
+  font-size: var(--font-size-sm);
+}
+
+.editionDetail {
+  color: var(--color-label);
+  font-size: var(--font-size-xs);
+}
+
+.franchise {
+  display: inline-flex;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-info-soft);
+  color: var(--color-info);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.albumNumber,
+.count {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+}
+
+.albumNumber {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-xs);
+  background: var(--color-surface-high);
+}

@@ -1,31 +1,16 @@
 import type { ReactNode } from 'react';
 
-import { Button } from '@/components/Button/Button';
-import { Toast } from '@/components/Toast/Toast';
-
 import type { CatalogItemDialogs } from '../../hooks/useCatalogItemDialogs';
 import { DeleteCatalogItemDialog } from '../DeleteCatalogItemDialog/DeleteCatalogItemDialog';
-import styles from './CatalogDialogs.module.css';
 
 interface CatalogDialogsProps<T> {
-  createLabel: string;
   dialogs: CatalogItemDialogs<T>;
   renderForm: (item: T | undefined) => ReactNode;
-  actions?: ReactNode;
 }
 
-export function CatalogDialogs<T>({
-  createLabel,
-  dialogs,
-  renderForm,
-  actions,
-}: CatalogDialogsProps<T>) {
+export function CatalogDialogs<T>({ dialogs, renderForm }: CatalogDialogsProps<T>) {
   return (
     <>
-      <div className={styles.toolbar}>
-        {actions}
-        <Button onClick={dialogs.openCreate}>{createLabel}</Button>
-      </div>
       {dialogs.form && renderForm(dialogs.form.item)}
       {dialogs.deleting && (
         <DeleteCatalogItemDialog
@@ -34,7 +19,6 @@ export function CatalogDialogs<T>({
           onDeleted={dialogs.finish}
         />
       )}
-      <Toast message={dialogs.message} onDismiss={dialogs.clearMessage} />
     </>
   );
 }

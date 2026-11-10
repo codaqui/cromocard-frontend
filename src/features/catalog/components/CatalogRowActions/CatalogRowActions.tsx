@@ -1,5 +1,4 @@
-import { Button } from '@/components/Button/Button';
-
+import { CatalogIcon } from '../CatalogIcon/CatalogIcon';
 import styles from './CatalogRowActions.module.css';
 
 interface CatalogRowActionsProps {
@@ -11,12 +10,24 @@ interface CatalogRowActionsProps {
 export function CatalogRowActions({ name, onEdit, onDelete }: CatalogRowActionsProps) {
   return (
     <div className={styles.actions}>
-      <Button variant="secondary" aria-label={`Editar ${name}`} onClick={onEdit}>
-        Editar
-      </Button>
-      <Button variant="danger" aria-label={`Excluir ${name}`} onClick={onDelete}>
-        Excluir
-      </Button>
+      <button
+        type="button"
+        className={styles.action}
+        aria-label={`Editar ${name}`}
+        title="Editar"
+        onClick={onEdit}
+      >
+        <CatalogIcon name="edit" />
+      </button>
+      <button
+        type="button"
+        className={styles.delete}
+        aria-label={`Excluir ${name}`}
+        title="Excluir"
+        onClick={onDelete}
+      >
+        <CatalogIcon name="delete" />
+      </button>
     </div>
   );
 }

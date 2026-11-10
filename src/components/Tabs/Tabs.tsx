@@ -16,6 +16,7 @@ interface TabsProps {
   activeId: string;
   onChange: (id: string) => void;
   children: ReactNode;
+  actions?: ReactNode;
 }
 
 const stepByKey: Record<string, number> = { ArrowRight: 1, ArrowLeft: -1 };
@@ -91,27 +92,42 @@ function TabPanel({ id, labelledBy, children }: TabPanelProps) {
   );
 }
 
-export function Tabs({ label, items, activeId, onChange, children }: TabsProps) {
-  const baseId = useId();
-  const panelId = `${baseId}-panel`;
-  const tabIdOf = (id: string) => `${baseId}-tab-${id}`;
+interface TabListProps extends Omit<TabsProps, 'children' | 'actions'> {
+  panelId: string;
+  tabIdOf: (id: string) => string;
+}
+
+function TabList({ label, items, activeId, onChange, panelId, tabIdOf }: TabListProps) {
   const moveFocus = keyboardNavigation({ items, activeId, onChange, tabIdOf });
 
   return (
+    <div role="tablist" aria-label={label} className={styles.list} onKeyDown={moveFocus}>
+      {items.map((item) => (
+        <TabButton
+          key={item.id}
+          item={item}
+          tabId={tabIdOf(item.id)}
+          panelId={panelId}
+          active={item.id === activeId}
+          onSelect={onChange}
+        />
+      ))}
+    </div>
+  );
+}
+
+export function Tabs({ children, actions, ...listProps }: TabsProps) {
+  const baseId = useId();
+  const panelId = `${baseId}-panel`;
+  const tabIdOf = (id: string) => `${baseId}-tab-${id}`;
+
+  return (
     <div className={styles.tabs}>
-      <div role="tablist" aria-label={label} className={styles.list} onKeyDown={moveFocus}>
-        {items.map((item) => (
-          <TabButton
-            key={item.id}
-            item={item}
-            tabId={tabIdOf(item.id)}
-            panelId={panelId}
-            active={item.id === activeId}
-            onSelect={onChange}
-          />
-        ))}
+      <div className={styles.bar}>
+        <TabList {...listProps} panelId={panelId} tabIdOf={tabIdOf} />
+        {actions && <div className={styles.actions}>{actions}</div>}
       </div>
-      <TabPanel id={panelId} labelledBy={tabIdOf(activeId)}>
+      <TabPanel id={panelId} labelledBy={tabIdOf(listProps.activeId)}>
         {children}
       </TabPanel>
     </div>
