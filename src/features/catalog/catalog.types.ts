@@ -78,7 +78,9 @@ export interface ListCardsParams extends SearchParams {
   rarityId?: string;
 }
 
-export type ListCategoriesParams = SearchParams;
+export interface ListCategoriesParams extends SearchParams {
+  type?: CategoryType;
+}
 
 export interface CatalogTabProps {
   pageSize: number;

@@ -7,14 +7,7 @@ import { renderWithProviders } from '@/test/renderWithProviders';
 
 import { catalogApi } from '../../catalog.api';
 import type { Card } from '../../catalog.types';
-import {
-  album,
-  albumCategory,
-  card,
-  cardCategory,
-  pageOf,
-  rarity,
-} from '../../test/catalogFixtures';
+import { album, card, categoriesByType, pageOf, rarity } from '../../test/catalogFixtures';
 import { CatalogAdminPage } from './CatalogAdminPage';
 
 vi.mock('../../catalog.api', () => ({
@@ -29,7 +22,6 @@ vi.mock('../../catalog.api', () => ({
 }));
 
 const RARITY = rarity;
-const categories = [cardCategory, albumCategory];
 
 const LIST_PAGE = { page: 1, pageSize: 20 };
 
@@ -52,7 +44,7 @@ describe('CatalogAdminPage', () => {
     vi.mocked(catalogApi.listAlbums)
       .mockReset()
       .mockResolvedValue(pageOf([album]));
-    vi.mocked(catalogApi.listCategories).mockReset().mockResolvedValue(pageOf(categories));
+    vi.mocked(catalogApi.listCategories).mockReset().mockImplementation(categoriesByType);
     vi.mocked(catalogApi.listRarities).mockReset().mockResolvedValue([RARITY]);
     vi.mocked(catalogApi.listLanguages).mockReset().mockResolvedValue([]);
     vi.mocked(catalogApi.deleteItem).mockReset().mockResolvedValue(undefined);
@@ -122,6 +114,11 @@ describe('CatalogAdminPage', () => {
     expect(
       within(categorySelect).queryByRole('option', { name: 'Futebol' }),
     ).not.toBeInTheDocument();
+    expect(catalogApi.listCategories).toHaveBeenCalledWith({
+      page: 1,
+      pageSize: 100,
+      type: 'CARD',
+    });
     await userEvent.selectOptions(screen.getByLabelText('Raridade'), RARITY.id);
 
     expect(catalogApi.listCards).toHaveBeenLastCalledWith({

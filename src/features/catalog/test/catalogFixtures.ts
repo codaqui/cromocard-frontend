@@ -1,6 +1,12 @@
 import type { PaginatedResponse } from '@/types/api';
 
-import type { Album, Card, CatalogReference, Category } from '../catalog.types';
+import type {
+  Album,
+  Card,
+  CatalogReference,
+  Category,
+  ListCategoriesParams,
+} from '../catalog.types';
 
 const TIMESTAMP = '2026-11-05T12:00:00.000Z';
 
@@ -66,4 +72,9 @@ export const card: Card = {
 
 export function pageOf<T>(data: T[], totalPages = 1): PaginatedResponse<T> {
   return { data, meta: { page: 1, pageSize: 20, total: data.length, totalPages } };
+}
+
+export function categoriesByType({ type }: ListCategoriesParams) {
+  const categories = [cardCategory, albumCategory];
+  return Promise.resolve(pageOf(categories.filter((category) => !type || category.type === type)));
 }

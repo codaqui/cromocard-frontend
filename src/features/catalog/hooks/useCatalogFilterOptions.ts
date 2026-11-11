@@ -18,25 +18,19 @@ function withCurrentOption(options: SelectOption[], current?: SelectOption): Sel
   return [current, ...options];
 }
 
-function categoryOptionsOf(categories: Category[], type: CategoryType): SelectOption[] {
-  return categories
-    .filter((category) => category.type === type)
-    .map((category) => ({ value: category.id, label: category.name }));
+function referenceOptionsOf(references: CatalogReference[] = []): SelectOption[] {
+  return references.map((reference) => ({ value: reference.id, label: reference.name }));
 }
 
 export function useCategoryOptions(type: CategoryType, current?: SelectOption): SelectOption[] {
-  const { data } = useCategoriesList(OPTIONS_PAGE);
-  return withCurrentOption(categoryOptionsOf(data?.data ?? [], type), current);
+  const { data } = useCategoriesList({ ...OPTIONS_PAGE, type });
+  return withCurrentOption(referenceOptionsOf(data?.data), current);
 }
 
 export function useAlbumOptions(current?: SelectOption): SelectOption[] {
   const { data } = useAlbumsList(OPTIONS_PAGE);
   const options = (data?.data ?? []).map((album) => ({ value: album.id, label: album.title }));
   return withCurrentOption(options, current);
-}
-
-function referenceOptionsOf(references: CatalogReference[] = []): SelectOption[] {
-  return references.map((reference) => ({ value: reference.id, label: reference.name }));
 }
 
 export function useParentCategoryOptions(category?: Category): SelectOption[] {

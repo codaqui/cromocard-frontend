@@ -7,7 +7,7 @@ import { renderWithProviders } from '@/test/renderWithProviders';
 
 import { catalogApi } from '../../catalog.api';
 import type { Album } from '../../catalog.types';
-import { album, albumCategory, cardCategory, pageOf } from '../../test/catalogFixtures';
+import { album, albumCategory, cardCategory, categoriesByType } from '../../test/catalogFixtures';
 import { AlbumFormModal } from './AlbumFormModal';
 
 vi.mock('../../catalog.api', () => ({
@@ -42,7 +42,7 @@ describe('AlbumFormModal', () => {
   beforeEach(() => {
     vi.mocked(catalogApi.createAlbum).mockReset().mockResolvedValue(album);
     vi.mocked(catalogApi.updateAlbum).mockReset().mockResolvedValue(album);
-    vi.mocked(catalogApi.listCategories).mockResolvedValue(pageOf([cardCategory, albumCategory]));
+    vi.mocked(catalogApi.listCategories).mockImplementation(categoriesByType);
     onSaved.mockReset();
   });
 
