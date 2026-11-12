@@ -72,4 +72,21 @@ describe('Tabs', () => {
 
     expect(screen.getByRole('tab', { name: 'Cartas 3' })).toBeInTheDocument();
   });
+
+  it('mostra as ações ao lado da lista de abas, fora do painel', () => {
+    render(
+      <Tabs
+        label="Catálogo"
+        items={catalogTabs}
+        activeId="cards"
+        onChange={() => undefined}
+        actions={<button type="button">Linhas</button>}
+      >
+        <p>Conteúdo</p>
+      </Tabs>,
+    );
+
+    expect(screen.getByRole('button', { name: 'Linhas' })).toBeInTheDocument();
+    expect(screen.getByRole('tabpanel')).not.toHaveTextContent('Linhas');
+  });
 });

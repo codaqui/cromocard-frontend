@@ -1,0 +1,33 @@
+.actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.action,
+.delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-catalog-icon-button);
+  height: var(--size-catalog-icon-button);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-high);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.delete {
+  color: var(--color-danger);
+}
+
+.action:hover,
+.delete:hover {
+  background: var(--color-neutral-soft);
+}
+
+.action:focus-visible,
+.delete:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
