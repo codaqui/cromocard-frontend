@@ -11,7 +11,11 @@ import { TextField } from '@/components/TextField/TextField';
 import { useUserForm } from '../../hooks/useUserForm';
 import { roleSelectOptions } from '../../users.labels';
 import { useCreateUser, useUpdateUser } from '../../users.queries';
-import type { CreateUserFormValues, CreateUserInput } from '../../users.schemas';
+import type {
+  AdminUpdateUserInput,
+  CreateUserFormValues,
+  CreateUserInput,
+} from '../../users.schemas';
 import type { UserSummary } from '../../users.types';
 import styles from './UserFormModal.module.css';
 
@@ -36,16 +40,30 @@ interface UserFormModalProps {
 
 type UserFormFields = ReturnType<typeof useUserForm>;
 
-function IdentityFields({ register, errors }: Pick<UserFormFields, 'register' | 'errors'>) {
+function NameAndUsernameFields({ register, errors }: Pick<UserFormFields, 'register' | 'errors'>) {
   return (
     <div className={styles.grid}>
       <TextField
-        label="Nome"
-        icon="person"
+        label="Nome completo"
+        icon="badge"
         autoComplete="name"
         error={errors.name?.message}
         {...register('name')}
       />
+      <TextField
+        label="Nome de usuário"
+        icon="mail"
+        autoComplete="username"
+        error={errors.username?.message}
+        {...register('username')}
+      />
+    </div>
+  );
+}
+
+function EmailAndCpfFields({ register, errors }: Pick<UserFormFields, 'register' | 'errors'>) {
+  return (
+    <div className={styles.grid}>
       <TextField
         label="E-mail"
         icon="envelope"
@@ -54,27 +72,29 @@ function IdentityFields({ register, errors }: Pick<UserFormFields, 'register' | 
         error={errors.email?.message}
         {...register('email')}
       />
-    </div>
-  );
-}
-
-function ComplementaryFields({ register, errors }: Pick<UserFormFields, 'register' | 'errors'>) {
-  return (
-    <div className={styles.grid}>
-      <TextField label="CPF" error={errors.cpf?.message} {...register('cpf')} />
       <TextField
-        label="Telefone"
-        icon="phone"
-        error={errors.phone?.message}
-        {...register('phone')}
+        label="CPF"
+        icon="badge"
+        inputMode="numeric"
+        autoComplete="off"
+        error={errors.cpf?.message}
+        {...register('cpf')}
       />
     </div>
   );
 }
 
-function RoleAndUsernameFields({ register, errors }: Pick<UserFormFields, 'register' | 'errors'>) {
+function PhoneAndRoleFields({ register, errors }: Pick<UserFormFields, 'register' | 'errors'>) {
   return (
-    <>
+    <div className={styles.grid}>
+      <TextField
+        label="Telefone com DDD"
+        icon="phone"
+        inputMode="tel"
+        autoComplete="tel"
+        error={errors.phone?.message}
+        {...register('phone')}
+      />
       <Select
         label="Papel"
         icon="shield"
@@ -82,13 +102,7 @@ function RoleAndUsernameFields({ register, errors }: Pick<UserFormFields, 'regis
         error={errors.role?.message}
         {...register('role')}
       />
-      <TextField
-        label="Nome de usuário (@)"
-        icon="mail"
-        error={errors.username?.message}
-        {...register('username')}
-      />
-    </>
+    </div>
   );
 }
 
@@ -114,9 +128,9 @@ function UserFormFields({
 }: UserFormFields & { isCreating: boolean }) {
   return (
     <>
-      <IdentityFields register={register} errors={errors} />
-      <RoleAndUsernameFields register={register} errors={errors} />
-      <ComplementaryFields register={register} errors={errors} />
+      <NameAndUsernameFields register={register} errors={errors} />
+      <EmailAndCpfFields register={register} errors={errors} />
+      <PhoneAndRoleFields register={register} errors={errors} />
       <ActivationField register={register} isCreating={isCreating} />
       <FormError message={formError} />
     </>
@@ -159,6 +173,16 @@ function UserFormModalActions({
   );
 }
 
+function toUpdateInput({
+  sendActivation: _sendActivation,
+  username,
+  cpf,
+  phone,
+  ...rest
+}: CreateUserInput): AdminUpdateUserInput {
+  return { ...rest, username: username ?? null, cpf: cpf ?? null, phone: phone ?? null };
+}
+
 function useUserFormSubmission(user: UserSummary | null, onSaved: () => void) {
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
@@ -166,7 +190,7 @@ function useUserFormSubmission(user: UserSummary | null, onSaved: () => void) {
 
   const submit = (input: CreateUserInput) => {
     const action = user
-      ? updateUser.mutateAsync({ id: user.id, input })
+      ? updateUser.mutateAsync({ id: user.id, input: toUpdateInput(input) })
       : createUser.mutateAsync(input);
     action.then(onSaved).catch(() => undefined);
   };

@@ -1,12 +1,12 @@
 import { useState } from 'react';
 
 import { userActionMessages } from '../users.labels';
+import { useResendActivation } from '../users.queries';
 import type { UserSummary } from '../users.types';
 
 type ActionDialog = 'suspend' | 'delete' | null;
 
-function suspendMessageFor(target: UserSummary | null): string | null {
-  if (!target) return null;
+function suspendMessageFor(target: UserSummary): string {
   return target.status === 'SUSPENDED'
     ? userActionMessages.reactivated
     : userActionMessages.suspended;
@@ -37,7 +37,7 @@ function buildActions(state: DialogState) {
     },
     close: () => closeDialog(state),
     savedSuspend: () => {
-      state.setToastMessage(suspendMessageFor(state.target));
+      state.setToastMessage(suspendMessageFor(state.target!));
       closeDialog(state);
     },
     savedDelete: () => {
@@ -51,12 +51,21 @@ export function useUserActionDialogs() {
   const [target, setTarget] = useState<UserSummary | null>(null);
   const [dialog, setDialog] = useState<ActionDialog>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const resendActivation = useResendActivation();
+
+  const resend = (user: UserSummary) =>
+    resendActivation.mutate(user.id, {
+      onSuccess: () => setToastMessage(userActionMessages.activationResent),
+      onError: (error) => setToastMessage(error.message),
+    });
 
   return {
     suspendTarget: dialog === 'suspend' ? target : null,
     deleteTarget: dialog === 'delete' ? target : null,
     toastMessage,
     dismissToast: () => setToastMessage(null),
+    resend,
+    isResending: resendActivation.isPending,
     ...buildActions({ target, setTarget, dialog, setDialog, setToastMessage }),
   };
 }

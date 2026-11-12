@@ -67,10 +67,23 @@ describe('DeleteUserDialog', () => {
     expect(screen.queryByText(/irrevers/i)).not.toBeInTheDocument();
   });
 
-  it('exige digitar o texto de confirmação e o motivo antes de confirmar', async () => {
+  it('CA7 (CCD098): sem digitar o texto de confirmação, o botão de excluir fica desabilitado', async () => {
     const user = buildUser({ name: 'Ana Colecionadora' });
     renderDialog(user);
 
+    await userEvent.click(
+      screen.getByLabelText('Estou ciente de que a conta de Ana Colecionadora será excluída'),
+    );
+
+    expect(screen.getByRole('button', { name: 'Excluir' })).toBeDisabled();
+    expect(usersApi.remove).not.toHaveBeenCalled();
+  });
+
+  it('digitado algo errado no texto de confirmação mostra o erro ao confirmar', async () => {
+    const user = buildUser({ name: 'Ana Colecionadora' });
+    renderDialog(user);
+
+    await userEvent.type(screen.getByLabelText('Digite "EXCLUIR-ANA" para confirmar'), 'Ana');
     await userEvent.click(
       screen.getByLabelText('Estou ciente de que a conta de Ana Colecionadora será excluída'),
     );
@@ -80,7 +93,7 @@ describe('DeleteUserDialog', () => {
     expect(usersApi.remove).not.toHaveBeenCalled();
   });
 
-  it('exige marcar "Estou ciente" antes de confirmar', async () => {
+  it('sem marcar "Estou ciente", o botão de excluir fica desabilitado', async () => {
     const user = buildUser({ name: 'Ana Colecionadora' });
     renderDialog(user);
 
@@ -89,11 +102,8 @@ describe('DeleteUserDialog', () => {
       'EXCLUIR-ANA',
     );
     await userEvent.type(screen.getByLabelText('Motivo'), 'Pedido do titular');
-    await userEvent.click(screen.getByRole('button', { name: 'Excluir' }));
 
-    expect(
-      await screen.findByText('Marque que está ciente da exclusão antes de confirmar'),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Excluir' })).toBeDisabled();
     expect(usersApi.remove).not.toHaveBeenCalled();
   });
 
@@ -116,6 +126,19 @@ describe('DeleteUserDialog', () => {
       expect(usersApi.remove).toHaveBeenCalledWith(user.id, { reason: 'Pedido do titular' }),
     );
     await vi.waitFor(() => expect(onSaved).toHaveBeenCalled());
+  });
+
+  it('R11: o texto de confirmação vem antes do "Estou ciente"', () => {
+    renderDialog(buildUser({ name: 'Ana Colecionadora' }));
+
+    const confirmation = screen.getByLabelText('Digite "EXCLUIR-ANA" para confirmar');
+    const aware = screen.getByLabelText(
+      'Estou ciente de que a conta de Ana Colecionadora será excluída',
+    );
+
+    expect(confirmation.compareDocumentPosition(aware) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
   });
 
   it('cancelar fecha sem chamar a API', async () => {

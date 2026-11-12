@@ -149,4 +149,37 @@ describe('LoginPanel', () => {
       `${paths.checkEmail}?email=ana%40cromocard.dev`,
     );
   });
+
+  it('mostra o aviso de senha alterada', () => {
+    renderWithProviders({
+      routes,
+      initialPath: `${paths.login}?senha-alterada=1`,
+    });
+
+    expect(screen.getByRole('status')).toHaveTextContent('Senha alterada. Entre com a senha nova.');
+  });
+
+  it('mostra o aviso de e-mail confirmado', () => {
+    renderWithProviders({
+      routes,
+      initialPath: `${paths.login}?confirmado=1`,
+    });
+
+    expect(screen.getByRole('status')).toHaveTextContent('E-mail confirmado. Agora é só entrar.');
+  });
+
+  it('e-mail não confirmado com login por @ não manda o @ como e-mail no link', async () => {
+    rejectWith(403, 'EMAIL_NOT_VERIFIED', 'Confirme seu e-mail para entrar');
+    renderWithProviders({ routes, initialPath: paths.login });
+
+    await userEvent.type(screen.getByLabelText('E-mail ou nome de usuário'), '@bia.vendas');
+    await userEvent.type(screen.getByLabelText('Senha'), 'Senha@Forte1');
+    await userEvent.click(screen.getByRole('button', { name: 'Entrar na Plataforma' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Confirme seu e-mail para entrar');
+    expect(screen.getByRole('link', { name: 'Reenviar confirmação' })).toHaveAttribute(
+      'href',
+      paths.checkEmail,
+    );
+  });
 });

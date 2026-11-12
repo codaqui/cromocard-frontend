@@ -1,25 +1,49 @@
 import { Link, useSearchParams } from 'react-router';
 
 import type { ApiError } from '@/lib/api-error';
-import { checkEmailPathFor, EMAIL_CONFIRMED_PARAM, PASSWORD_CHANGED_PARAM } from '@/routes/paths';
+import { z } from '@/lib/zod';
+import {
+  checkEmailPathFor,
+  EMAIL_CONFIRMED_PARAM,
+  PASSWORD_CHANGED_PARAM,
+  paths,
+} from '@/routes/paths';
 
 import { authErrorCodes } from '../../auth.types';
 import styles from './LoginPanel.module.css';
 
 interface LoginNoticeProps {
   error: ApiError | null;
-  login: string;
+  loginIdentifier: string;
 }
 
-export function LoginNotice({ error, login }: LoginNoticeProps) {
+function isEmail(loginIdentifier: string): boolean {
+  return z.email().safeParse(loginIdentifier).success;
+}
+
+function EmailNotVerifiedNotice({
+  message,
+  loginIdentifier,
+}: {
+  message: string;
+  loginIdentifier: string;
+}) {
+  const checkEmailPath = isEmail(loginIdentifier)
+    ? checkEmailPathFor(loginIdentifier)
+    : paths.checkEmail;
+
+  return (
+    <p className={styles.notice} data-tone="warning" role="alert">
+      {message}. <Link to={checkEmailPath}>Reenviar confirmação</Link>
+    </p>
+  );
+}
+
+export function LoginNotice({ error, loginIdentifier }: LoginNoticeProps) {
   const [searchParams] = useSearchParams();
 
   if (error?.code === authErrorCodes.emailNotVerified) {
-    return (
-      <p className={styles.notice} data-tone="warning" role="alert">
-        {error.message}. <Link to={checkEmailPathFor(login)}>Reenviar confirmação</Link>
-      </p>
-    );
+    return <EmailNotVerifiedNotice message={error.message} loginIdentifier={loginIdentifier} />;
   }
 
   if (!error && searchParams.has(PASSWORD_CHANGED_PARAM)) {

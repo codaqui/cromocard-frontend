@@ -7,6 +7,7 @@ import { Icon } from '@/components/Icon/Icon';
 import type { IconName } from '@/components/Icon/icon-paths';
 import type { UserRole } from '@/types/authenticated-user';
 import { formatDate } from '@/utils/formatDate';
+import { formatLastAccess } from '@/utils/formatLastAccess';
 import { formatPhone } from '@/utils/formatPhone';
 
 import {
@@ -41,7 +42,7 @@ function RoleBadge({ role }: { role: UserRole }) {
 
 function initialsOf(name: string): string {
   const [first, second] = name.trim().split(/\s+/);
-  return `${first?.[0] ?? ''}${second?.[0] ?? ''}`.toUpperCase();
+  return `${first![0]}${second?.[0] ?? ''}`.toUpperCase();
 }
 
 function shortIdOf(id: string): string {
@@ -71,8 +72,19 @@ function LastLoginCell({ user }: { user: UserSummary }) {
 
   return (
     <div>
-      <div>{formatDate(user.lastLoginAt)}</div>
+      <div>{formatLastAccess(user.lastLoginAt)}</div>
       {user.lastLoginIp && <div className={styles.userId}>{user.lastLoginIp}</div>}
+    </div>
+  );
+}
+
+function ContactCell({ user }: { user: UserSummary }) {
+  return (
+    <div>
+      <div>{user.email}</div>
+      <div className={styles.userId}>
+        {user.phone ? formatPhone(user.phone) : 'Sem telefone verif.'}
+      </div>
     </div>
   );
 }
@@ -142,12 +154,7 @@ function RowActions(props: RowActionsProps) {
 function buildColumns(actions: Omit<RowActionsProps, 'user'>): DataTableColumn<UserSummary>[] {
   return [
     { key: 'name', header: 'Nome', render: (user) => <NameCell user={user} /> },
-    { key: 'email', header: 'E-mail', render: (user) => user.email },
-    {
-      key: 'phone',
-      header: 'Telefone',
-      render: (user) => (user.phone ? formatPhone(user.phone) : '—'),
-    },
+    { key: 'contact', header: 'Contato', render: (user) => <ContactCell user={user} /> },
     { key: 'role', header: 'Tipo', render: (user) => <RoleBadge role={user.role} /> },
     { key: 'status', header: 'Situação', render: (user) => <StatusBadge status={user.status} /> },
     { key: 'createdAt', header: 'Cadastro', render: (user) => formatDate(user.createdAt) },

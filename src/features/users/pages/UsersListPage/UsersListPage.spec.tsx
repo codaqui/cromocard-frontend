@@ -64,6 +64,16 @@ describe('UsersListPage', () => {
     vi.mocked(usersApi.list).mockReset();
   });
 
+  it('R2 (CCD098): mostra o último acesso de hoje com a hora', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-11-12T18:00:00'));
+    mockList([buildUser({ name: 'Bia Vendedora', lastLoginAt: '2026-11-12T14:28:00' })]);
+    renderPage();
+
+    expect(await screen.findByText('Hoje, 14:28')).toBeInTheDocument();
+    vi.useRealTimers();
+  });
+
   it('CA1 (CCD098): lista mostra @, telefone e último acesso', async () => {
     mockList([
       buildUser({
@@ -77,7 +87,7 @@ describe('UsersListPage', () => {
     renderPage();
 
     expect(await screen.findByText(/@bia\.vendas/)).toBeInTheDocument();
-    expect(screen.getByText('(11) 91234-5678')).toBeInTheDocument();
+    expect(screen.getByText('+55 (11) 91234-5678')).toBeInTheDocument();
     expect(screen.getByText('189.40.12.91')).toBeInTheDocument();
   });
 
@@ -86,7 +96,7 @@ describe('UsersListPage', () => {
     renderPage();
 
     expect(await screen.findByText('Sem Dados')).toBeInTheDocument();
-    expect(screen.getByText('—')).toBeInTheDocument();
+    expect(screen.getByText('Sem telefone verif.')).toBeInTheDocument();
     expect(screen.getByText('Nunca')).toBeInTheDocument();
   });
 
@@ -104,9 +114,27 @@ describe('UsersListPage', () => {
     renderPage();
     await screen.findByText('Nenhum usuário encontrado');
 
-    await userEvent.type(screen.getByLabelText('Buscar por nome, @, e-mail, CPF ou ID'), 'ana');
+    await userEvent.type(
+      screen.getByLabelText('Buscar por nome, @, e-mail, CPF, CNPJ ou ID (#USR-)'),
+      'ana',
+    );
 
     await vi.waitFor(() => expect(lastListCall()).toMatchObject({ q: 'ana' }));
+  });
+
+  it('CA2 (CCD098): busca por CPF mostra só o usuário dono do CPF', async () => {
+    const cpf = '52998224725';
+    mockList([buildUser({ name: 'Ana Colecionadora', cpf })]);
+    renderPage();
+    await screen.findByText('Ana Colecionadora');
+
+    await userEvent.type(
+      screen.getByLabelText('Buscar por nome, @, e-mail, CPF, CNPJ ou ID (#USR-)'),
+      '529.982.247-25',
+    );
+
+    await vi.waitFor(() => expect(lastListCall()).toMatchObject({ q: '529.982.247-25' }));
+    expect(await screen.findByText('Ana Colecionadora')).toBeInTheDocument();
   });
 
   it('CA1: filtra por papel', async () => {
@@ -172,7 +200,7 @@ describe('UsersListPage - toasts das ações administrativas', () => {
 
     await userEvent.click(screen.getByRole('button', { name: '+ Novo Usuário no Sistema' }));
     const dialog = screen.getByRole('dialog');
-    await userEvent.type(within(dialog).getByLabelText('Nome'), 'Bia Vendedora');
+    await userEvent.type(within(dialog).getByLabelText('Nome completo'), 'Bia Vendedora');
     await userEvent.type(within(dialog).getByLabelText('E-mail'), 'bia@cromocard.dev');
     await userEvent.selectOptions(within(dialog).getByLabelText('Papel'), 'SELLER');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Cadastrar Usuário' }));
@@ -188,8 +216,8 @@ describe('UsersListPage - toasts das ações administrativas', () => {
     await screen.findByText(user.name);
 
     await userEvent.click(screen.getByRole('button', { name: 'Editar' }));
-    await userEvent.clear(screen.getByLabelText('Nome'));
-    await userEvent.type(screen.getByLabelText('Nome'), 'Ana Silva');
+    await userEvent.clear(screen.getByLabelText('Nome completo'));
+    await userEvent.type(screen.getByLabelText('Nome completo'), 'Ana Silva');
     await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
 
     expect(await screen.findByText('Usuário atualizado com sucesso.')).toBeInTheDocument();

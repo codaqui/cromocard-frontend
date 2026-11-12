@@ -21,17 +21,11 @@ interface DeleteUserDialogContentProps {
 }
 
 function confirmationTextFor(user: UserSummary): string {
-  const firstName = user.name.trim().split(/\s+/)[0] ?? '';
+  const firstName = user.name.trim().split(/\s+/)[0]!;
   return `EXCLUIR-${firstName.toUpperCase()}`;
 }
 
-interface DeleteUserDialogMessageProps {
-  user: UserSummary;
-  aware: boolean;
-  onAwareChange: (aware: boolean) => void;
-}
-
-function DeleteUserDialogMessage({ user, aware, onAwareChange }: DeleteUserDialogMessageProps) {
+function DeleteUserDialogMessage({ user }: { user: UserSummary }) {
   return (
     <div className={styles.message}>
       <div className={styles.intro}>
@@ -44,45 +38,57 @@ function DeleteUserDialogMessage({ user, aware, onAwareChange }: DeleteUserDialo
         <p className={styles.impactsTitle}>Impactos imediatos</p>
         <p>O acesso deste usuário é removido na hora e as sessões ativas são encerradas.</p>
       </div>
-      <Checkbox
-        label={`Estou ciente de que a conta de ${user.name} será excluída`}
-        checked={aware}
-        onChange={(event) => onAwareChange(event.target.checked)}
-      />
     </div>
+  );
+}
+
+function DeleteUserDialogAwareCheckbox({
+  user,
+  aware,
+  onAwareChange,
+}: {
+  user: UserSummary;
+  aware: boolean;
+  onAwareChange: (aware: boolean) => void;
+}) {
+  return (
+    <Checkbox
+      label={`Estou ciente de que a conta de ${user.name} será excluída`}
+      checked={aware}
+      onChange={(event) => onAwareChange(event.target.checked)}
+    />
   );
 }
 
 function useDeleteConfirm(user: UserSummary, onSaved: () => void) {
   const removeUser = useRemoveUser();
   const [aware, setAware] = useState(false);
-  const [awareError, setAwareError] = useState<string>();
 
   const confirm = (reason?: string) => {
-    if (!aware) {
-      setAwareError('Marque que está ciente da exclusão antes de confirmar');
-      return;
-    }
-    removeUser.mutate({ id: user.id, input: { reason: reason ?? '' } }, { onSuccess: onSaved });
+    removeUser.mutate({ id: user.id, input: { reason: reason! } }, { onSuccess: onSaved });
   };
 
-  return { removeUser, aware, setAware, awareError, confirm };
+  return { removeUser, aware, setAware, confirm };
 }
 
 function DeleteUserDialogContent({ user, onClose, onSaved }: DeleteUserDialogContentProps) {
-  const { removeUser, aware, setAware, awareError, confirm } = useDeleteConfirm(user, onSaved);
+  const { removeUser, aware, setAware, confirm } = useDeleteConfirm(user, onSaved);
 
   return (
     <ConfirmDialog
       open
       title="Excluir usuário"
-      message={<DeleteUserDialogMessage user={user} aware={aware} onAwareChange={setAware} />}
+      message={<DeleteUserDialogMessage user={user} />}
       confirmLabel="Excluir"
       tone="danger"
       requireReason
       confirmationText={confirmationTextFor(user)}
+      extraFields={
+        <DeleteUserDialogAwareCheckbox user={user} aware={aware} onAwareChange={setAware} />
+      }
+      canConfirm={aware}
       isConfirming={removeUser.isPending}
-      errorMessage={awareError ?? removeUser.error?.message}
+      errorMessage={removeUser.error?.message}
       onConfirm={confirm}
       onCancel={onClose}
     />

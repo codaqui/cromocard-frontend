@@ -36,7 +36,7 @@ type UsersListFilters = ReturnType<typeof useUsersListFilters>;
 function SearchFilter({ search, changeSearch }: Pick<UsersListFilters, 'search' | 'changeSearch'>) {
   return (
     <TextField
-      label="Buscar por nome, @, e-mail, CPF ou ID"
+      label="Buscar por nome, @, e-mail, CPF, CNPJ ou ID (#USR-)"
       icon="search"
       type="search"
       value={search}

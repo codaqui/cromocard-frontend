@@ -9,6 +9,7 @@ import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { paths } from '@/routes/paths';
 import { formatCpf } from '@/utils/formatCpf';
 import { formatDate } from '@/utils/formatDate';
+import { formatLastAccess } from '@/utils/formatLastAccess';
 import { formatPhone } from '@/utils/formatPhone';
 
 import { UserActionDialogsWithToast } from '../../components/UserActionDialogsWithToast/UserActionDialogsWithToast';
@@ -28,7 +29,7 @@ import styles from './UserDetailPage.module.css';
 
 function initialsOf(name: string): string {
   const [first, second] = name.trim().split(/\s+/);
-  return `${first?.[0] ?? ''}${second?.[0] ?? ''}`.toUpperCase();
+  return `${first![0]}${second?.[0] ?? ''}`.toUpperCase();
 }
 
 function shortIdOf(id: string): string {
@@ -63,21 +64,46 @@ function Identity({ user }: { user: UserSummary }) {
 }
 
 interface HeaderActionsProps {
-  status: UserSummary['status'];
+  user: UserSummary;
   onEdit: () => void;
   onToggleStatus: () => void;
   onDelete: () => void;
+  onResendActivation: () => void;
+  isResendingActivation: boolean;
 }
 
-function HeaderActions({ status, onEdit, onToggleStatus, onDelete }: HeaderActionsProps) {
+function ResendActivationButton({
+  user,
+  onResendActivation,
+  isResendingActivation,
+}: {
+  user: UserSummary;
+  onResendActivation: () => void;
+  isResendingActivation: boolean;
+}) {
+  if (user.lastLoginAt) return null;
+
+  return (
+    <Button variant="secondary" onClick={onResendActivation} disabled={isResendingActivation}>
+      <Icon name="mail" size={16} />
+      Reenviar link de ativação
+    </Button>
+  );
+}
+
+function ToggleAndDeleteButtons({
+  status,
+  onToggleStatus,
+  onDelete,
+}: {
+  status: UserSummary['status'];
+  onToggleStatus: () => void;
+  onDelete: () => void;
+}) {
   const toggleStatus = toggleStatusCopyFor(status);
 
   return (
-    <div className={styles.actions}>
-      <Button onClick={onEdit}>
-        <Icon name="edit" size={16} />
-        Editar
-      </Button>
+    <>
       <Button variant="secondary" onClick={onToggleStatus}>
         <Icon name={toggleStatus.icon} size={16} />
         {toggleStatus.label}
@@ -86,6 +112,19 @@ function HeaderActions({ status, onEdit, onToggleStatus, onDelete }: HeaderActio
         <Icon name="delete" size={16} />
         Excluir
       </Button>
+    </>
+  );
+}
+
+function HeaderActions({ user, onEdit, ...actions }: HeaderActionsProps) {
+  return (
+    <div className={styles.actions}>
+      <Button onClick={onEdit}>
+        <Icon name="edit" size={16} />
+        Editar
+      </Button>
+      <ResendActivationButton user={user} {...actions} />
+      <ToggleAndDeleteButtons status={user.status} {...actions} />
     </div>
   );
 }
@@ -95,13 +134,15 @@ interface HeaderCardProps {
   onEdit: () => void;
   onToggleStatus: () => void;
   onDelete: () => void;
+  onResendActivation: () => void;
+  isResendingActivation: boolean;
 }
 
 function HeaderCard({ user, ...actions }: HeaderCardProps) {
   return (
     <div className={styles.headerCard}>
       <Identity user={user} />
-      <HeaderActions status={user.status} {...actions} />
+      <HeaderActions user={user} {...actions} />
     </div>
   );
 }
@@ -120,7 +161,7 @@ function LastAccessValue({ user }: { user: UserSummary }) {
 
   return (
     <>
-      {formatDate(user.lastLoginAt)}
+      {formatLastAccess(user.lastLoginAt)}
       {user.lastLoginIp && <span className={styles.fieldHint}> · {user.lastLoginIp}</span>}
     </>
   );
@@ -174,6 +215,8 @@ function UserDetailContent({ user }: { user: UserSummary }) {
         onEdit={() => formModal.openEdit(user)}
         onToggleStatus={() => actionDialogs.openSuspend(user)}
         onDelete={() => actionDialogs.openDelete(user)}
+        onResendActivation={() => actionDialogs.resend(user)}
+        isResendingActivation={actionDialogs.isResending}
       />
       <UserDataSection user={user} />
       <UserFormModalWithToast formModal={formModal} />
@@ -184,7 +227,7 @@ function UserDetailContent({ user }: { user: UserSummary }) {
 
 export function UserDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const userQuery = useUser(id ?? '');
+  const userQuery = useUser(id!);
 
   if (userQuery.isPending) return <LoadingState />;
   if (userQuery.isError) return <ErrorState message={userQuery.error.message} />;

@@ -65,9 +65,9 @@ export const adminUpdateUserSchema = z.object({
   name: nameSchema.optional(),
   email: emailSchema.optional(),
   role: userRoleSchema.optional(),
-  username: usernameSchema,
-  cpf: cpfSchema,
-  phone: phoneSchema,
+  username: usernameSchema.nullable(),
+  cpf: cpfSchema.nullable(),
+  phone: phoneSchema.nullable(),
 });
 
 export const reasonBodySchema = z.object({
