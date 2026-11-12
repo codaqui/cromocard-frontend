@@ -100,6 +100,29 @@ describe('http', () => {
     stopListening();
   });
 
+  it('repassa um erro que não é do axios sem tentar renovar', async () => {
+    http.defaults.adapter = () => Promise.reject(new Error('falha de rede'));
+    const refresher = vi.fn(() => Promise.resolve(true));
+    const stop = setSessionRefresher(refresher);
+
+    await expect(api.get('/users/me')).rejects.toThrow();
+    expect(refresher).not.toHaveBeenCalled();
+    stop();
+  });
+
+  it('não manda Authorization sem um access token', async () => {
+    accessTokenStore.set(null);
+    let sent: InternalAxiosRequestConfig | undefined;
+    useFakeApi((config) => {
+      sent = config;
+      return { status: 200, data: { data: null } };
+    });
+
+    await api.get('/users/me');
+
+    expect(bearerOf(sent as InternalAxiosRequestConfig)).toBe('');
+  });
+
   it('não tenta renovar quando o 401 vem de uma rota de autenticação', async () => {
     useFakeApi(() => ({
       status: 401,
@@ -125,6 +148,43 @@ describe('http', () => {
     await api.delete('/users/user-1', { reason: 'Pedido do titular' });
 
     expect(JSON.parse(sent?.data as string)).toEqual({ reason: 'Pedido do titular' });
+  });
+
+  it('post envia o corpo e devolve data.data', async () => {
+    let sent: InternalAxiosRequestConfig | undefined;
+    useFakeApi((config) => {
+      sent = config;
+      return { status: 201, data: { data: { id: 'user-1' } } };
+    });
+
+    await expect(api.post('/users', { name: 'Ana' })).resolves.toEqual({ id: 'user-1' });
+    expect(JSON.parse(sent?.data as string)).toEqual({ name: 'Ana' });
+  });
+
+  it('getPage devolve a resposta paginada inteira, não só data.data', async () => {
+    useFakeApi(() => ({
+      status: 200,
+      data: { data: [{ id: 'user-1' }], meta: { page: 1, pageSize: 20, total: 1, totalPages: 1 } },
+    }));
+
+    await expect(api.getPage('/users', { page: 1 })).resolves.toEqual({
+      data: [{ id: 'user-1' }],
+      meta: { page: 1, pageSize: 20, total: 1, totalPages: 1 },
+    });
+  });
+
+  it('patch envia o corpo e devolve data.data', async () => {
+    let sent: InternalAxiosRequestConfig | undefined;
+    useFakeApi((config) => {
+      sent = config;
+      return { status: 200, data: { data: { id: 'user-1', name: 'Ana Silva' } } };
+    });
+
+    await expect(api.patch('/users/me', { name: 'Ana Silva' })).resolves.toEqual({
+      id: 'user-1',
+      name: 'Ana Silva',
+    });
+    expect(JSON.parse(sent?.data as string)).toEqual({ name: 'Ana Silva' });
   });
 
   it('postEmpty não quebra numa resposta 202 sem corpo', async () => {

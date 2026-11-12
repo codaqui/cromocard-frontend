@@ -40,3 +40,9 @@
 .select[aria-invalid='true'] {
   border-color: var(--color-danger);
 }
+
+@media (max-width: 25rem) {
+  .select {
+    font-size: var(--font-size-md);
+  }
+}
