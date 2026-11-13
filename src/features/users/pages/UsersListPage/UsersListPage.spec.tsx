@@ -157,17 +157,6 @@ describe('UsersListPage', () => {
     await vi.waitFor(() => expect(lastListCall()).toMatchObject({ status: 'SUSPENDED' }));
   });
 
-  it('R4: o botão Visualizar leva para a tela de detalhe', async () => {
-    const user = buildUser();
-    mockList([user]);
-    renderPage();
-    await screen.findByText(user.name);
-
-    await userEvent.click(screen.getByRole('button', { name: 'Visualizar' }));
-
-    expect(await screen.findByText('Tela de detalhe')).toBeInTheDocument();
-  });
-
   it('R4: clicar na linha leva para a tela de detalhe', async () => {
     const user = buildUser();
     mockList([user]);
@@ -205,7 +194,73 @@ describe('UsersListPage - toasts das ações administrativas', () => {
     await userEvent.selectOptions(within(dialog).getByLabelText('Papel'), 'SELLER');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Cadastrar Usuário' }));
 
+    expect(
+      await screen.findByText(
+        'Usuário cadastrado com sucesso. O link de ativação foi enviado para bia@cromocard.dev.',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('cria um usuário sem marcar o envio do link e o toast não cita o e-mail', async () => {
+    mockList([]);
+    vi.mocked(usersApi.create).mockResolvedValue(
+      buildUser({ name: 'Bia Vendedora', email: 'bia@cromocard.dev', role: 'SELLER' }),
+    );
+    renderPage();
+    await screen.findByText('Nenhum usuário encontrado');
+
+    await userEvent.click(screen.getByRole('button', { name: '+ Novo Usuário no Sistema' }));
+    const dialog = screen.getByRole('dialog');
+    await userEvent.type(within(dialog).getByLabelText('Nome completo'), 'Bia Vendedora');
+    await userEvent.type(within(dialog).getByLabelText('E-mail'), 'bia@cromocard.dev');
+    await userEvent.selectOptions(within(dialog).getByLabelText('Papel'), 'SELLER');
+    await userEvent.click(
+      within(dialog).getByLabelText('Enviar link de ativação de conta por e-mail'),
+    );
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Cadastrar Usuário' }));
+
     expect(await screen.findByText('Usuário cadastrado com sucesso.')).toBeInTheDocument();
+  });
+
+  it('cancelar o cadastro fecha o modal sem chamar a API', async () => {
+    mockList([]);
+    renderPage();
+    await screen.findByText('Nenhum usuário encontrado');
+
+    await userEvent.click(screen.getByRole('button', { name: '+ Novo Usuário no Sistema' }));
+    await userEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancelar' }),
+    );
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(usersApi.create).not.toHaveBeenCalled();
+  });
+
+  it('fecha o toast de cadastro pelo botão de fechar', async () => {
+    mockList([]);
+    vi.mocked(usersApi.create).mockResolvedValue(
+      buildUser({ name: 'Bia Vendedora', email: 'bia@cromocard.dev', role: 'SELLER' }),
+    );
+    renderPage();
+    await screen.findByText('Nenhum usuário encontrado');
+
+    await userEvent.click(screen.getByRole('button', { name: '+ Novo Usuário no Sistema' }));
+    const dialog = screen.getByRole('dialog');
+    await userEvent.type(within(dialog).getByLabelText('Nome completo'), 'Bia Vendedora');
+    await userEvent.type(within(dialog).getByLabelText('E-mail'), 'bia@cromocard.dev');
+    await userEvent.selectOptions(within(dialog).getByLabelText('Papel'), 'SELLER');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Cadastrar Usuário' }));
+    await screen.findByText(
+      'Usuário cadastrado com sucesso. O link de ativação foi enviado para bia@cromocard.dev.',
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Fechar aviso' }));
+
+    expect(
+      screen.queryByText(
+        'Usuário cadastrado com sucesso. O link de ativação foi enviado para bia@cromocard.dev.',
+      ),
+    ).not.toBeInTheDocument();
   });
 
   it('CA3: edita um usuário e mostra o toast de atualizado', async () => {
@@ -249,7 +304,6 @@ describe('UsersListPage - toasts das ações administrativas', () => {
     const table = screen.getByRole('table');
     await userEvent.click(within(table).getByRole('button', { name: 'Reativar' }));
     const dialog = screen.getByRole('alertdialog');
-    await userEvent.type(within(dialog).getByLabelText('Motivo'), 'Prazo da suspensão terminou');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Reativar' }));
 
     expect(await screen.findByText('Usuário reativado com sucesso.')).toBeInTheDocument();

@@ -70,12 +70,9 @@ describe('usersApi', () => {
     expect(callsOf('post')[0]).toEqual(['/users/user-1/suspend', { reason: 'Violou as regras' }]);
   });
 
-  it('reactivate reativa um usuário com o motivo', () => {
-    void usersApi.reactivate('user-1', { reason: 'Pedido do titular' });
-    expect(callsOf('post')[0]).toEqual([
-      '/users/user-1/reactivate',
-      { reason: 'Pedido do titular' },
-    ]);
+  it('reactivate reativa um usuário sem motivo', () => {
+    void usersApi.reactivate('user-1');
+    expect(callsOf('post')[0]).toEqual(['/users/user-1/reactivate']);
   });
 
   it('remove exclui um usuário com o motivo', () => {

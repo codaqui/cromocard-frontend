@@ -9,12 +9,21 @@ function userFor(target: FormModalTarget): UserSummary | null {
   return target === 'new' || target === null ? null : target;
 }
 
+export interface UserFormSavedResult {
+  user: UserSummary;
+  sendActivation: boolean;
+}
+
 export function useUserFormModal() {
   const [target, setTarget] = useState<FormModalTarget>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const saved = () => {
-    setToastMessage(target === 'new' ? userActionMessages.created : userActionMessages.updated);
+  const saved = ({ user, sendActivation }: UserFormSavedResult) => {
+    setToastMessage(
+      target === 'new'
+        ? userActionMessages.created(user.email, sendActivation)
+        : userActionMessages.updated,
+    );
     setTarget(null);
   };
 

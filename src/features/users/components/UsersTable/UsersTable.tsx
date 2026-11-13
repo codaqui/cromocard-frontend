@@ -30,7 +30,6 @@ interface UsersTableProps {
 
 interface RowActionsProps {
   user: UserSummary;
-  onView: (user: UserSummary) => void;
   onEdit: (user: UserSummary) => void;
   onToggleStatus: (user: UserSummary) => void;
   onDelete: (user: UserSummary) => void;
@@ -126,7 +125,6 @@ function ActionIconButton({ label, icon, variant, onClick }: ActionIconButtonPro
 
 function rowActionsFor({
   user,
-  onView,
   onEdit,
   onToggleStatus,
   onDelete,
@@ -134,7 +132,6 @@ function rowActionsFor({
   const toggleStatus = toggleStatusCopyFor(user.status);
 
   return [
-    { label: 'Visualizar', icon: 'visibility', variant: 'secondary', onClick: () => onView(user) },
     { label: 'Editar', icon: 'edit', variant: 'secondary', onClick: () => onEdit(user) },
     { ...toggleStatus, variant: 'secondary', onClick: () => onToggleStatus(user) },
     { label: 'Excluir', icon: 'delete', variant: 'danger', onClick: () => onDelete(user) },
@@ -171,7 +168,7 @@ export function UsersTable({ users, onView, onEdit, onToggleStatus, onDelete }: 
   return (
     <DataTable
       caption="Usuários"
-      columns={buildColumns({ onView, onEdit, onToggleStatus, onDelete })}
+      columns={buildColumns({ onEdit, onToggleStatus, onDelete })}
       rows={users}
       getRowKey={(user) => user.id}
       emptyMessage="Nenhum usuário encontrado"

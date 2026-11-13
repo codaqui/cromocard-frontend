@@ -136,6 +136,67 @@
   color: var(--color-text-muted);
 }
 
+.headerMain {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.membership {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.statusTabs {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.statusTab {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-card-border);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.statusTab[data-active='true'] {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.statusTab[data-disabled='true'] {
+  opacity: 0.5;
+}
+
+.addressList,
+.logList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  list-style: none;
+}
+
+.addressItem,
+.logItem {
+  padding: var(--space-3);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-sm);
+}
+
+.logHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.logAction {
+  font-weight: 600;
+}
+
 @media (max-width: 48rem) {
   .headerCard {
     flex-direction: column;

@@ -9,8 +9,9 @@ import { Select } from '@/components/Select/Select';
 import { TextField } from '@/components/TextField/TextField';
 
 import { useUserForm } from '../../hooks/useUserForm';
+import type { UserFormSavedResult } from '../../hooks/useUserFormModal';
 import { roleSelectOptions } from '../../users.labels';
-import { useCreateUser, useUpdateUser } from '../../users.queries';
+import { useCreateUser, useResendActivation, useUpdateUser } from '../../users.queries';
 import type {
   AdminUpdateUserInput,
   CreateUserFormValues,
@@ -35,7 +36,7 @@ interface UserFormModalProps {
   open: boolean;
   user: UserSummary | null;
   onClose: () => void;
-  onSaved: () => void;
+  onSaved: (result: UserFormSavedResult) => void;
 }
 
 type UserFormFields = ReturnType<typeof useUserForm>;
@@ -108,10 +109,17 @@ function PhoneAndRoleFields({ register, errors }: Pick<UserFormFields, 'register
 
 function ActivationField({
   register,
-  isCreating,
-}: Pick<UserFormFields, 'register'> & { isCreating: boolean }) {
-  if (!isCreating) return null;
-  return (
+  user,
+}: Pick<UserFormFields, 'register'> & { user: UserSummary | null }) {
+  if (user?.emailVerified) return null;
+
+  return user ? (
+    <Checkbox
+      label="Reenviar link de ativação"
+      hint="O usuário ainda não ativou a conta. O novo link vale por 24 horas."
+      {...register('sendActivation')}
+    />
+  ) : (
     <Checkbox
       label="Enviar link de ativação de conta por e-mail"
       hint="O link vale por 24 horas. Sem marcar, a conta é criada sem enviar e-mail."
@@ -124,14 +132,14 @@ function UserFormFields({
   register,
   errors,
   formError,
-  isCreating,
-}: UserFormFields & { isCreating: boolean }) {
+  user,
+}: UserFormFields & { user: UserSummary | null }) {
   return (
     <>
       <NameAndUsernameFields register={register} errors={errors} />
       <EmailAndCpfFields register={register} errors={errors} />
       <PhoneAndRoleFields register={register} errors={errors} />
-      <ActivationField register={register} isCreating={isCreating} />
+      <ActivationField register={register} user={user} />
       <FormError message={formError} />
     </>
   );
@@ -183,19 +191,36 @@ function toUpdateInput({
   return { ...rest, username: username ?? null, cpf: cpf ?? null, phone: phone ?? null };
 }
 
-function useUserFormSubmission(user: UserSummary | null, onSaved: () => void) {
+function shouldResendActivation(user: UserSummary | null, sendActivation: boolean): boolean {
+  return Boolean(user && !user.emailVerified && sendActivation);
+}
+
+function useUserFormSubmission(
+  user: UserSummary | null,
+  onSaved: (result: UserFormSavedResult) => void,
+) {
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
+  const resendActivation = useResendActivation();
   const mutation = user ? updateUser : createUser;
+  const isSaving = mutation.isPending || resendActivation.isPending;
 
   const submit = (input: CreateUserInput) => {
     const action = user
       ? updateUser.mutateAsync({ id: user.id, input: toUpdateInput(input) })
       : createUser.mutateAsync(input);
-    action.then(onSaved).catch(() => undefined);
+
+    action
+      .then(async (saved) => {
+        if (shouldResendActivation(user, input.sendActivation)) {
+          await resendActivation.mutateAsync(saved.id);
+        }
+        onSaved({ user: saved, sendActivation: input.sendActivation });
+      })
+      .catch(() => undefined);
   };
 
-  return { mutation, form: useUserForm(defaultValuesFor(user), submit, mutation.error) };
+  return { mutation, isSaving, form: useUserForm(defaultValuesFor(user), submit, mutation.error) };
 }
 
 function UserFormModalSubtitle({ user }: { user: UserSummary | null }) {
@@ -210,18 +235,18 @@ function UserFormModalSubtitle({ user }: { user: UserSummary | null }) {
 
 function UserFormModalContent({ user, onClose, onSaved }: Omit<UserFormModalProps, 'open'>) {
   const formId = useId();
-  const { mutation, form } = useUserFormSubmission(user, onSaved);
+  const { isSaving, form } = useUserFormSubmission(user, onSaved);
 
   return (
     <Modal
       open
       title={user ? 'Editar usuário' : 'Novo usuário'}
       onClose={onClose}
-      dismissible={!mutation.isPending}
+      dismissible={!isSaving}
       footer={
         <UserFormModalActions
           formId={formId}
-          isSaving={mutation.isPending}
+          isSaving={isSaving}
           isCreating={!user}
           onClose={onClose}
         />
@@ -229,7 +254,7 @@ function UserFormModalContent({ user, onClose, onSaved }: Omit<UserFormModalProp
     >
       <UserFormModalSubtitle user={user} />
       <form id={formId} className={styles.form} noValidate onSubmit={form.submit}>
-        <UserFormFields {...form} isCreating={!user} />
+        <UserFormFields {...form} user={user} />
       </form>
     </Modal>
   );
