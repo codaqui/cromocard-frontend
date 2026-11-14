@@ -31,5 +31,12 @@ export function useUsersListFilters() {
     changeRole: withPageReset(setRole, setPage),
     changeStatus: withPageReset(setStatus, setPage),
     changePage: setPage,
+    hasFilters: Boolean(search || role || status),
+    clearFilters: () => {
+      setSearch('');
+      setRole('');
+      setStatus('');
+      setPage(1);
+    },
   };
 }

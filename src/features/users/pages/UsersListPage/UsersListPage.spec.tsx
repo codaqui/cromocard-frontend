@@ -83,9 +83,32 @@ describe('UsersListPage', () => {
     renderPage();
     await screen.findByText('Nenhum usuário encontrado');
 
-    await userEvent.selectOptions(screen.getByLabelText('Papel'), 'ADMIN');
+    await userEvent.selectOptions(screen.getByLabelText('Papel de acesso'), 'ADMIN');
 
     await vi.waitFor(() => expect(lastListCall()).toMatchObject({ role: 'ADMIN' }));
+  });
+
+  it('CA1: limpar filtros volta à lista sem busca, papel e status', async () => {
+    mockList([]);
+    renderPage();
+    await screen.findByText('Nenhum usuário encontrado');
+    const clear = screen.getByRole('button', { name: 'Limpar filtros' });
+    expect(clear).toBeDisabled();
+
+    await userEvent.selectOptions(screen.getByLabelText('Status'), 'SUSPENDED');
+    await userEvent.click(clear);
+
+    await vi.waitFor(() =>
+      expect(lastListCall()).toMatchObject({ status: undefined, role: undefined }),
+    );
+    expect(screen.getByLabelText('Status')).toHaveValue('');
+  });
+
+  it('mostra o carregando enquanto a lista não chega', async () => {
+    vi.mocked(usersApi.list).mockReturnValue(new Promise(() => undefined));
+    renderPage();
+
+    expect(await screen.findByText('Carregando…')).toBeInTheDocument();
   });
 
   it('CA1: filtra por status', async () => {
@@ -139,9 +162,9 @@ describe('UsersListPage - toasts das ações administrativas', () => {
     renderPage();
     await screen.findByText('Nenhum usuário encontrado');
 
-    await userEvent.click(screen.getByRole('button', { name: '+ Novo Usuário no Sistema' }));
+    await userEvent.click(screen.getByRole('button', { name: '+ Novo Usuário' }));
     const dialog = screen.getByRole('dialog');
-    await userEvent.type(within(dialog).getByLabelText('Nome'), 'Bia Vendedora');
+    await userEvent.type(within(dialog).getByLabelText('Nome completo'), 'Bia Vendedora');
     await userEvent.type(within(dialog).getByLabelText('E-mail'), 'bia@cromocard.dev');
     await userEvent.selectOptions(within(dialog).getByLabelText('Papel'), 'SELLER');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Cadastrar Usuário' }));
@@ -157,9 +180,9 @@ describe('UsersListPage - toasts das ações administrativas', () => {
     await screen.findByText(user.name);
 
     await userEvent.click(screen.getByRole('button', { name: 'Editar' }));
-    await userEvent.clear(screen.getByLabelText('Nome'));
-    await userEvent.type(screen.getByLabelText('Nome'), 'Ana Silva');
-    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+    await userEvent.clear(screen.getByLabelText('Nome completo'));
+    await userEvent.type(screen.getByLabelText('Nome completo'), 'Ana Silva');
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }));
 
     expect(await screen.findByText('Usuário atualizado com sucesso.')).toBeInTheDocument();
   });

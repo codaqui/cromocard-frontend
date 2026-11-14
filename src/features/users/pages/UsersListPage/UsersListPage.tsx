@@ -48,7 +48,7 @@ function SearchFilter({ search, changeSearch }: Pick<UsersListFilters, 'search' 
 function RoleFilter({ role, changeRole }: Pick<UsersListFilters, 'role' | 'changeRole'>) {
   return (
     <Select
-      label="Papel"
+      label="Papel de acesso"
       icon="shield"
       placeholder="Todos"
       options={roleSelectOptions}
@@ -77,6 +77,16 @@ function UsersListFilterFields(filters: UsersListFilters) {
       <SearchFilter {...filters} />
       <RoleFilter {...filters} />
       <StatusFilter {...filters} />
+      <Button
+        variant="secondary"
+        className={styles.clearFilters}
+        aria-label="Limpar filtros"
+        title="Limpar filtros"
+        disabled={!filters.hasFilters}
+        onClick={filters.clearFilters}
+      >
+        <Icon name="filterOff" size={18} />
+      </Button>
     </div>
   );
 }
@@ -90,12 +100,14 @@ interface UsersListResultProps {
   onDelete: (user: UserSummary) => void;
 }
 
-function TableHeading({ count }: { count: number }) {
+function TableHeading({ count, total }: { count: number; total: number }) {
   return (
     <div className={styles.tableHeading}>
       <span>
-        Mesa de usuários registrados
-        <span className={styles.countPill}>{count} registros carregados</span>
+        Usuários cadastrados
+        <span className={styles.countPill}>
+          {count} de {total} usuários
+        </span>
       </span>
       <span className={styles.inspectHint}>Clique na linha para inspecionar</span>
     </div>
@@ -111,13 +123,14 @@ function UsersListResult({ query, onPageChange, ...actions }: UsersListResultPro
 
   return (
     <>
-      <TableHeading count={query.data.data.length} />
+      <TableHeading count={query.data.data.length} total={meta.total} />
       <UsersTable users={query.data.data} {...actions} />
       <Pagination
         page={meta.page}
         totalPages={meta.totalPages}
         total={meta.total}
         pageSize={meta.pageSize}
+        itemLabel="usuários cadastrados"
         onPageChange={onPageChange}
       />
     </>
@@ -133,11 +146,8 @@ function UsersListHeader({ total, onNewUser }: UsersListHeaderProps) {
   return (
     <div className={styles.header}>
       <div>
-        <p className={styles.eyebrow}>BackOffice · Administração</p>
-        <h1 className={styles.title}>Usuários</h1>
-        <p className={styles.subtitle}>
-          Crie, edite, suspenda, reative e exclua contas de usuários da plataforma.
-        </p>
+        <h1 className={styles.title}>Gestão de Usuários</h1>
+        <p className={styles.subtitle}>Clientes, vendedores e administradores da plataforma.</p>
       </div>
       <div className={styles.headerActions}>
         {total !== undefined && (
@@ -146,7 +156,7 @@ function UsersListHeader({ total, onNewUser }: UsersListHeaderProps) {
             Total: {total}
           </span>
         )}
-        <Button onClick={onNewUser}>+ Novo Usuário no Sistema</Button>
+        <Button onClick={onNewUser}>+ Novo Usuário</Button>
       </div>
     </div>
   );

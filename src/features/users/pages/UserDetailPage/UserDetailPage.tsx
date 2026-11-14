@@ -21,17 +21,9 @@ import {
   toggleStatusCopyFor,
 } from '../../users.labels';
 import { useUser } from '../../users.queries';
+import { initialsOf, shortIdOf } from '../../users.format';
 import type { UserSummary } from '../../users.types';
 import styles from './UserDetailPage.module.css';
-
-function initialsOf(name: string): string {
-  const [first, second] = name.trim().split(/\s+/);
-  return `${first?.[0] ?? ''}${second?.[0] ?? ''}`.toUpperCase();
-}
-
-function shortIdOf(id: string): string {
-  return `#USR-${id.slice(-6).toUpperCase()}`;
-}
 
 function Breadcrumb({ name }: { name: string }) {
   return (

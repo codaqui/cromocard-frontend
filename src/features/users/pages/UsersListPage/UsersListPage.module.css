@@ -4,14 +4,6 @@
   gap: var(--space-6);
 }
 
-.eyebrow {
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  letter-spacing: var(--letter-spacing-caps);
-  text-transform: uppercase;
-  color: var(--color-label);
-}
-
 .title {
   font-size: var(--font-size-xl);
 }
@@ -54,6 +46,11 @@
 
 .filters > * {
   min-width: var(--size-card-min);
+}
+
+.filters > .clearFilters {
+  min-width: var(--size-control);
+  padding: var(--space-2);
 }
 
 .tableHeading {

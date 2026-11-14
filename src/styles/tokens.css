@@ -75,6 +75,10 @@
   --size-toast: 24rem;
   --size-field-icon: 1.25rem;
   --size-card-min: 12rem;
+  --size-status-dot: 0.5rem;
+  --size-avatar-sm: 2rem;
+  --size-avatar-md: 2.5rem;
+  --size-avatar-lg: 3.5rem;
 
   --z-overlay: 100;
   --z-toast: 200;
