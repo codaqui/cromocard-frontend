@@ -108,6 +108,30 @@ describe('UsersListPage', () => {
     expect(screen.getByText('Suspenso', { selector: 'span' })).toBeInTheDocument();
   });
 
+  it('CA11 (CCD094): vendedor com cadastro em análise mostra o selo "Em análise"', async () => {
+    mockList([
+      buildUser({
+        name: 'Bia Vendedora',
+        role: 'SELLER',
+        status: 'ACTIVE',
+        verificationStatus: 'UNDER_REVIEW',
+      }),
+    ]);
+    renderPage();
+
+    expect(await screen.findByText('Vendedor', { selector: 'span' })).toBeInTheDocument();
+    expect(screen.getByText('Em análise', { selector: 'span' })).toBeInTheDocument();
+    expect(screen.getByText('Ativo', { selector: 'span' })).toBeInTheDocument();
+  });
+
+  it('vendedor aprovado não mostra o selo "Em análise"', async () => {
+    mockList([buildUser({ role: 'SELLER', verificationStatus: 'APPROVED' })]);
+    renderPage();
+
+    await screen.findByText('Vendedor', { selector: 'span' });
+    expect(screen.queryByText('Em análise')).not.toBeInTheDocument();
+  });
+
   it('CA1: busca por nome ou e-mail envia q para a API', async () => {
     mockList([]);
     renderPage();
