@@ -1,0 +1,136 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.sellerName {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.sellerEmail {
+  font-size: var(--font-size-xs);
+  color: var(--color-label);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: var(--space-3);
+}
+
+.fieldLabel {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-caps);
+  text-transform: uppercase;
+  color: var(--color-label);
+}
+
+.fieldValue {
+  margin-top: var(--space-1);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.emptyHint {
+  font-size: var(--font-size-caption);
+  color: var(--color-label);
+}
+
+.documentList,
+.noteList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+}
+
+.documentItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.documentType {
+  font-weight: 600;
+}
+
+.documentValidated {
+  font-size: var(--font-size-caption);
+  color: var(--color-success);
+}
+
+.documentPending {
+  font-size: var(--font-size-caption);
+  color: var(--color-label);
+}
+
+.documentActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.documentLink {
+  font-size: var(--font-size-caption);
+  color: var(--color-info);
+}
+
+.notes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.noteItem {
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.noteContent {
+  overflow-wrap: anywhere;
+}
+
+.noteMeta {
+  margin-top: var(--space-1);
+  font-size: var(--font-size-caption);
+  color: var(--color-label);
+}
+
+.decisionActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.decidedInfo {
+  font-size: var(--font-size-caption);
+  color: var(--color-label);
+}
