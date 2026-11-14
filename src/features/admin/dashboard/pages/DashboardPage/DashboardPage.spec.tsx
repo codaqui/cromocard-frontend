@@ -4,12 +4,26 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { sellerVerificationsApi } from '@/features/admin';
+
 import { dashboardApi } from '../../dashboard.api';
 import type { DashboardSummary } from '../../dashboard.types';
 import { DashboardPage } from './DashboardPage';
 
 vi.mock('../../dashboard.api', () => ({
-  dashboardApi: { getSummary: vi.fn(), listRecentSellers: vi.fn() },
+  dashboardApi: { getSummary: vi.fn() },
+}));
+
+vi.mock('@/features/admin/seller-verifications/seller-verifications.api', () => ({
+  sellerVerificationsApi: {
+    list: vi.fn(),
+    getSummary: vi.fn(),
+    getById: vi.fn(),
+    validateDocument: vi.fn(),
+    addNote: vi.fn(),
+    approve: vi.fn(),
+    reject: vi.fn(),
+  },
 }));
 
 const summary: DashboardSummary = {
@@ -22,17 +36,21 @@ const summary: DashboardSummary = {
   isEmpty: false,
 };
 
-const sellersPage = {
+const sellerVerificationsPage = {
   data: [
     {
-      id: '1',
-      name: 'Fábio TCG Store',
-      email: 'fabio@cromocard.dev',
+      id: 'ver-1',
+      status: 'UNDER_REVIEW' as const,
+      legalName: 'Cards Kanto LTDA',
+      cnpj: '45.291.802/0001-93',
       createdAt: '2026-10-20T15:00:00Z',
+      seller: { id: 'seller-1', name: 'Fábio TCG Store', email: 'fabio@cromocard.dev' },
     },
   ],
-  meta: { page: 1, pageSize: 5, total: 1, totalPages: 1 },
+  meta: { page: 1, pageSize: 20, total: 1, totalPages: 1 },
 };
+
+const sellerVerificationsSummary = { approved: 3, pending: 1, conversionRate: 0.75 };
 
 function renderPage() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -48,7 +66,10 @@ function renderPage() {
 describe('DashboardPage', () => {
   beforeEach(() => {
     vi.mocked(dashboardApi.getSummary).mockReset().mockResolvedValue(summary);
-    vi.mocked(dashboardApi.listRecentSellers).mockReset().mockResolvedValue(sellersPage);
+    vi.mocked(sellerVerificationsApi.list).mockReset().mockResolvedValue(sellerVerificationsPage);
+    vi.mocked(sellerVerificationsApi.getSummary)
+      .mockReset()
+      .mockResolvedValue(sellerVerificationsSummary);
   });
 
   it('mostra o carregando enquanto busca os dados', () => {
@@ -59,7 +80,7 @@ describe('DashboardPage', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Carregando o dashboard…');
   });
 
-  it('CA1: mostra os KPIs dos últimos 30 dias, o gráfico e os vendedores', async () => {
+  it('CA1: mostra os KPIs dos últimos 30 dias, o gráfico e os vendedores em análise', async () => {
     renderPage();
 
     expect(await screen.findByRole('region', { name: 'Total de usuários' })).toHaveTextContent(
@@ -72,18 +93,22 @@ describe('DashboardPage', () => {
     expect(dashboardApi.getSummary).toHaveBeenCalledWith({ period: '30d' });
   });
 
-  it('CA2: recalcula o dashboard e a lista ao escolher 7 dias', async () => {
+  it('CA8: mostra o card de credenciamento com aprovados e conversão', async () => {
+    renderPage();
+
+    const card = await screen.findByRole('region', { name: 'Lojistas & Credenciamento' });
+    expect(card).toHaveTextContent('75%');
+    expect(card).toHaveTextContent('3');
+  });
+
+  it('CA2: recalcula o dashboard ao escolher 7 dias', async () => {
     renderPage();
     await screen.findByRole('region', { name: 'Total de usuários' });
 
     await userEvent.click(screen.getByRole('button', { name: '7 dias' }));
 
     expect(dashboardApi.getSummary).toHaveBeenLastCalledWith({ period: '7d' });
-    expect(dashboardApi.listRecentSellers).toHaveBeenLastCalledWith({
-      period: '7d',
-      page: 1,
-      pageSize: 5,
-    });
+    expect(sellerVerificationsApi.getSummary).toHaveBeenLastCalledWith({ period: '7d' });
   });
 
   it('CA5: avisa quando não existem dados', async () => {
@@ -100,36 +125,56 @@ describe('DashboardPage', () => {
       kpis: { ...summary.kpis, newUsers: 0, newSellers: 0 },
       signupsByMonth: [{ month: '2026-10', customers: 0, sellers: 0 }],
     });
-    vi.mocked(dashboardApi.listRecentSellers).mockResolvedValue({
-      data: [],
-      meta: { page: 1, pageSize: 5, total: 0, totalPages: 0 },
-    });
 
     renderPage();
 
-    await screen.findByRole('table', { name: 'Cadastros dos Vendedores Recentes' });
     expect(
-      screen.getAllByText('Não foram encontrados dados para os filtros selecionados'),
-    ).toHaveLength(2);
+      await screen.findByText('Não foram encontrados dados para os filtros selecionados'),
+    ).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Total de usuários' })).toBeInTheDocument();
   });
 
-  it('volta a lista de vendedores para a página 1 ao trocar o período', async () => {
-    vi.mocked(dashboardApi.listRecentSellers).mockResolvedValue({
-      ...sellersPage,
-      meta: { page: 1, pageSize: 5, total: 12, totalPages: 3 },
-    });
+  it('R3: filtra os cadastros de vendedores por status', async () => {
     renderPage();
     await screen.findByRole('row', { name: /Fábio TCG Store/ });
 
-    await userEvent.click(screen.getByRole('button', { name: 'Próximo' }));
-    await userEvent.click(screen.getByRole('button', { name: '7 dias' }));
+    await userEvent.selectOptions(screen.getByLabelText('Filtrar por status'), 'PENDING');
 
-    expect(dashboardApi.listRecentSellers).toHaveBeenLastCalledWith({
-      period: '7d',
-      page: 1,
-      pageSize: 5,
+    await vi.waitFor(() =>
+      expect(sellerVerificationsApi.list).toHaveBeenLastCalledWith({
+        status: 'PENDING',
+        page: 1,
+        pageSize: 20,
+      }),
+    );
+  });
+
+  it('abre o painel de validação ao clicar em Validar Cadastro', async () => {
+    renderPage();
+    await screen.findByRole('row', { name: /Fábio TCG Store/ });
+    vi.mocked(sellerVerificationsApi.getById).mockResolvedValue({
+      ...sellerVerificationsPage.data[0]!,
+      tradeName: null,
+      stateRegistration: null,
+      openingDate: null,
+      companySize: null,
+      cnae: null,
+      responsibleName: 'Fábio Silva',
+      responsibleCpf: '52998224725',
+      responsiblePhone: null,
+      bankName: null,
+      bankBranch: null,
+      bankAccount: null,
+      pixKey: null,
+      rejectionReason: null,
+      reviewedAt: null,
+      documents: [],
+      notes: [],
     });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Validar Cadastro' }));
+
+    expect(await screen.findByRole('heading', { name: 'Validar Cadastro' })).toBeInTheDocument();
   });
 
   it('CA8: mostra o erro e tenta de novo', async () => {
@@ -140,5 +185,25 @@ describe('DashboardPage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Serviço indisponível');
     await userEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }));
     expect(await screen.findByRole('region', { name: 'Total de usuários' })).toBeInTheDocument();
+  });
+
+  it('mostra o erro dos vendedores e tenta de novo', async () => {
+    vi.mocked(sellerVerificationsApi.list).mockRejectedValueOnce(new Error('Fila indisponível'));
+
+    renderPage();
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Fila indisponível');
+    await userEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }));
+    expect(await screen.findByRole('row', { name: /Fábio TCG Store/ })).toBeInTheDocument();
+  });
+
+  it('atualiza a fila ao clicar em Atualizar Fila', async () => {
+    renderPage();
+    await screen.findByRole('row', { name: /Fábio TCG Store/ });
+    vi.mocked(sellerVerificationsApi.list).mockClear();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Atualizar Fila' }));
+
+    await vi.waitFor(() => expect(sellerVerificationsApi.list).toHaveBeenCalled());
   });
 });

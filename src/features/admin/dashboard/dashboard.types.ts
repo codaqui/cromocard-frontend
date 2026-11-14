@@ -1,5 +1,4 @@
 import type { PeriodPreset } from '@/components/PeriodFilter/PeriodFilter';
-import type { PaginationParams } from '@/types/api';
 
 export interface DashboardKpis {
   totalUsers: number;
@@ -21,13 +20,4 @@ export interface DashboardSummary {
   isEmpty: boolean;
 }
 
-export interface RecentSeller {
-  id: string;
-  name: string;
-  email: string;
-  createdAt: string;
-}
-
 export type DashboardPeriodParams = { period: PeriodPreset } | { from: string; to: string };
-
-export type RecentSellersParams = DashboardPeriodParams & PaginationParams;

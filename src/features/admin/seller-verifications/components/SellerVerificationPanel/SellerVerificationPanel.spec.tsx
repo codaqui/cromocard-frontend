@@ -95,6 +95,28 @@ describe('SellerVerificationPanel', () => {
     expect(await screen.findByText('Documento validado com sucesso.')).toBeInTheDocument();
   });
 
+  it('documento validado sem a data mostra só "Validado"', async () => {
+    vi.mocked(sellerVerificationsApi.getById).mockResolvedValue(
+      buildDetail({
+        documents: [
+          {
+            id: 'doc-1',
+            type: 'CNPJ_CARD',
+            fileUrl: 'https://files.cromocard.dev/doc.pdf',
+            fileSize: 240000,
+            status: 'VALIDATED',
+            validatedAt: null,
+            validatedById: 'admin-1',
+            createdAt: '2026-10-20T15:00:00Z',
+          },
+        ],
+      }),
+    );
+    renderPanel();
+
+    expect(await screen.findByText('Validado')).toBeInTheDocument();
+  });
+
   it('CA4: aprova o credenciamento', async () => {
     const detail = buildDetail();
     vi.mocked(sellerVerificationsApi.getById).mockResolvedValue(detail);
