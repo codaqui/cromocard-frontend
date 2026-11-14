@@ -1,5 +1,6 @@
 import { ConfirmDialog } from '@/components/ConfirmDialog/ConfirmDialog';
 
+import { toReasonInput } from '../../users.schemas';
 import { useReactivateUser, useSuspendUser } from '../../users.queries';
 import type { UserSummary } from '../../users.types';
 
@@ -47,7 +48,7 @@ function SuspendUserDialogContent({ user, onClose, onSaved }: SuspendUserDialogC
   const copy = copyFor(user);
 
   const confirm = (reason?: string) => {
-    mutation.mutate({ id: user.id, input: { reason: reason ?? '' } }, { onSuccess: onSaved });
+    mutation.mutate({ id: user.id, input: toReasonInput(reason) }, { onSuccess: onSaved });
   };
 
   return (
