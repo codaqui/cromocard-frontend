@@ -36,7 +36,9 @@ type UsersListFilters = ReturnType<typeof useUsersListFilters>;
 function SearchFilter({ search, changeSearch }: Pick<UsersListFilters, 'search' | 'changeSearch'>) {
   return (
     <TextField
-      label="Buscar por nome ou e-mail"
+      label="Buscar por nome, @, e-mail, CPF, CNPJ ou ID (#USR-)"
+      hideLabel
+      placeholder="Filtrar por nome, @handle, e-mail, CPF/CNPJ ou ID (#USR-)..."
       icon="search"
       type="search"
       value={search}
@@ -49,8 +51,9 @@ function RoleFilter({ role, changeRole }: Pick<UsersListFilters, 'role' | 'chang
   return (
     <Select
       label="Papel de acesso"
+      hideLabel
       icon="shield"
-      placeholder="Todos"
+      placeholder="Papel de Acesso: Todos"
       options={roleSelectOptions}
       value={role}
       onChange={(event) => changeRole(event.target.value as UserRole | '')}
@@ -62,8 +65,9 @@ function StatusFilter({ status, changeStatus }: Pick<UsersListFilters, 'status' 
   return (
     <Select
       label="Status"
+      hideLabel
       icon="checkCircle"
-      placeholder="Todos"
+      placeholder="Status: Todos"
       options={statusOptions}
       value={status}
       onChange={(event) => changeStatus(event.target.value as UserStatus | '')}

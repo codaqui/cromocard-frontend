@@ -1,48 +1,80 @@
 import { useId } from 'react';
 
 import { Button } from '@/components/Button/Button';
+import { Checkbox } from '@/components/Checkbox/Checkbox';
 import { FormError } from '@/components/FormError/FormError';
 import { Modal } from '@/components/Modal/Modal';
 import { Select } from '@/components/Select/Select';
 import { TextField } from '@/components/TextField/TextField';
 import type { ApiError } from '@/lib/api-error';
+import { formatCpf } from '@/utils/formatCpf';
+import { formatPhone } from '@/utils/formatPhone';
 
-import { useUserForm } from '../../hooks/useUserForm';
+import { type UserFormDirtyFields, useUserForm } from '../../hooks/useUserForm';
 import { roleSelectOptions } from '../../users.labels';
-import type { CreateUserInput } from '../../users.schemas';
-import type { UserSummary } from '../../users.types';
+import type { CreateUserFormValues, CreateUserInput } from '../../users.schemas';
+import { canResendActivation } from '../../users.format';
+import type { EditableUser } from '../../users.types';
 import styles from './UserFormModal.module.css';
 
-function defaultValuesFor(user: UserSummary | null): CreateUserInput {
+function cpfOf(user: EditableUser | null): string {
+  return user && 'cpf' in user && user.cpf ? formatCpf(user.cpf) : '';
+}
+
+/** Telefone com DDD como o Figma mostra no formulário, num formato que a validação aceita de volta. */
+function phoneOf(user: EditableUser | null): string {
+  return user?.phone ? formatPhone(user.phone).replace('+55 ', '') : '';
+}
+
+function defaultValuesFor(user: EditableUser | null): CreateUserFormValues {
   return {
     name: user?.name ?? '',
     email: user?.email ?? '',
     role: user?.role ?? 'CUSTOMER',
+    username: user?.username ?? '',
+    cpf: cpfOf(user),
+    phone: phoneOf(user),
+    sendActivation: !user,
   };
 }
 
 interface UserFormModalProps {
   open: boolean;
-  user: UserSummary | null;
+  user: EditableUser | null;
   isSaving: boolean;
   apiError: ApiError | null;
   onClose: () => void;
-  onSubmit: (input: CreateUserInput) => void;
+  onSubmit: (input: CreateUserInput, dirtyFields: UserFormDirtyFields) => void;
 }
 
 type UserFormFields = ReturnType<typeof useUserForm>;
 
-function IdentityFields({ register, errors }: Pick<UserFormFields, 'register' | 'errors'>) {
+function NameAndUsernameFields({ register, errors }: Pick<UserFormFields, 'register' | 'errors'>) {
   return (
     <div className={styles.grid}>
       <TextField
         label="Nome completo"
-        hint="obrigatório"
-        icon="person"
+        labelAside="obrigatório"
+        icon="badge"
         autoComplete="name"
         error={errors.name?.message}
         {...register('name')}
       />
+      <TextField
+        label="Nome de usuário"
+        labelAside="único"
+        icon="mail"
+        autoComplete="username"
+        error={errors.username?.message}
+        {...register('username')}
+      />
+    </div>
+  );
+}
+
+function EmailAndCpfFields({ register, errors }: Pick<UserFormFields, 'register' | 'errors'>) {
+  return (
+    <div className={styles.grid}>
       <TextField
         label="E-mail"
         icon="envelope"
@@ -51,14 +83,29 @@ function IdentityFields({ register, errors }: Pick<UserFormFields, 'register' | 
         error={errors.email?.message}
         {...register('email')}
       />
+      <TextField
+        label="CPF"
+        icon="badge"
+        inputMode="numeric"
+        autoComplete="off"
+        error={errors.cpf?.message}
+        {...register('cpf')}
+      />
     </div>
   );
 }
 
-function UserFormFields({ register, errors, formError }: UserFormFields) {
+function PhoneAndRoleFields({ register, errors }: Pick<UserFormFields, 'register' | 'errors'>) {
   return (
-    <>
-      <IdentityFields register={register} errors={errors} />
+    <div className={styles.grid}>
+      <TextField
+        label="Telefone com DDD"
+        icon="phone"
+        inputMode="tel"
+        autoComplete="tel"
+        error={errors.phone?.message}
+        {...register('phone')}
+      />
       <Select
         label="Papel"
         icon="shield"
@@ -66,6 +113,46 @@ function UserFormFields({ register, errors, formError }: UserFormFields) {
         error={errors.role?.message}
         {...register('role')}
       />
+    </div>
+  );
+}
+
+function ActivationField({
+  register,
+  user,
+}: Pick<UserFormFields, 'register'> & { user: EditableUser | null }) {
+  if (!user) {
+    return (
+      <Checkbox
+        label="Enviar link de ativação de conta por e-mail"
+        hint="O link de ativação vale por 24 horas."
+        {...register('sendActivation')}
+      />
+    );
+  }
+  if (!canResendActivation(user)) return null;
+
+  return (
+    <Checkbox
+      label="Reenviar link de ativação"
+      hint="O usuário ainda não ativou a conta. O novo link vale por 24 horas."
+      {...register('sendActivation')}
+    />
+  );
+}
+
+function UserFormFields({
+  register,
+  errors,
+  formError,
+  user,
+}: UserFormFields & { user: EditableUser | null }) {
+  return (
+    <>
+      <NameAndUsernameFields register={register} errors={errors} />
+      <EmailAndCpfFields register={register} errors={errors} />
+      <PhoneAndRoleFields register={register} errors={errors} />
+      <ActivationField register={register} user={user} />
       <FormError message={formError} />
     </>
   );
@@ -101,7 +188,7 @@ function UserFormModalActions({
   );
 }
 
-function UserFormModalSubtitle({ user }: { user: UserSummary | null }) {
+function UserFormModalSubtitle({ user }: { user: EditableUser | null }) {
   return (
     <p className={styles.subtitle}>
       {user
@@ -125,14 +212,14 @@ function UserFormModalContent({
   return (
     <Modal
       open
-      title={user ? 'Editar usuário' : 'Novo usuário'}
-      onClose={onClose}
+      {...{ onClose, title: user ? 'Editar usuário' : 'Novo usuário', size: 'wide' as const }}
+      icon={user ? 'edit' : 'personAdd'}
       dismissible={!isSaving}
       footer={<UserFormModalActions {...actions} />}
     >
       <UserFormModalSubtitle user={user} />
       <form id={formId} className={styles.form} noValidate onSubmit={form.submit}>
-        <UserFormFields {...form} />
+        <UserFormFields {...form} user={user} />
       </form>
     </Modal>
   );

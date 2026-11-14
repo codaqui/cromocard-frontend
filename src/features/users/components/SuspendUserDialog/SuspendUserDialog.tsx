@@ -20,9 +20,9 @@ interface SuspendCopy {
 function copyFor(user: UserSummary): SuspendCopy {
   if (user.status === 'SUSPENDED') {
     return {
-      title: 'Reativar usuário',
-      message: `${user.name} volta a poder entrar na plataforma.`,
-      confirmLabel: 'Reativar',
+      title: 'Reativar usuário?',
+      message: `${user.name}${user.username ? ` (@${user.username})` : ''} está Suspenso. Ao reativar, o status volta para Ativo e a ação fica registrada no log de auditoria.`,
+      confirmLabel: 'Reativar usuário',
       tone: 'primary',
     };
   }
@@ -41,15 +41,26 @@ interface SuspendUserDialogContentProps {
   onSaved: () => void;
 }
 
-function SuspendUserDialogContent({ user, onClose, onSaved }: SuspendUserDialogContentProps) {
+function useSuspendOrReactivate(user: UserSummary, onSaved: () => void) {
+  const isReactivating = user.status === 'SUSPENDED';
   const suspendUser = useSuspendUser();
   const reactivateUser = useReactivateUser();
-  const mutation = user.status === 'SUSPENDED' ? reactivateUser : suspendUser;
-  const copy = copyFor(user);
+  const mutation = isReactivating ? reactivateUser : suspendUser;
 
   const confirm = (reason?: string) => {
-    mutation.mutate({ id: user.id, input: toReasonInput(reason) }, { onSuccess: onSaved });
+    if (isReactivating) {
+      reactivateUser.mutate(user.id, { onSuccess: onSaved });
+      return;
+    }
+    suspendUser.mutate({ id: user.id, input: toReasonInput(reason) }, { onSuccess: onSaved });
   };
+
+  return { isReactivating, mutation, confirm };
+}
+
+function SuspendUserDialogContent({ user, onClose, onSaved }: SuspendUserDialogContentProps) {
+  const { isReactivating, mutation, confirm } = useSuspendOrReactivate(user, onSaved);
+  const copy = copyFor(user);
 
   return (
     <ConfirmDialog
@@ -58,7 +69,7 @@ function SuspendUserDialogContent({ user, onClose, onSaved }: SuspendUserDialogC
       message={copy.message}
       confirmLabel={copy.confirmLabel}
       tone={copy.tone}
-      requireReason
+      requireReason={!isReactivating}
       isConfirming={mutation.isPending}
       errorMessage={mutation.error?.message}
       onConfirm={confirm}

@@ -22,6 +22,10 @@ function buildUser(overrides: Partial<UserSummary> = {}): UserSummary {
     status: 'ACTIVE',
     emailVerified: true,
     createdAt: '2026-10-01T00:00:00.000Z',
+    username: null,
+    phone: null,
+    lastLoginAt: null,
+    lastLoginIp: null,
     ...overrides,
   };
 }
@@ -68,20 +72,16 @@ describe('SuspendUserDialog', () => {
     await vi.waitFor(() => expect(onSaved).toHaveBeenCalled());
   });
 
-  it('CA5: reativa um usuário suspenso com o motivo', async () => {
+  it('CA5: reativa um usuário suspenso sem pedir motivo', async () => {
     const user = buildUser({ status: 'SUSPENDED' });
     vi.mocked(usersApi.reactivate).mockResolvedValue({ ...user, status: 'ACTIVE' });
     const { onSaved } = renderDialog(user);
 
-    expect(screen.getByRole('alertdialog', { name: 'Reativar usuário' })).toBeInTheDocument();
-    await userEvent.type(screen.getByLabelText('Motivo'), 'Prazo da suspensão terminou');
-    await userEvent.click(screen.getByRole('button', { name: 'Reativar' }));
+    expect(screen.getByRole('alertdialog', { name: 'Reativar usuário?' })).toBeInTheDocument();
+    expect(screen.queryByLabelText('Motivo')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Reativar usuário' }));
 
-    await vi.waitFor(() =>
-      expect(usersApi.reactivate).toHaveBeenCalledWith(user.id, {
-        reason: 'Prazo da suspensão terminou',
-      }),
-    );
+    await vi.waitFor(() => expect(usersApi.reactivate).toHaveBeenCalledWith(user.id));
     await vi.waitFor(() => expect(onSaved).toHaveBeenCalled());
   });
 

@@ -9,6 +9,7 @@ vi.mock('@/lib/http', () => ({
     get: vi.fn(),
     getPage: vi.fn(),
     post: vi.fn(),
+    postEmpty: vi.fn(),
     patch: vi.fn(),
     delete: vi.fn(),
   },
@@ -49,13 +50,17 @@ describe('usersApi', () => {
       name: 'Ana',
       email: 'ana@cromocard.dev',
       role: 'CUSTOMER' as const,
+      username: undefined,
+      cpf: undefined,
+      phone: undefined,
+      sendActivation: true,
     };
     void usersApi.create(input);
     expect(callsOf('post')[0]).toEqual(['/users', input]);
   });
 
   it('update edita um usuário pelo id', () => {
-    const input = { name: 'Ana Silva' };
+    const input = { name: 'Ana Silva', username: null, cpf: null, phone: null };
     void usersApi.update('user-1', input);
     expect(callsOf('patch')[0]).toEqual(['/users/user-1', input]);
   });
@@ -65,13 +70,18 @@ describe('usersApi', () => {
     expect(callsOf('post')[0]).toEqual(['/users/user-1/suspend', { reason: 'Violou as regras' }]);
   });
 
-  it('reactivate reativa um usuário com o motivo', () => {
-    void usersApi.reactivate('user-1', { reason: 'Recurso aceito' });
-    expect(callsOf('post')[0]).toEqual(['/users/user-1/reactivate', { reason: 'Recurso aceito' }]);
+  it('reactivate reativa um usuário sem motivo', () => {
+    void usersApi.reactivate('user-1');
+    expect(callsOf('post')[0]).toEqual(['/users/user-1/reactivate']);
   });
 
   it('remove exclui um usuário com o motivo', () => {
     void usersApi.remove('user-1', { reason: 'Pedido do titular' });
     expect(callsOf('delete')[0]).toEqual(['/users/user-1', { reason: 'Pedido do titular' }]);
+  });
+
+  it('resendActivation reenvia o link sem corpo', () => {
+    void usersApi.resendActivation('user-1');
+    expect(callsOf('postEmpty')[0]).toEqual(['/users/user-1/resend-activation']);
   });
 });

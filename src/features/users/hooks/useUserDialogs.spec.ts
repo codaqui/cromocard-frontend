@@ -14,6 +14,10 @@ const user: UserSummary = {
   status: 'SUSPENDED',
   emailVerified: true,
   createdAt: '2026-10-01T00:00:00.000Z',
+  username: null,
+  phone: null,
+  lastLoginAt: null,
+  lastLoginIp: null,
 };
 
 describe('useUserActionDialogs', () => {
@@ -52,8 +56,8 @@ describe('useUserFormModal', () => {
     expect(result.current.isOpen).toBe(false);
 
     act(() => result.current.openCreate());
-    act(() => result.current.saved());
-    expect(result.current.toastMessage).toBe(userActionMessages.created);
+    act(() => result.current.saved({ user, sendActivation: true }));
+    expect(result.current.toastMessage).toBe(userActionMessages.created(user.email, true));
     act(() => result.current.dismissToast());
     expect(result.current.toastMessage).toBeNull();
   });

@@ -98,6 +98,10 @@ export const api = {
     return response.data.data;
   },
 
+  async postEmpty(url: string, body?: unknown): Promise<void> {
+    await http.post(url, body);
+  },
+
   async patch<T>(url: string, body: unknown): Promise<T> {
     const response = await http.patch<ApiResponse<T>>(url, body);
     return response.data.data;

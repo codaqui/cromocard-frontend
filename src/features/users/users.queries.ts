@@ -84,8 +84,7 @@ export function useReactivateUser() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: ReasonInput }) =>
-      usersApi.reactivate(id, input),
+    mutationFn: (id: string) => usersApi.reactivate(id),
     onSuccess: () => invalidateAllUsers(queryClient),
   });
 }
@@ -96,5 +95,14 @@ export function useRemoveUser() {
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: ReasonInput }) => usersApi.remove(id, input),
     onSuccess: (_, { id }) => invalidateAfterRemoval(queryClient, id),
+  });
+}
+
+export function useResendActivation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: usersApi.resendActivation,
+    onSuccess: (_, id) => queryClient.invalidateQueries({ queryKey: usersKeys.detail(id) }),
   });
 }

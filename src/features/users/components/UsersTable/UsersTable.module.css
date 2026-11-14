@@ -5,7 +5,13 @@
 
 .iconButton {
   min-height: auto;
-  padding: var(--space-2);
+  padding: var(--space-1);
+  border: 0;
+  box-shadow: none;
+}
+
+.iconButton:hover:not(:disabled) {
+  background: var(--color-surface-high);
 }
 
 .status {
@@ -56,4 +62,23 @@
   color: var(--color-info);
   font-size: var(--font-size-xs);
   font-weight: 700;
+}
+
+.iconButton.neutral,
+.iconButton.warning,
+.iconButton.danger {
+  border-color: transparent;
+  background: transparent;
+}
+
+.neutral {
+  color: var(--color-text);
+}
+
+.warning {
+  color: var(--color-warning);
+}
+
+.danger {
+  color: var(--color-danger);
 }

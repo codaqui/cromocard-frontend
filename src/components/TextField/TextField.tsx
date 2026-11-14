@@ -1,7 +1,7 @@
 import { type ComponentProps, type ReactNode, useId } from 'react';
 
 import { describedByOf } from '@/components/FormField/field-ids';
-import { FormField } from '@/components/FormField/FormField';
+import { type FieldLabelOptions, FormField } from '@/components/FormField/FormField';
 import { Icon } from '@/components/Icon/Icon';
 import type { IconName } from '@/components/Icon/icon-paths';
 import { cn } from '@/utils/cn';
@@ -13,7 +13,7 @@ interface InputControlProps extends ComponentProps<'input'> {
   endAdornment?: ReactNode;
 }
 
-interface TextFieldProps extends InputControlProps {
+interface TextFieldProps extends InputControlProps, FieldLabelOptions {
   label: string;
   hint?: string;
   error?: string;
@@ -41,12 +41,20 @@ function InputControl({ icon, endAdornment, className, ...inputProps }: InputCon
   );
 }
 
-export function TextField({ label, hint, error, id, ...controlProps }: TextFieldProps) {
+export function TextField({
+  label,
+  hint,
+  error,
+  id,
+  hideLabel,
+  labelAside,
+  ...controlProps
+}: TextFieldProps) {
   const generatedId = useId();
   const inputId = id ?? generatedId;
 
   return (
-    <FormField inputId={inputId} label={label} hint={hint} error={error}>
+    <FormField inputId={inputId} {...{ label, hint, error, hideLabel, labelAside }}>
       <InputControl
         id={inputId}
         aria-invalid={Boolean(error)}

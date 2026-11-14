@@ -1,20 +1,68 @@
-import { useCreateUser, useUpdateUser } from '../users.queries';
-import type { CreateUserInput } from '../users.schemas';
-import type { UserSummary } from '../users.types';
+import { useCreateUser, useResendActivation, useUpdateUser } from '../users.queries';
+import { canResendActivation } from '../users.format';
+import type { AdminUpdateUserInput, CreateUserInput } from '../users.schemas';
+import type { EditableUser, UserSummary } from '../users.types';
+import type { UserFormDirtyFields } from './useUserForm';
+import type { UserFormSavedResult } from './useUserFormModal';
 
-/** Escolhe entre criar e editar e avisa `onSaved` só quando a API confirma (ADR-042: o container fala com a API). */
-export function useUserFormSubmission(user: UserSummary | null, onSaved: () => void) {
-  const createUser = useCreateUser();
+const CLEARABLE_FIELDS = ['username', 'cpf', 'phone'] as const;
+const PLAIN_FIELDS = ['name', 'email', 'role'] as const;
+
+/**
+ * A edição manda só o que a pessoa mexeu. Um campo opcional esvaziado vai como `null` (apagar, R4); um campo que
+ * o formulário nem carregou (o CPF, quando a edição abre pela lista) não vai, e o dado fica como está.
+ */
+export function toUpdateInput(input: CreateUserInput, dirty: UserFormDirtyFields) {
+  const changes: AdminUpdateUserInput = {};
+  PLAIN_FIELDS.filter((field) => dirty[field]).forEach((field) => {
+    Object.assign(changes, { [field]: input[field] });
+  });
+  CLEARABLE_FIELDS.filter((field) => dirty[field]).forEach((field) => {
+    Object.assign(changes, { [field]: input[field] ?? null });
+  });
+  return changes;
+}
+
+type OnSaved = (result: UserFormSavedResult) => void;
+
+/** Edita e, se pedido e permitido, reenvia o link; o modal só fecha quando as duas chamadas dão certo. */
+function useUpdateWithResend(user: EditableUser | null, onSaved: OnSaved) {
   const updateUser = useUpdateUser();
-  const mutation = user ? updateUser : createUser;
+  const resendActivation = useResendActivation();
 
-  const submit = (input: CreateUserInput) => {
-    if (user) {
-      updateUser.mutate({ id: user.id, input }, { onSuccess: onSaved });
-      return;
-    }
-    createUser.mutate(input, { onSuccess: onSaved });
+  const submit = (current: UserSummary, input: CreateUserInput, dirty: UserFormDirtyFields) => {
+    const resend = canResendActivation(user) && input.sendActivation;
+    const finish = (saved: UserSummary) => onSaved({ user: saved, sendActivation: resend });
+    const afterUpdate = (saved: UserSummary) =>
+      resend
+        ? resendActivation.mutate(saved.id, { onSuccess: () => finish(saved) })
+        : finish(saved);
+    const changes = toUpdateInput(input, dirty);
+    // Nada mudou: não chama o PATCH (a API recusa corpo vazio) e segue para o reenvio, se pedido.
+    if (Object.keys(changes).length === 0) return afterUpdate(current);
+    updateUser.mutate({ id: current.id, input: changes }, { onSuccess: afterUpdate });
   };
 
-  return { submit, isSaving: mutation.isPending, apiError: mutation.error };
+  return {
+    submit,
+    isPending: updateUser.isPending || resendActivation.isPending,
+    error: updateUser.error ?? resendActivation.error,
+  };
+}
+
+/** Escolhe entre criar e editar e avisa `onSaved` só quando a API confirma (ADR-042: o container fala com a API). */
+export function useUserFormSubmission(user: EditableUser | null, onSaved: OnSaved) {
+  const createUser = useCreateUser();
+  const update = useUpdateWithResend(user, onSaved);
+
+  const submit = (input: CreateUserInput, dirty: UserFormDirtyFields) => {
+    if (user) return update.submit(user, input, dirty);
+    createUser.mutate(input, {
+      onSuccess: (saved) => onSaved({ user: saved, sendActivation: input.sendActivation }),
+    });
+  };
+
+  return user
+    ? { submit, isSaving: update.isPending, apiError: update.error }
+    : { submit, isSaving: createUser.isPending, apiError: createUser.error };
 }

@@ -71,6 +71,7 @@
   --size-topbar: 4rem;
   --size-sidebar: 14rem;
   --size-dialog: 32rem;
+  --size-dialog-wide: 48rem;
   --size-drawer: 28rem;
   --size-toast: 24rem;
   --size-field-icon: 1.25rem;
@@ -79,6 +80,7 @@
   --size-avatar-sm: 2rem;
   --size-avatar-md: 2.5rem;
   --size-avatar-lg: 3.5rem;
+  --size-avatar-xl: 5.25rem;
 
   --z-overlay: 100;
   --z-toast: 200;
@@ -122,6 +124,7 @@
   --color-warning-text: #ffddb7;
   --color-surface-glass: rgb(18 33 45 / 0.75);
   --color-surface-shade: rgb(2 15 27 / 0.5);
+  --color-surface-glow: #0e2c3a;
   --color-chart-primary: #3291ff;
   --color-chart-secondary: #47d6ff;
   --color-chart-primary-fill: rgb(50 145 255 / 0.35);

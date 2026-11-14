@@ -6,7 +6,10 @@ import { DataTable, type DataTableColumn } from '@/components/DataTable/DataTabl
 import { Icon } from '@/components/Icon/Icon';
 import type { IconName } from '@/components/Icon/icon-paths';
 import type { UserRole } from '@/types/authenticated-user';
+import { cn } from '@/utils/cn';
 import { formatDate } from '@/utils/formatDate';
+import { formatLastAccess } from '@/utils/formatLastAccess';
+import { formatPhone } from '@/utils/formatPhone';
 
 import {
   roleLabels,
@@ -29,7 +32,6 @@ interface UsersTableProps {
 
 interface RowActionsProps {
   user: UserSummary;
-  onView: (user: UserSummary) => void;
   onEdit: (user: UserSummary) => void;
   onToggleStatus: (user: UserSummary) => void;
   onDelete: (user: UserSummary) => void;
@@ -40,6 +42,10 @@ function RoleBadge({ role }: { role: UserRole }) {
 }
 
 function NameCell({ user }: { user: UserSummary }) {
+  const idLine = [user.username && `@${user.username}`, shortIdOf(user.id)]
+    .filter(Boolean)
+    .join(' ');
+
   return (
     <div className={styles.nameCell}>
       <span className={styles.avatar} aria-hidden="true">
@@ -47,7 +53,29 @@ function NameCell({ user }: { user: UserSummary }) {
       </span>
       <div>
         <div>{user.name}</div>
-        <div className={styles.userId}>{shortIdOf(user.id)}</div>
+        <div className={styles.userId}>{idLine}</div>
+      </div>
+    </div>
+  );
+}
+
+function LastLoginCell({ user }: { user: UserSummary }) {
+  if (!user.lastLoginAt) return <span className={styles.userId}>Nunca</span>;
+
+  return (
+    <div>
+      <div>{formatLastAccess(user.lastLoginAt)}</div>
+      {user.lastLoginIp && <div className={styles.userId}>{user.lastLoginIp}</div>}
+    </div>
+  );
+}
+
+function ContactCell({ user }: { user: UserSummary }) {
+  return (
+    <div>
+      <div>{user.email}</div>
+      <div className={styles.userId}>
+        {user.phone ? formatPhone(user.phone) : 'Sem telefone verif.'}
       </div>
     </div>
   );
@@ -62,14 +90,17 @@ function StatusBadge({ status }: { status: UserStatus }) {
   );
 }
 
+/** Cor do ícone, como no Figma 208-1793: editar neutro, suspender/reativar âmbar, excluir vermelho. */
+type ActionTone = 'neutral' | 'warning' | 'danger';
+
 interface ActionIconButtonProps {
   label: string;
   icon: IconName;
-  variant: 'secondary' | 'danger';
+  tone: ActionTone;
   onClick: () => void;
 }
 
-function ActionIconButton({ label, icon, variant, onClick }: ActionIconButtonProps) {
+function ActionIconButton({ label, icon, tone, onClick }: ActionIconButtonProps) {
   const handleClick: MouseEventHandler = (event) => {
     event.stopPropagation();
     onClick();
@@ -77,8 +108,8 @@ function ActionIconButton({ label, icon, variant, onClick }: ActionIconButtonPro
 
   return (
     <Button
-      variant={variant}
-      className={styles.iconButton}
+      variant="secondary"
+      className={cn(styles.iconButton, styles[tone])}
       aria-label={label}
       title={label}
       onClick={handleClick}
@@ -90,7 +121,6 @@ function ActionIconButton({ label, icon, variant, onClick }: ActionIconButtonPro
 
 function rowActionsFor({
   user,
-  onView,
   onEdit,
   onToggleStatus,
   onDelete,
@@ -98,10 +128,9 @@ function rowActionsFor({
   const toggleStatus = toggleStatusCopyFor(user.status);
 
   return [
-    { label: 'Visualizar', icon: 'visibility', variant: 'secondary', onClick: () => onView(user) },
-    { label: 'Editar', icon: 'edit', variant: 'secondary', onClick: () => onEdit(user) },
-    { ...toggleStatus, variant: 'secondary', onClick: () => onToggleStatus(user) },
-    { label: 'Excluir', icon: 'delete', variant: 'danger', onClick: () => onDelete(user) },
+    { label: 'Editar', icon: 'edit', tone: 'neutral', onClick: () => onEdit(user) },
+    { ...toggleStatus, tone: 'warning', onClick: () => onToggleStatus(user) },
+    { label: 'Excluir', icon: 'delete', tone: 'danger', onClick: () => onDelete(user) },
   ];
 }
 
@@ -118,9 +147,14 @@ function RowActions(props: RowActionsProps) {
 function buildColumns(actions: Omit<RowActionsProps, 'user'>): DataTableColumn<UserSummary>[] {
   return [
     { key: 'name', header: 'Usuário', render: (user) => <NameCell user={user} /> },
-    { key: 'email', header: 'Contato', render: (user) => user.email },
+    { key: 'contact', header: 'Contato', render: (user) => <ContactCell user={user} /> },
     { key: 'role', header: 'Papel', render: (user) => <RoleBadge role={user.role} /> },
     { key: 'status', header: 'Status', render: (user) => <StatusBadge status={user.status} /> },
+    {
+      key: 'lastLogin',
+      header: 'Último acesso',
+      render: (user) => <LastLoginCell user={user} />,
+    },
     { key: 'createdAt', header: 'Cadastro', render: (user) => formatDate(user.createdAt) },
     { key: 'actions', header: 'Ações', render: (user) => <RowActions user={user} {...actions} /> },
   ];
@@ -130,7 +164,7 @@ export function UsersTable({ users, onView, onEdit, onToggleStatus, onDelete }: 
   return (
     <DataTable
       caption="Usuários"
-      columns={buildColumns({ onView, onEdit, onToggleStatus, onDelete })}
+      columns={buildColumns({ onEdit, onToggleStatus, onDelete })}
       rows={users}
       getRowKey={(user) => user.id}
       emptyMessage="Nenhum usuário encontrado"

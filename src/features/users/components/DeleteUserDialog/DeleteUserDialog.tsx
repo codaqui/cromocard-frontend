@@ -1,3 +1,6 @@
+import { useState } from 'react';
+
+import { Checkbox } from '@/components/Checkbox/Checkbox';
 import { ConfirmDialog } from '@/components/ConfirmDialog/ConfirmDialog';
 import { Icon } from '@/components/Icon/Icon';
 
@@ -18,6 +21,11 @@ interface DeleteUserDialogContentProps {
   onSaved: () => void;
 }
 
+function confirmationTextFor(user: UserSummary): string {
+  const firstName = user.name.trim().split(/\s+/)[0]!;
+  return `EXCLUIR-${firstName.toUpperCase()}`;
+}
+
 function DeleteUserDialogMessage({ user }: { user: UserSummary }) {
   return (
     <div className={styles.message}>
@@ -35,12 +43,37 @@ function DeleteUserDialogMessage({ user }: { user: UserSummary }) {
   );
 }
 
-function DeleteUserDialogContent({ user, onClose, onSaved }: DeleteUserDialogContentProps) {
+function DeleteUserDialogAwareCheckbox({
+  user,
+  aware,
+  onAwareChange,
+}: {
+  user: UserSummary;
+  aware: boolean;
+  onAwareChange: (aware: boolean) => void;
+}) {
+  return (
+    <Checkbox
+      label={`Estou ciente de que a conta de ${user.name} será excluída`}
+      checked={aware}
+      onChange={(event) => onAwareChange(event.target.checked)}
+    />
+  );
+}
+
+function useDeleteConfirm(user: UserSummary, onSaved: () => void) {
   const removeUser = useRemoveUser();
+  const [aware, setAware] = useState(false);
 
   const confirm = (reason?: string) => {
     removeUser.mutate({ id: user.id, input: toReasonInput(reason) }, { onSuccess: onSaved });
   };
+
+  return { removeUser, aware, setAware, confirm };
+}
+
+function DeleteUserDialogContent({ user, onClose, onSaved }: DeleteUserDialogContentProps) {
+  const { removeUser, aware, setAware, confirm } = useDeleteConfirm(user, onSaved);
 
   return (
     <ConfirmDialog
@@ -50,7 +83,11 @@ function DeleteUserDialogContent({ user, onClose, onSaved }: DeleteUserDialogCon
       confirmLabel="Excluir"
       tone="danger"
       requireReason
-      confirmationText={user.name}
+      confirmationText={confirmationTextFor(user)}
+      extraFields={
+        <DeleteUserDialogAwareCheckbox user={user} aware={aware} onAwareChange={setAware} />
+      }
+      canConfirm={aware}
       isConfirming={removeUser.isPending}
       errorMessage={removeUser.error?.message}
       onConfirm={confirm}

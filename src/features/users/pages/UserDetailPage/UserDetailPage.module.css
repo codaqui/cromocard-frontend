@@ -26,10 +26,8 @@
 
 .headerCard {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--space-4);
+  flex-direction: column;
+  gap: var(--space-5);
   padding: var(--space-5);
   border: 1px solid var(--color-card-border);
   border-radius: var(--radius-md);
@@ -131,9 +129,413 @@
   overflow-wrap: anywhere;
 }
 
+.fieldHint {
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.addressList,
+.logList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  list-style: none;
+}
+
+.addressItem,
+.logItem {
+  padding: var(--space-3);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-sm);
+}
+
+.logHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.logAction {
+  font-weight: 600;
+}
+
 @media (max-width: 48rem) {
   .headerCard {
     flex-direction: column;
     align-items: flex-start;
   }
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.breadcrumbCurrent {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-info-soft);
+  color: var(--color-info);
+}
+
+.lastAccessPill {
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.headerTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.profileMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+}
+
+.metaDivider {
+  padding-left: var(--space-5);
+  border-left: 1px solid var(--color-card-border);
+}
+
+.metaLabel {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.metaValue {
+  font-weight: 600;
+}
+
+.registeredAt {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-warning);
+  font-size: var(--font-size-sm);
+}
+
+.statusControl {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-high);
+}
+
+.statusOption {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border: 0;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.statusOption[aria-pressed='true'] {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+  cursor: default;
+}
+
+.statusOption:disabled:not([aria-pressed='true']) {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: var(--space-6);
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.sectionAside {
+  margin-left: auto;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.field {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-high);
+}
+
+.actionList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  list-style: none;
+}
+
+.actionRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-high);
+}
+
+.actionText {
+  flex: 1;
+  min-width: 0;
+}
+
+.actionButtons {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--space-2);
+}
+
+.actionButtons > button {
+  min-height: auto;
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  background: var(--color-surface);
+  font-size: var(--font-size-sm);
+}
+
+.actionButtons > button:last-child:not(:first-child) {
+  color: var(--color-success);
+}
+
+@media (max-width: 64rem) {
+  .columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 48rem) {
+  .actionRow {
+    flex-wrap: nowrap;
+  }
+}
+
+/* Cores e proporções medidas no Figma 649-1164 / 649-796 */
+.headerCard,
+.section {
+  border: 0;
+  background: var(--color-surface);
+  box-shadow: none;
+}
+
+.headerCard {
+  background: linear-gradient(100deg, var(--color-surface) 55%, var(--color-surface-glow) 100%);
+}
+
+.field,
+.actionRow,
+.logItem,
+.addressItem {
+  border: 0;
+  background: var(--color-surface-raised);
+}
+
+.statusControl {
+  background: var(--color-surface-sunken);
+}
+
+.sectionHeader .sectionIcon {
+  width: auto;
+  height: auto;
+  background: transparent;
+  color: var(--color-info);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-lg);
+}
+
+.actionTile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--size-control);
+  height: var(--size-control);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-high);
+  color: var(--color-info);
+}
+
+.avatar {
+  width: var(--size-avatar-xl);
+  height: var(--size-avatar-xl);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-high);
+  font-size: var(--font-size-xl);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+  color: var(--color-info);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-caps);
+  text-transform: uppercase;
+}
+
+.pillSoft {
+  text-transform: none;
+  letter-spacing: normal;
+  background: transparent;
+  color: var(--color-success);
+}
+
+.fieldWithPill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.statusDot {
+  width: var(--size-status-dot);
+  height: var(--size-status-dot);
+  border-radius: 50%;
+  background: currentcolor;
+}
+
+.logAction {
+  color: var(--color-success);
+  font-size: var(--font-size-sm);
+}
+
+.roleTag {
+  color: var(--color-info);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-caps);
+  text-transform: uppercase;
+}
+
+/* Dados Pessoais como no Figma: nome e @ lado a lado, ID na largura toda, CPF/cadastro/papel em três colunas */
+.personalGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.personalGrid > :nth-child(-n + 2) {
+  grid-column: span 3;
+}
+
+.personalGrid > :nth-child(3) {
+  grid-column: 1 / -1;
+}
+
+.personalGrid > :nth-child(n + 4) {
+  grid-column: span 2;
+}
+
+.fieldWithPill .pill {
+  white-space: nowrap;
+}
+
+@media (max-width: 48rem) {
+  .personalGrid > * {
+    grid-column: 1 / -1;
+  }
+}
+
+.identity,
+.identityText {
+  min-width: 0;
+}
+
+.identityText {
+  flex: 1;
+}
+
+@media (max-width: 48rem) {
+  .headerCard,
+  .section {
+    padding: var(--space-4);
+  }
+
+  .avatar {
+    width: var(--size-avatar-lg);
+    height: var(--size-avatar-lg);
+    font-size: var(--font-size-lg);
+  }
+
+  .headerCard,
+  .headerTop {
+    min-width: 0;
+  }
+
+  .name {
+    font-size: var(--font-size-lg);
+    overflow-wrap: anywhere;
+  }
+
+  .statusControl {
+    width: 100%;
+    flex-wrap: nowrap;
+  }
+
+  .statusOption {
+    flex: 1;
+    justify-content: center;
+    min-width: 0;
+    padding: var(--space-2) var(--space-1);
+    font-size: var(--font-size-xs);
+  }
+
+  .profileMeta {
+    gap: var(--space-3);
+  }
+
+  .metaDivider {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+/* Tipografia dos campos como no Figma: rótulo pequeno em caixa alta e valor em corpo menor */
+.field .fieldValue,
+.actionRow .fieldValue,
+.logItem .fieldValue,
+.addressItem .fieldValue {
+  font-size: var(--font-size-sm);
+}
+
+.field .fieldHint,
+.actionRow .fieldHint,
+.logItem .fieldHint,
+.addressItem .fieldHint {
+  font-size: var(--font-size-xs);
 }

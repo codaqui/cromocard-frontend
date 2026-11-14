@@ -14,6 +14,12 @@
   gap: var(--space-4);
 }
 
+@media (max-width: 25rem) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .footer {
   display: flex;
   justify-content: flex-end;
@@ -24,5 +30,21 @@
 @media (max-width: 48rem) {
   .grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 25rem) {
+  .footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+  }
+
+  .footerButtons {
+    justify-content: stretch;
+  }
+
+  .footerButtons > * {
+    flex: 1;
   }
 }

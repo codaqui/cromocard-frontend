@@ -7,7 +7,7 @@ import { paths } from '@/routes/paths';
 import { renderWithProviders } from '@/test/renderWithProviders';
 
 import { usersApi } from '../../users.api';
-import type { UserSummary } from '../../users.types';
+import type { UserDetail, UserSummary } from '../../users.types';
 import { useUserFormSubmission } from '../../hooks/useUserFormSubmission';
 import { UserFormModal } from './UserFormModal';
 
@@ -45,6 +45,22 @@ function buildUser(overrides: Partial<UserSummary> = {}): UserSummary {
     status: 'ACTIVE',
     emailVerified: true,
     createdAt: '2026-10-01T00:00:00.000Z',
+    username: null,
+    phone: null,
+    lastLoginAt: null,
+    lastLoginIp: null,
+    ...overrides,
+  };
+}
+
+function buildDetail(overrides: Partial<UserDetail> = {}): UserDetail {
+  return {
+    ...buildUser(),
+    cpf: null,
+    oauthProvider: null,
+    activationPending: false,
+    addresses: [],
+    adminActions: [],
     ...overrides,
   };
 }
@@ -85,14 +101,22 @@ describe('UserFormModal', () => {
 
     await vi.waitFor(() =>
       expect(usersApi.create).toHaveBeenCalledWith(
-        { name: 'Bia Vendedora', email: 'bia@cromocard.dev', role: 'SELLER' },
+        {
+          name: 'Bia Vendedora',
+          email: 'bia@cromocard.dev',
+          role: 'SELLER',
+          username: undefined,
+          cpf: undefined,
+          phone: undefined,
+          sendActivation: true,
+        },
         expect.anything(),
       ),
     );
     await vi.waitFor(() => expect(onSaved).toHaveBeenCalled());
   });
 
-  it('CA3: edita um usuário existente', async () => {
+  it('CA3: edita um usuário existente sem mandar sendActivation', async () => {
     const user = buildUser();
     vi.mocked(usersApi.update).mockResolvedValue({ ...user, name: 'Ana Silva' });
     const { onSaved } = renderModal(user);
@@ -103,13 +127,61 @@ describe('UserFormModal', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }));
 
     await vi.waitFor(() =>
-      expect(usersApi.update).toHaveBeenCalledWith(user.id, {
-        name: 'Ana Silva',
-        email: user.email,
-        role: user.role,
-      }),
+      expect(usersApi.update).toHaveBeenCalledWith(user.id, { name: 'Ana Silva' }),
     );
     await vi.waitFor(() => expect(onSaved).toHaveBeenCalled());
+  });
+
+  it('R4 (CCD098): editar sem mexer em @, CPF e telefone não os manda, e o que existe fica', async () => {
+    const user = buildDetail({
+      username: 'ana.colecionadora',
+      cpf: '52998224725',
+      phone: '11912345678',
+    });
+    vi.mocked(usersApi.update).mockResolvedValue(user);
+    renderModal(user);
+
+    await userEvent.clear(screen.getByLabelText('Nome completo'));
+    await userEvent.type(screen.getByLabelText('Nome completo'), 'Ana Silva');
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }));
+
+    await vi.waitFor(() =>
+      expect(usersApi.update).toHaveBeenCalledWith(user.id, { name: 'Ana Silva' }),
+    );
+  });
+
+  it('R4 (CCD098): editar pela lista, sem o CPF carregado, não apaga o CPF', async () => {
+    const user = buildUser();
+    vi.mocked(usersApi.update).mockResolvedValue(user);
+    const { onSaved } = renderModal(user);
+
+    expect(screen.getByLabelText('CPF')).toHaveValue('');
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }));
+
+    await vi.waitFor(() => expect(onSaved).toHaveBeenCalled());
+    expect(usersApi.update).not.toHaveBeenCalled();
+  });
+
+  it('R4 (CCD098): apagar @, CPF e telefone no formulário manda null para a API', async () => {
+    const user = buildDetail({
+      username: 'ana.colecionadora',
+      cpf: '52998224725',
+      phone: '11912345678',
+    });
+    vi.mocked(usersApi.update).mockResolvedValue(user);
+    renderModal(user);
+
+    await userEvent.clear(screen.getByLabelText('Nome de usuário'));
+    await userEvent.clear(screen.getByLabelText('CPF'));
+    await userEvent.clear(screen.getByLabelText('Telefone com DDD'));
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }));
+
+    await vi.waitFor(() =>
+      expect(usersApi.update).toHaveBeenCalledWith(
+        user.id,
+        expect.objectContaining({ username: null, cpf: null, phone: null }),
+      ),
+    );
   });
 
   it('mostra o erro por campo quando a API responde 409 no e-mail', async () => {
@@ -158,6 +230,98 @@ describe('UserFormModal', () => {
     await vi.waitFor(() => expect(onSaved).toHaveBeenCalled());
   });
 
+  it('R4: cria com @, CPF e telefone normalizados', async () => {
+    vi.mocked(usersApi.create).mockResolvedValue(buildUser({ role: 'SELLER' }));
+    renderModal(null);
+
+    await fillIdentity('Bia Vendedora', 'bia@cromocard.dev');
+    await userEvent.selectOptions(screen.getByLabelText('Papel'), 'SELLER');
+    await userEvent.type(screen.getByLabelText('Nome de usuário'), '@bia.vendas');
+    await userEvent.type(screen.getByLabelText('CPF'), '529.982.247-25');
+    await userEvent.type(screen.getByLabelText('Telefone com DDD'), '(11) 91234-5678');
+    await userEvent.click(screen.getByRole('button', { name: 'Cadastrar Usuário' }));
+
+    await vi.waitFor(() =>
+      expect(usersApi.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          username: 'bia.vendas',
+          cpf: '52998224725',
+          phone: '11912345678',
+        }),
+        expect.anything(),
+      ),
+    );
+  });
+
+  it('R5: desmarcar o envio do link manda sendActivation false', async () => {
+    vi.mocked(usersApi.create).mockResolvedValue(buildUser({ role: 'SELLER' }));
+    renderModal(null);
+
+    await fillIdentity('Bia Vendedora', 'bia@cromocard.dev');
+    await userEvent.selectOptions(screen.getByLabelText('Papel'), 'SELLER');
+    await userEvent.click(screen.getByLabelText('Enviar link de ativação de conta por e-mail'));
+    await userEvent.click(screen.getByRole('button', { name: 'Cadastrar Usuário' }));
+
+    await vi.waitFor(() =>
+      expect(usersApi.create).toHaveBeenCalledWith(
+        expect.objectContaining({ sendActivation: false }),
+        expect.anything(),
+      ),
+    );
+  });
+
+  it('R6: @ já cadastrado mostra o erro no campo', async () => {
+    vi.mocked(usersApi.create).mockRejectedValue(
+      new ApiError({
+        status: 409,
+        code: 'USERNAME_TAKEN',
+        message: 'Este nome de usuário já está em uso',
+        details: [{ field: 'username', message: 'Este nome de usuário já está em uso' }],
+      }),
+    );
+    renderModal(null);
+
+    await fillIdentity('Bia', 'bia@cromocard.dev');
+    await userEvent.selectOptions(screen.getByLabelText('Papel'), 'SELLER');
+    await userEvent.type(screen.getByLabelText('Nome de usuário'), 'bia');
+    await userEvent.click(screen.getByRole('button', { name: 'Cadastrar Usuário' }));
+
+    expect(await screen.findByText('Este nome de usuário já está em uso')).toBeInTheDocument();
+  });
+
+  it('R6: CPF já cadastrado mostra o erro no campo', async () => {
+    vi.mocked(usersApi.create).mockRejectedValue(
+      new ApiError({
+        status: 409,
+        code: 'CPF_TAKEN',
+        message: 'Já existe um usuário cadastrado com este CPF',
+        details: [{ field: 'cpf', message: 'Já existe um usuário cadastrado com este CPF' }],
+      }),
+    );
+    renderModal(null);
+
+    await fillIdentity('Bia', 'bia@cromocard.dev');
+    await userEvent.selectOptions(screen.getByLabelText('Papel'), 'SELLER');
+    await userEvent.type(screen.getByLabelText('CPF'), '529.982.247-25');
+    await userEvent.click(screen.getByRole('button', { name: 'Cadastrar Usuário' }));
+
+    expect(
+      await screen.findByText('Já existe um usuário cadastrado com este CPF'),
+    ).toBeInTheDocument();
+  });
+
+  it('R7: CPF inválido não envia e mostra o erro no campo', async () => {
+    renderModal(null);
+
+    await fillIdentity('Bia', 'bia@cromocard.dev');
+    await userEvent.selectOptions(screen.getByLabelText('Papel'), 'SELLER');
+    await userEvent.type(screen.getByLabelText('CPF'), '111.111.111-11');
+    await userEvent.click(screen.getByRole('button', { name: 'Cadastrar Usuário' }));
+
+    expect(await screen.findByText('CPF inválido')).toBeInTheDocument();
+    expect(usersApi.create).not.toHaveBeenCalled();
+  });
+
   it('CA8: cancelar fecha sem gravar', async () => {
     const { onClose } = renderModal(null);
 
@@ -182,6 +346,7 @@ describe('UserFormModal', () => {
     vi.mocked(usersApi.update).mockReturnValue(new Promise(() => undefined));
     renderModal(buildUser());
 
+    await userEvent.type(screen.getByLabelText('Nome completo'), ' Silva');
     await userEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }));
 
     expect(await screen.findByRole('button', { name: 'Salvando…' })).toBeDisabled();

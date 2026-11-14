@@ -52,3 +52,9 @@
 .input[aria-invalid='true'] {
   border-color: var(--color-danger);
 }
+
+@media (max-width: 25rem) {
+  .input {
+    font-size: var(--font-size-md);
+  }
+}

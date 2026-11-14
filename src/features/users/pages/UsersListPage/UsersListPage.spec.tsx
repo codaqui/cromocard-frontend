@@ -29,6 +29,10 @@ function buildUser(overrides: Partial<UserSummary> = {}): UserSummary {
     status: 'ACTIVE',
     emailVerified: true,
     createdAt: '2026-10-01T00:00:00.000Z',
+    username: null,
+    phone: null,
+    lastLoginAt: null,
+    lastLoginIp: null,
     ...overrides,
   };
 }
@@ -59,6 +63,42 @@ describe('UsersListPage', () => {
     vi.mocked(usersApi.list).mockReset();
   });
 
+  it('R2 (CCD098): mostra o último acesso de hoje com a hora', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-11-12T18:00:00'));
+    mockList([buildUser({ name: 'Bia Vendedora', lastLoginAt: '2026-11-12T14:28:00' })]);
+    renderPage();
+
+    expect(await screen.findByText('Hoje, 14:28')).toBeInTheDocument();
+    vi.useRealTimers();
+  });
+
+  it('CA1 (CCD098): lista mostra @, telefone e último acesso', async () => {
+    mockList([
+      buildUser({
+        name: 'Bia Vendedora',
+        username: 'bia.vendas',
+        phone: '11912345678',
+        lastLoginAt: '2026-11-01T10:00:00.000Z',
+        lastLoginIp: '189.40.12.91',
+      }),
+    ]);
+    renderPage();
+
+    expect(await screen.findByText(/@bia\.vendas/)).toBeInTheDocument();
+    expect(screen.getByText('+55 (11) 91234-5678')).toBeInTheDocument();
+    expect(screen.getByText('189.40.12.91')).toBeInTheDocument();
+  });
+
+  it('CA1 (CCD098): sem @, telefone ou último acesso mostra os vazios', async () => {
+    mockList([buildUser({ name: 'Sem Dados' })]);
+    renderPage();
+
+    expect(await screen.findByText('Sem Dados')).toBeInTheDocument();
+    expect(screen.getByText('Sem telefone verif.')).toBeInTheDocument();
+    expect(screen.getByText('Nunca')).toBeInTheDocument();
+  });
+
   it('CA1: lista os usuários com papel e status', async () => {
     mockList([buildUser({ name: 'Bia Vendedora', role: 'SELLER', status: 'SUSPENDED' })]);
     renderPage();
@@ -73,9 +113,26 @@ describe('UsersListPage', () => {
     renderPage();
     await screen.findByText('Nenhum usuário encontrado');
 
-    await userEvent.type(screen.getByLabelText('Buscar por nome ou e-mail'), 'ana');
+    await userEvent.type(
+      screen.getByLabelText('Buscar por nome, @, e-mail, CPF, CNPJ ou ID (#USR-)'),
+      'ana',
+    );
 
     await vi.waitFor(() => expect(lastListCall()).toMatchObject({ q: 'ana' }));
+  });
+
+  it('CA2 (CCD098): busca por CPF mostra só o usuário dono do CPF', async () => {
+    mockList([buildUser({ name: 'Ana Colecionadora' })]);
+    renderPage();
+    await screen.findByText('Ana Colecionadora');
+
+    await userEvent.type(
+      screen.getByLabelText('Buscar por nome, @, e-mail, CPF, CNPJ ou ID (#USR-)'),
+      '529.982.247-25',
+    );
+
+    await vi.waitFor(() => expect(lastListCall()).toMatchObject({ q: '529.982.247-25' }));
+    expect(await screen.findByText('Ana Colecionadora')).toBeInTheDocument();
   });
 
   it('CA1: filtra por papel', async () => {
@@ -121,17 +178,6 @@ describe('UsersListPage', () => {
     await vi.waitFor(() => expect(lastListCall()).toMatchObject({ status: 'SUSPENDED' }));
   });
 
-  it('R4: o botão Visualizar leva para a tela de detalhe', async () => {
-    const user = buildUser();
-    mockList([user]);
-    renderPage();
-    await screen.findByText(user.name);
-
-    await userEvent.click(screen.getByRole('button', { name: 'Visualizar' }));
-
-    expect(await screen.findByText('Tela de detalhe')).toBeInTheDocument();
-  });
-
   it('R4: clicar na linha leva para a tela de detalhe', async () => {
     const user = buildUser();
     mockList([user]);
@@ -169,7 +215,73 @@ describe('UsersListPage - toasts das ações administrativas', () => {
     await userEvent.selectOptions(within(dialog).getByLabelText('Papel'), 'SELLER');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Cadastrar Usuário' }));
 
+    expect(
+      await screen.findByText(
+        'Usuário cadastrado com sucesso. O link de ativação foi enviado para bia@cromocard.dev.',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('cria um usuário sem marcar o envio do link e o toast não cita o e-mail', async () => {
+    mockList([]);
+    vi.mocked(usersApi.create).mockResolvedValue(
+      buildUser({ name: 'Bia Vendedora', email: 'bia@cromocard.dev', role: 'SELLER' }),
+    );
+    renderPage();
+    await screen.findByText('Nenhum usuário encontrado');
+
+    await userEvent.click(screen.getByRole('button', { name: '+ Novo Usuário' }));
+    const dialog = screen.getByRole('dialog');
+    await userEvent.type(within(dialog).getByLabelText('Nome completo'), 'Bia Vendedora');
+    await userEvent.type(within(dialog).getByLabelText('E-mail'), 'bia@cromocard.dev');
+    await userEvent.selectOptions(within(dialog).getByLabelText('Papel'), 'SELLER');
+    await userEvent.click(
+      within(dialog).getByLabelText('Enviar link de ativação de conta por e-mail'),
+    );
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Cadastrar Usuário' }));
+
     expect(await screen.findByText('Usuário cadastrado com sucesso.')).toBeInTheDocument();
+  });
+
+  it('cancelar o cadastro fecha o modal sem chamar a API', async () => {
+    mockList([]);
+    renderPage();
+    await screen.findByText('Nenhum usuário encontrado');
+
+    await userEvent.click(screen.getByRole('button', { name: '+ Novo Usuário' }));
+    await userEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancelar' }),
+    );
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(usersApi.create).not.toHaveBeenCalled();
+  });
+
+  it('fecha o toast de cadastro pelo botão de fechar', async () => {
+    mockList([]);
+    vi.mocked(usersApi.create).mockResolvedValue(
+      buildUser({ name: 'Bia Vendedora', email: 'bia@cromocard.dev', role: 'SELLER' }),
+    );
+    renderPage();
+    await screen.findByText('Nenhum usuário encontrado');
+
+    await userEvent.click(screen.getByRole('button', { name: '+ Novo Usuário' }));
+    const dialog = screen.getByRole('dialog');
+    await userEvent.type(within(dialog).getByLabelText('Nome completo'), 'Bia Vendedora');
+    await userEvent.type(within(dialog).getByLabelText('E-mail'), 'bia@cromocard.dev');
+    await userEvent.selectOptions(within(dialog).getByLabelText('Papel'), 'SELLER');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Cadastrar Usuário' }));
+    await screen.findByText(
+      'Usuário cadastrado com sucesso. O link de ativação foi enviado para bia@cromocard.dev.',
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Fechar aviso' }));
+
+    expect(
+      screen.queryByText(
+        'Usuário cadastrado com sucesso. O link de ativação foi enviado para bia@cromocard.dev.',
+      ),
+    ).not.toBeInTheDocument();
   });
 
   it('CA3: edita um usuário e mostra o toast de atualizado', async () => {
@@ -213,8 +325,7 @@ describe('UsersListPage - toasts das ações administrativas', () => {
     const table = screen.getByRole('table');
     await userEvent.click(within(table).getByRole('button', { name: 'Reativar' }));
     const dialog = screen.getByRole('alertdialog');
-    await userEvent.type(within(dialog).getByLabelText('Motivo'), 'Prazo da suspensão terminou');
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Reativar' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Reativar usuário' }));
 
     expect(await screen.findByText('Usuário reativado com sucesso.')).toBeInTheDocument();
   });
@@ -230,8 +341,11 @@ describe('UsersListPage - toasts das ações administrativas', () => {
     const dialog = screen.getByRole('alertdialog');
     await userEvent.type(within(dialog).getByLabelText('Motivo'), 'Pedido do titular');
     await userEvent.type(
-      within(dialog).getByLabelText(`Digite "${user.name}" para confirmar`),
-      user.name,
+      within(dialog).getByLabelText('Digite "EXCLUIR-ANA" para confirmar'),
+      'EXCLUIR-ANA',
+    );
+    await userEvent.click(
+      within(dialog).getByLabelText(`Estou ciente de que a conta de ${user.name} será excluída`),
     );
     await userEvent.click(within(dialog).getByRole('button', { name: 'Excluir' }));
 
