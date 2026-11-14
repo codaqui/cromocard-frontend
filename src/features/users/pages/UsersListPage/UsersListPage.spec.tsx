@@ -325,7 +325,7 @@ describe('UsersListPage - toasts das ações administrativas', () => {
     const table = screen.getByRole('table');
     await userEvent.click(within(table).getByRole('button', { name: 'Reativar' }));
     const dialog = screen.getByRole('alertdialog');
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Reativar' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Reativar usuário' }));
 
     expect(await screen.findByText('Usuário reativado com sucesso.')).toBeInTheDocument();
   });

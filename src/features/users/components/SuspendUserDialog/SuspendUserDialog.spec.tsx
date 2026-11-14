@@ -77,9 +77,9 @@ describe('SuspendUserDialog', () => {
     vi.mocked(usersApi.reactivate).mockResolvedValue({ ...user, status: 'ACTIVE' });
     const { onSaved } = renderDialog(user);
 
-    expect(screen.getByRole('alertdialog', { name: 'Reativar usuário' })).toBeInTheDocument();
+    expect(screen.getByRole('alertdialog', { name: 'Reativar usuário?' })).toBeInTheDocument();
     expect(screen.queryByLabelText('Motivo')).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Reativar' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Reativar usuário' }));
 
     await vi.waitFor(() => expect(usersApi.reactivate).toHaveBeenCalledWith(user.id));
     await vi.waitFor(() => expect(onSaved).toHaveBeenCalled());

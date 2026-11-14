@@ -20,9 +20,9 @@ interface SuspendCopy {
 function copyFor(user: UserSummary): SuspendCopy {
   if (user.status === 'SUSPENDED') {
     return {
-      title: 'Reativar usuário',
-      message: `${user.name} volta a poder entrar na plataforma.`,
-      confirmLabel: 'Reativar',
+      title: 'Reativar usuário?',
+      message: `${user.name}${user.username ? ` (@${user.username})` : ''} está Suspenso. Ao reativar, o status volta para Ativo e a ação fica registrada no log de auditoria.`,
+      confirmLabel: 'Reativar usuário',
       tone: 'primary',
     };
   }

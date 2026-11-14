@@ -225,7 +225,7 @@ describe('UserDetailPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Ativo' }));
     const dialog = screen.getByRole('alertdialog');
     expect(within(dialog).queryByLabelText('Motivo')).not.toBeInTheDocument();
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Reativar' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Reativar usuário' }));
 
     expect(usersApi.reactivate).toHaveBeenCalledWith(user.id);
     expect(await screen.findByText('Usuário reativado com sucesso.')).toBeInTheDocument();
