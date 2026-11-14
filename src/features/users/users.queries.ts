@@ -8,12 +8,19 @@ import type { ListUsersParams } from './users.types';
 export const usersKeys = {
   all: ['users'] as const,
   me: () => [...usersKeys.all, 'me'] as const,
-  list: (params: ListUsersParams) => [...usersKeys.all, 'list', params] as const,
+  lists: () => [...usersKeys.all, 'list'] as const,
+  list: (params: ListUsersParams) => [...usersKeys.lists(), params] as const,
   detail: (id: string) => [...usersKeys.all, 'detail', id] as const,
 };
 
-function invalidateUsersList(queryClient: QueryClient) {
+function invalidateAllUsers(queryClient: QueryClient) {
   return queryClient.invalidateQueries({ queryKey: usersKeys.all });
+}
+
+/** Depois de excluir, o detalhe responderia 404: recarrega só as listas e deixa o detalhe vencido, sem buscar. */
+function invalidateAfterRemoval(queryClient: QueryClient, id: string) {
+  void queryClient.invalidateQueries({ queryKey: usersKeys.detail(id), refetchType: 'none' });
+  return queryClient.invalidateQueries({ queryKey: usersKeys.lists() });
 }
 
 export function useUsersList(params: ListUsersParams) {
@@ -50,7 +57,7 @@ export function useCreateUser() {
 
   return useMutation({
     mutationFn: usersApi.create,
-    onSuccess: () => invalidateUsersList(queryClient),
+    onSuccess: () => invalidateAllUsers(queryClient),
   });
 }
 
@@ -60,7 +67,7 @@ export function useUpdateUser() {
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: AdminUpdateUserInput }) =>
       usersApi.update(id, input),
-    onSuccess: () => invalidateUsersList(queryClient),
+    onSuccess: () => invalidateAllUsers(queryClient),
   });
 }
 
@@ -69,7 +76,7 @@ export function useSuspendUser() {
 
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: ReasonInput }) => usersApi.suspend(id, input),
-    onSuccess: () => invalidateUsersList(queryClient),
+    onSuccess: () => invalidateAllUsers(queryClient),
   });
 }
 
@@ -79,7 +86,7 @@ export function useReactivateUser() {
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: ReasonInput }) =>
       usersApi.reactivate(id, input),
-    onSuccess: () => invalidateUsersList(queryClient),
+    onSuccess: () => invalidateAllUsers(queryClient),
   });
 }
 
@@ -88,6 +95,6 @@ export function useRemoveUser() {
 
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: ReasonInput }) => usersApi.remove(id, input),
-    onSuccess: () => invalidateUsersList(queryClient),
+    onSuccess: (_, { id }) => invalidateAfterRemoval(queryClient, id),
   });
 }

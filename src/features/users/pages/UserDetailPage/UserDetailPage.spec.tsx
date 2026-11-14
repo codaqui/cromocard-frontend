@@ -88,9 +88,9 @@ describe('UserDetailPage', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Editar' }));
     const dialog = screen.getByRole('dialog');
-    await userEvent.clear(within(dialog).getByLabelText('Nome'));
-    await userEvent.type(within(dialog).getByLabelText('Nome'), 'Ana Silva');
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Salvar' }));
+    await userEvent.clear(within(dialog).getByLabelText('Nome completo'));
+    await userEvent.type(within(dialog).getByLabelText('Nome completo'), 'Ana Silva');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Salvar alterações' }));
 
     expect(await screen.findByText('Usuário atualizado com sucesso.')).toBeInTheDocument();
   });
@@ -109,7 +109,7 @@ describe('UserDetailPage', () => {
     expect(await screen.findByText('Usuário suspenso com sucesso.')).toBeInTheDocument();
   });
 
-  it('exclui o usuário e volta para a lista', async () => {
+  it('CA6: exclui o usuário e volta para a lista, mesmo com o detalhe respondendo 404 depois', async () => {
     const user = buildUser();
     vi.mocked(usersApi.list).mockResolvedValue({
       data: [],
@@ -117,7 +117,10 @@ describe('UserDetailPage', () => {
     });
     renderDetail(user);
     await screen.findByRole('heading', { name: user.name });
-    vi.mocked(usersApi.remove).mockResolvedValue(undefined);
+    vi.mocked(usersApi.remove).mockImplementation(() => {
+      vi.mocked(usersApi.getById).mockRejectedValue(new Error('Usuário não encontrado'));
+      return Promise.resolve(undefined);
+    });
 
     await userEvent.click(screen.getByRole('button', { name: 'Excluir' }));
     const dialog = screen.getByRole('alertdialog');
@@ -129,6 +132,17 @@ describe('UserDetailPage', () => {
     await userEvent.click(within(dialog).getByRole('button', { name: 'Excluir' }));
 
     expect(await screen.findByText('Nenhum usuário encontrado')).toBeInTheDocument();
+  });
+
+  it('sem id na rota, não quebra: busca com id vazio e mostra o resultado', async () => {
+    vi.mocked(usersApi.getById).mockRejectedValue(new Error('Usuário não encontrado'));
+    renderWithProviders({
+      routes: [{ path: '/sem-id', element: <UserDetailPage /> }],
+      initialPath: '/sem-id',
+    });
+
+    expect(await screen.findByText('Usuário não encontrado')).toBeInTheDocument();
+    expect(usersApi.getById).toHaveBeenCalledWith('');
   });
 
   it('R4: erro ao carregar o usuário mostra o estado de erro', async () => {
