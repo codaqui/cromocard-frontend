@@ -27,6 +27,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0   # a cobertura compara o PR com a branch base
 
       - uses: actions/setup-node@v5
         with:
@@ -47,6 +49,12 @@ jobs:
 
       - name: Testes
         run: npm test
+
+      - name: Cobertura dos arquivos alterados (mínimo de 90%, ADR-060)
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: origin/${{ github.base_ref }}
+        run: bash .github/scripts/coverage-changed-files.sh "$BASE_REF"
 
       - name: Build
         run: npm run build
