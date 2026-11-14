@@ -108,6 +108,8 @@ jobs:
           labels: org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
           cache-from: type=gha,scope=web
           cache-to: type=gha,mode=max,scope=web
+          # O estágio final roda o apk upgrade: com cache, as correções novas do Alpine não entram e o Trivy reprova.
+          no-cache-filters: runtime
 
       - name: Conferir que a imagem roda como usuário não-root
         run: |

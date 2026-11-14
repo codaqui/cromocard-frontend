@@ -8,8 +8,9 @@ COPY . .
 RUN npm run build
 
 # nginx sem root, escutando na 8080 (porta usada pelo túnel no compose).
-FROM nginxinc/nginx-unprivileged:1.30-alpine
+FROM nginxinc/nginx-unprivileged:1.30-alpine AS runtime
 # A imagem base sai antes das correções do Alpine; sem atualizar, o Trivy do CI reprova (ADR-055, decisão 6).
+# O CI refaz este estágio sem cache (no-cache-filters: runtime), senão o apk upgrade antigo seria reaproveitado.
 USER root
 RUN apk upgrade --no-cache
 USER 101
