@@ -1,1 +1,1 @@
-export { communityBackofficeRoutes } from './community.routes';
+export { communityBackofficeRoutes, communityRoutes } from './community.routes';

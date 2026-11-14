@@ -7,13 +7,13 @@ import { renderWithProviders } from '@/test/renderWithProviders';
 import { PublicLayout } from './PublicLayout';
 
 describe('PublicLayout', () => {
-  it('CCD003 R2: a Home oferece Cadastrar e Entrar', () => {
+  it('CCD003 R2: a Home oferece Cadastrar e Login', () => {
     renderWithProviders({
       routes: [{ path: paths.home, element: <PublicLayout /> }],
       initialPath: paths.home,
     });
 
     expect(screen.getByRole('link', { name: 'Cadastrar' })).toHaveAttribute('href', paths.register);
-    expect(screen.getByRole('link', { name: 'Entrar' })).toHaveAttribute('href', paths.login);
+    expect(screen.getByRole('link', { name: 'Login' })).toHaveAttribute('href', paths.login);
   });
 });

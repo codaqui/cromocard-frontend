@@ -1,21 +1,22 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 
+import { BrandLogo } from '@/components/BrandLogo/BrandLogo';
+
 import styles from './Header.module.css';
 
 interface HeaderProps {
   homePath: string;
-  brand?: ReactNode;
   children?: ReactNode;
 }
 
-export function Header({ homePath, brand = 'CromoCard', children }: HeaderProps) {
+export function Header({ homePath, children }: HeaderProps) {
   return (
     <header className={styles.header}>
       <Link to={homePath} className={styles.brand} aria-label="CromoCard">
-        {brand}
+        <BrandLogo />
       </Link>
-      <nav className={styles.nav}>{children}</nav>
+      <div className={styles.actions}>{children}</div>
     </header>
   );
 }

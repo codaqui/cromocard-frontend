@@ -10,3 +10,7 @@ export const communityBackofficeRoutes: RouteObject[] = [
     story: 'CCD062',
   }),
 ];
+
+export const communityRoutes: RouteObject[] = [
+  underConstructionRoute({ path: paths.communities, title: 'Comunidades', story: 'CCD039' }),
+];
