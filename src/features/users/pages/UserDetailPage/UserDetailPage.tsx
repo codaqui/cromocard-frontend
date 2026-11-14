@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 
-import { Badge } from '@/components/Badge/Badge';
 import { Button } from '@/components/Button/Button';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { Icon } from '@/components/Icon/Icon';
@@ -10,6 +9,7 @@ import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { useAuth } from '@/hooks/useAuth';
 import { paths } from '@/routes/paths';
 import { maskCpf } from '@/utils/formatCpf';
+import { cn } from '@/utils/cn';
 import { formatDate } from '@/utils/formatDate';
 import { formatLastAccess } from '@/utils/formatLastAccess';
 import { formatPhone } from '@/utils/formatPhone';
@@ -19,7 +19,7 @@ import { UserFormModalWithToast } from '../../components/UserFormModalWithToast/
 import { useUserActionDialogs } from '../../hooks/useUserActionDialogs';
 import { useUserFormModal } from '../../hooks/useUserFormModal';
 import { initialsOf, shortIdOf } from '../../users.format';
-import { adminActionLabels, roleLabels, roleTones } from '../../users.labels';
+import { adminActionLabels, roleLabels } from '../../users.labels';
 import { useUser } from '../../users.queries';
 import type { AdminActionEntry, UserAddress, UserDetail } from '../../users.types';
 import styles from './UserDetailPage.module.css';
@@ -107,7 +107,7 @@ function Identity({ user }: { user: UserDetail }) {
       </span>
       <div className={styles.identityText}>
         <h1 className={styles.name}>{user.name}</h1>
-        <Badge tone={roleTones[user.role]}>{roleLabels[user.role]}</Badge>
+        <span className={cn(styles.pill, styles.roleTag)}>{roleLabels[user.role]}</span>
         <ProfileMeta user={user} />
       </div>
     </div>
@@ -174,18 +174,33 @@ function Field({
   );
 }
 
+function IdField({ user }: { user: UserDetail }) {
+  return (
+    <div className={cn(styles.field, styles.fieldWithPill)}>
+      <div>
+        <p className={styles.fieldLabel}>ID do usuário</p>
+        <p className={styles.fieldValue}>{shortIdOf(user.id)}</p>
+      </div>
+      <span className={cn(styles.pill, styles.pillSoft)}>
+        <span className={styles.statusDot} aria-hidden="true" />
+        {user.emailVerified ? 'E-mail confirmado' : 'E-mail não confirmado'}
+      </span>
+    </div>
+  );
+}
+
 function PersonalDataCard({ user }: { user: UserDetail }) {
   return (
-    <Card id="personal-data-heading" icon="badge" title="Dados Pessoais">
-      <div className={styles.fields}>
+    <Card
+      id="personal-data-heading"
+      icon="badge"
+      title="Dados Pessoais"
+      aside={user.emailVerified && <span className={styles.pill}>Verificado</span>}
+    >
+      <div className={styles.personalGrid}>
         <Field label="Nome completo">{user.name}</Field>
         <Field label="Nome de usuário">{user.username ? `@${user.username}` : '—'}</Field>
-        <Field
-          label="ID do usuário"
-          hint={user.emailVerified ? 'E-mail confirmado' : 'E-mail não confirmado'}
-        >
-          {shortIdOf(user.id)}
-        </Field>
+        <IdField user={user} />
         <Field label="CPF">{user.cpf ? maskCpf(user.cpf) : '—'}</Field>
         <Field label="Data de cadastro">{formatDate(user.createdAt)}</Field>
         <Field label="Papel">{roleLabels[user.role]}</Field>
@@ -201,9 +216,23 @@ function authMethodLabel(oauthProvider: string | null): string {
     : `Login com ${oauthProvider}`;
 }
 
+function VerifiedTag() {
+  return (
+    <span className={cn(styles.pill, styles.pillSoft)}>
+      <Icon name="check" size={14} />
+      Verificado
+    </span>
+  );
+}
+
 function ContactSecurityCard({ user }: { user: UserDetail }) {
   return (
-    <Card id="contact-security-heading" icon="shield" title="Contato & Segurança">
+    <Card
+      id="contact-security-heading"
+      icon="shield"
+      title="Contato & Segurança"
+      aside={user.emailVerified && <VerifiedTag />}
+    >
       <div className={styles.fields}>
         <Field label="E-mail" hint={user.emailVerified ? 'Verificado via link' : 'Não verificado'}>
           {user.email}
@@ -264,7 +293,7 @@ interface ActionRowProps {
 function ActionRow({ icon, title, description, children }: ActionRowProps) {
   return (
     <li className={styles.actionRow}>
-      <span className={styles.sectionIcon} aria-hidden="true">
+      <span className={styles.actionTile} aria-hidden="true">
         <Icon name={icon} size={18} />
       </span>
       <div className={styles.actionText}>

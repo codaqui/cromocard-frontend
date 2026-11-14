@@ -338,3 +338,204 @@
     flex-wrap: nowrap;
   }
 }
+
+/* Cores e proporções medidas no Figma 649-1164 / 649-796 */
+.headerCard,
+.section {
+  border: 0;
+  background: var(--color-surface);
+  box-shadow: none;
+}
+
+.headerCard {
+  background: linear-gradient(100deg, var(--color-surface) 55%, var(--color-surface-glow) 100%);
+}
+
+.field,
+.actionRow,
+.logItem,
+.addressItem {
+  border: 0;
+  background: var(--color-surface-raised);
+}
+
+.statusControl {
+  background: var(--color-surface-sunken);
+}
+
+.sectionHeader .sectionIcon {
+  width: auto;
+  height: auto;
+  background: transparent;
+  color: var(--color-info);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-lg);
+}
+
+.actionTile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--size-control);
+  height: var(--size-control);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-high);
+  color: var(--color-info);
+}
+
+.avatar {
+  width: var(--size-avatar-xl);
+  height: var(--size-avatar-xl);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-high);
+  font-size: var(--font-size-xl);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+  color: var(--color-info);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-caps);
+  text-transform: uppercase;
+}
+
+.pillSoft {
+  text-transform: none;
+  letter-spacing: normal;
+  background: transparent;
+  color: var(--color-success);
+}
+
+.fieldWithPill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.statusDot {
+  width: var(--size-status-dot);
+  height: var(--size-status-dot);
+  border-radius: 50%;
+  background: currentcolor;
+}
+
+.logAction {
+  color: var(--color-success);
+  font-size: var(--font-size-sm);
+}
+
+.roleTag {
+  color: var(--color-info);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-caps);
+  text-transform: uppercase;
+}
+
+/* Dados Pessoais como no Figma: nome e @ lado a lado, ID na largura toda, CPF/cadastro/papel em três colunas */
+.personalGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.personalGrid > :nth-child(-n + 2) {
+  grid-column: span 3;
+}
+
+.personalGrid > :nth-child(3) {
+  grid-column: 1 / -1;
+}
+
+.personalGrid > :nth-child(n + 4) {
+  grid-column: span 2;
+}
+
+.fieldWithPill .pill {
+  white-space: nowrap;
+}
+
+@media (max-width: 48rem) {
+  .personalGrid > * {
+    grid-column: 1 / -1;
+  }
+}
+
+.identity,
+.identityText {
+  min-width: 0;
+}
+
+.identityText {
+  flex: 1;
+}
+
+@media (max-width: 48rem) {
+  .headerCard,
+  .section {
+    padding: var(--space-4);
+  }
+
+  .avatar {
+    width: var(--size-avatar-lg);
+    height: var(--size-avatar-lg);
+    font-size: var(--font-size-lg);
+  }
+
+  .headerCard,
+  .headerTop {
+    min-width: 0;
+  }
+
+  .name {
+    font-size: var(--font-size-lg);
+    overflow-wrap: anywhere;
+  }
+
+  .statusControl {
+    width: 100%;
+    flex-wrap: nowrap;
+  }
+
+  .statusOption {
+    flex: 1;
+    justify-content: center;
+    min-width: 0;
+    padding: var(--space-2) var(--space-1);
+    font-size: var(--font-size-xs);
+  }
+
+  .profileMeta {
+    gap: var(--space-3);
+  }
+
+  .metaDivider {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+/* Tipografia dos campos como no Figma: rótulo pequeno em caixa alta e valor em corpo menor */
+.field .fieldValue,
+.actionRow .fieldValue,
+.logItem .fieldValue,
+.addressItem .fieldValue {
+  font-size: var(--font-size-sm);
+}
+
+.field .fieldHint,
+.actionRow .fieldHint,
+.logItem .fieldHint,
+.addressItem .fieldHint {
+  font-size: var(--font-size-xs);
+}
