@@ -7,6 +7,8 @@ import { Modal } from '@/components/Modal/Modal';
 import { Select } from '@/components/Select/Select';
 import { TextField } from '@/components/TextField/TextField';
 import type { ApiError } from '@/lib/api-error';
+import { formatCpf } from '@/utils/formatCpf';
+import { formatPhone } from '@/utils/formatPhone';
 
 import { type UserFormDirtyFields, useUserForm } from '../../hooks/useUserForm';
 import { roleSelectOptions } from '../../users.labels';
@@ -16,7 +18,12 @@ import type { EditableUser } from '../../users.types';
 import styles from './UserFormModal.module.css';
 
 function cpfOf(user: EditableUser | null): string {
-  return user && 'cpf' in user ? (user.cpf ?? '') : '';
+  return user && 'cpf' in user && user.cpf ? formatCpf(user.cpf) : '';
+}
+
+/** Telefone com DDD como o Figma mostra no formulário, num formato que a validação aceita de volta. */
+function phoneOf(user: EditableUser | null): string {
+  return user?.phone ? formatPhone(user.phone).replace('+55 ', '') : '';
 }
 
 function defaultValuesFor(user: EditableUser | null): CreateUserFormValues {
@@ -26,7 +33,7 @@ function defaultValuesFor(user: EditableUser | null): CreateUserFormValues {
     role: user?.role ?? 'CUSTOMER',
     username: user?.username ?? '',
     cpf: cpfOf(user),
-    phone: user?.phone ?? '',
+    phone: phoneOf(user),
     sendActivation: !user,
   };
 }
