@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { passwordStrength, passwordStrengthLabel } from './passwordStrength';
+import { passwordStrength, passwordStrengthLabel } from './passwordStrengthScore';
 
 describe('passwordStrength', () => {
   it.each([
