@@ -8,7 +8,29 @@ import { renderWithProviders } from '@/test/renderWithProviders';
 
 import { usersApi } from '../../users.api';
 import type { UserSummary } from '../../users.types';
+import { useUserFormSubmission } from '../../hooks/useUserFormSubmission';
 import { UserFormModal } from './UserFormModal';
+
+interface HarnessProps {
+  user: UserSummary | null;
+  onClose: () => void;
+  onSaved: () => void;
+}
+
+/** O modal é só apresentação (ADR-042): o teste o liga à API como o container faz. */
+function ModalWithSubmission({ user, onClose, onSaved }: HarnessProps) {
+  const submission = useUserFormSubmission(user, onSaved);
+  return (
+    <UserFormModal
+      open
+      user={user}
+      isSaving={submission.isSaving}
+      apiError={submission.apiError}
+      onClose={onClose}
+      onSubmit={submission.submit}
+    />
+  );
+}
 
 vi.mock('../../users.api', () => ({
   usersApi: { create: vi.fn(), update: vi.fn() },
@@ -32,7 +54,7 @@ function renderModal(user: UserSummary | null, onClose = vi.fn(), onSaved = vi.f
     routes: [
       {
         path: paths.backoffice.users,
-        element: <UserFormModal open user={user} onClose={onClose} onSaved={onSaved} />,
+        element: <ModalWithSubmission user={user} onClose={onClose} onSaved={onSaved} />,
       },
     ],
     initialPath: paths.backoffice.users,
@@ -41,8 +63,8 @@ function renderModal(user: UserSummary | null, onClose = vi.fn(), onSaved = vi.f
 }
 
 async function fillIdentity(name: string, email: string) {
-  await userEvent.clear(screen.getByLabelText('Nome'));
-  await userEvent.type(screen.getByLabelText('Nome'), name);
+  await userEvent.clear(screen.getByLabelText('Nome completo'));
+  await userEvent.type(screen.getByLabelText('Nome completo'), name);
   await userEvent.clear(screen.getByLabelText('E-mail'));
   await userEvent.type(screen.getByLabelText('E-mail'), email);
 }
@@ -75,10 +97,10 @@ describe('UserFormModal', () => {
     vi.mocked(usersApi.update).mockResolvedValue({ ...user, name: 'Ana Silva' });
     const { onSaved } = renderModal(user);
 
-    expect(screen.getByLabelText('Nome')).toHaveValue(user.name);
-    await userEvent.clear(screen.getByLabelText('Nome'));
-    await userEvent.type(screen.getByLabelText('Nome'), 'Ana Silva');
-    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+    expect(screen.getByLabelText('Nome completo')).toHaveValue(user.name);
+    await userEvent.clear(screen.getByLabelText('Nome completo'));
+    await userEvent.type(screen.getByLabelText('Nome completo'), 'Ana Silva');
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }));
 
     await vi.waitFor(() =>
       expect(usersApi.update).toHaveBeenCalledWith(user.id, {
@@ -143,5 +165,25 @@ describe('UserFormModal', () => {
 
     expect(onClose).toHaveBeenCalled();
     expect(usersApi.create).not.toHaveBeenCalled();
+  });
+
+  it('enquanto a API responde, o botão mostra que está salvando e fica desabilitado', async () => {
+    vi.mocked(usersApi.create).mockReturnValue(new Promise(() => undefined));
+    vi.mocked(usersApi.update).mockReturnValue(new Promise(() => undefined));
+    renderModal(null);
+
+    await fillIdentity('Bia Vendedora', 'bia@cromocard.dev');
+    await userEvent.click(screen.getByRole('button', { name: 'Cadastrar Usuário' }));
+
+    expect(await screen.findByRole('button', { name: 'Cadastrando…' })).toBeDisabled();
+  });
+
+  it('na edição, o botão salvando também aparece', async () => {
+    vi.mocked(usersApi.update).mockReturnValue(new Promise(() => undefined));
+    renderModal(buildUser());
+
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }));
+
+    expect(await screen.findByRole('button', { name: 'Salvando…' })).toBeDisabled();
   });
 });

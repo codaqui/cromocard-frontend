@@ -2,14 +2,13 @@ import { useId } from 'react';
 
 import { Button } from '@/components/Button/Button';
 import { FormError } from '@/components/FormError/FormError';
-import { Icon } from '@/components/Icon/Icon';
 import { Modal } from '@/components/Modal/Modal';
 import { Select } from '@/components/Select/Select';
 import { TextField } from '@/components/TextField/TextField';
+import type { ApiError } from '@/lib/api-error';
 
 import { useUserForm } from '../../hooks/useUserForm';
 import { roleSelectOptions } from '../../users.labels';
-import { useCreateUser, useUpdateUser } from '../../users.queries';
 import type { CreateUserInput } from '../../users.schemas';
 import type { UserSummary } from '../../users.types';
 import styles from './UserFormModal.module.css';
@@ -25,8 +24,10 @@ function defaultValuesFor(user: UserSummary | null): CreateUserInput {
 interface UserFormModalProps {
   open: boolean;
   user: UserSummary | null;
+  isSaving: boolean;
+  apiError: ApiError | null;
   onClose: () => void;
-  onSaved: () => void;
+  onSubmit: (input: CreateUserInput) => void;
 }
 
 type UserFormFields = ReturnType<typeof useUserForm>;
@@ -35,7 +36,8 @@ function IdentityFields({ register, errors }: Pick<UserFormFields, 'register' | 
   return (
     <div className={styles.grid}>
       <TextField
-        label="Nome"
+        label="Nome completo"
+        hint="obrigatório"
         icon="person"
         autoComplete="name"
         error={errors.name?.message}
@@ -78,7 +80,7 @@ interface UserFormModalActionsProps {
 
 function submitLabelFor(isCreating: boolean, isSaving: boolean): string {
   if (isCreating) return isSaving ? 'Cadastrando…' : 'Cadastrar Usuário';
-  return isSaving ? 'Salvando…' : 'Salvar';
+  return isSaving ? 'Salvando…' : 'Salvar alterações';
 }
 
 function UserFormModalActions({
@@ -89,65 +91,44 @@ function UserFormModalActions({
 }: UserFormModalActionsProps) {
   return (
     <div className={styles.footer}>
-      <span className={styles.protected}>
-        <Icon name="lock" size={16} />
-        protegido
-      </span>
-      <div className={styles.footerButtons}>
-        <Button variant="secondary" disabled={isSaving} onClick={onClose}>
-          Cancelar
-        </Button>
-        <Button type="submit" form={formId} disabled={isSaving}>
-          {submitLabelFor(isCreating, isSaving)}
-        </Button>
-      </div>
+      <Button variant="secondary" disabled={isSaving} onClick={onClose}>
+        Cancelar
+      </Button>
+      <Button type="submit" form={formId} disabled={isSaving}>
+        {submitLabelFor(isCreating, isSaving)}
+      </Button>
     </div>
   );
-}
-
-function useUserFormSubmission(user: UserSummary | null, onSaved: () => void) {
-  const createUser = useCreateUser();
-  const updateUser = useUpdateUser();
-  const mutation = user ? updateUser : createUser;
-
-  const submit = (input: CreateUserInput) => {
-    const action = user
-      ? updateUser.mutateAsync({ id: user.id, input })
-      : createUser.mutateAsync(input);
-    action.then(onSaved).catch(() => undefined);
-  };
-
-  return { mutation, form: useUserForm(defaultValuesFor(user), submit, mutation.error) };
 }
 
 function UserFormModalSubtitle({ user }: { user: UserSummary | null }) {
   return (
     <p className={styles.subtitle}>
       {user
-        ? 'Atualize as informações do usuário.'
-        : 'Cadastre um novo usuário atribuindo as informações corretamente.'}
+        ? `Altere os dados ou o papel de ${user.name}.`
+        : 'Preencha os dados do usuário. O papel define o que ele pode fazer na plataforma.'}
     </p>
   );
 }
 
-function UserFormModalContent({ user, onClose, onSaved }: Omit<UserFormModalProps, 'open'>) {
+function UserFormModalContent({
+  user,
+  isSaving,
+  apiError,
+  onClose,
+  onSubmit,
+}: Omit<UserFormModalProps, 'open'>) {
   const formId = useId();
-  const { mutation, form } = useUserFormSubmission(user, onSaved);
+  const form = useUserForm(defaultValuesFor(user), onSubmit, apiError);
+  const actions = { formId, isSaving, isCreating: !user, onClose };
 
   return (
     <Modal
       open
       title={user ? 'Editar usuário' : 'Novo usuário'}
       onClose={onClose}
-      dismissible={!mutation.isPending}
-      footer={
-        <UserFormModalActions
-          formId={formId}
-          isSaving={mutation.isPending}
-          isCreating={!user}
-          onClose={onClose}
-        />
-      }
+      dismissible={!isSaving}
+      footer={<UserFormModalActions {...actions} />}
     >
       <UserFormModalSubtitle user={user} />
       <form id={formId} className={styles.form} noValidate onSubmit={form.submit}>
