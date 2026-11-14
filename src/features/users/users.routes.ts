@@ -18,4 +18,10 @@ export const usersBackofficeRoutes: RouteObject[] = [
       Component: (await import('./pages/UsersListPage/UsersListPage')).UsersListPage,
     }),
   },
+  {
+    path: paths.backoffice.userDetail,
+    lazy: async () => ({
+      Component: (await import('./pages/UserDetailPage/UserDetailPage')).UserDetailPage,
+    }),
+  },
 ];

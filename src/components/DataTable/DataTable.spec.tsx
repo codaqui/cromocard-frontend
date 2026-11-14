@@ -1,5 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
 
 import { Badge } from '@/components/Badge/Badge';
 
@@ -59,5 +60,22 @@ describe('DataTable', () => {
       'colspan',
       '2',
     );
+  });
+
+  it('com onRowClick, clicar na linha entrega o registro dela', async () => {
+    const onRowClick = vi.fn();
+    render(
+      <DataTable
+        caption="Vendedores recentes"
+        columns={columns}
+        rows={sellers}
+        getRowKey={(seller) => seller.id}
+        onRowClick={onRowClick}
+      />,
+    );
+
+    await userEvent.click(screen.getByText('Fábio TCG Store'));
+
+    expect(onRowClick).toHaveBeenCalledWith(sellers[1]);
   });
 });

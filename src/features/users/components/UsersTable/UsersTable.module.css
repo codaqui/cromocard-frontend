@@ -1,28 +1,59 @@
-.wrapper {
-  overflow-x: auto;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
+.actions {
+  display: flex;
+  gap: var(--space-2);
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
+.iconButton {
+  min-height: auto;
+  padding: var(--space-2);
 }
 
-.table th,
-.table td {
-  padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--color-border);
-  text-align: left;
-  white-space: nowrap;
-}
-
-.table th {
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.status[data-tone='success'] {
+  color: var(--color-success);
+}
+
+.status[data-tone='danger'] {
+  color: var(--color-danger);
+}
+
+.statusDot {
+  width: var(--size-status-dot);
+  height: var(--size-status-dot);
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.nameCell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-weight: 600;
+}
+
+.userId {
+  font-size: var(--font-size-xs);
+  font-weight: 400;
   color: var(--color-text-muted);
 }
 
-.table tbody tr:last-child td {
-  border-bottom: none;
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--size-avatar-sm);
+  height: var(--size-avatar-sm);
+  border-radius: 50%;
+  background: var(--color-info-soft);
+  color: var(--color-info);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
 }
