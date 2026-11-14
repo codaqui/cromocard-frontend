@@ -1,5 +1,7 @@
 import { type MouseEvent, type ReactNode, type Ref, useId } from 'react';
 
+import { Icon } from '@/components/Icon/Icon';
+import type { IconName } from '@/components/Icon/icon-paths';
 import { useOverlay } from '@/hooks/useOverlay';
 import { cn } from '@/utils/cn';
 
@@ -14,6 +16,10 @@ export interface OverlayDialogProps {
   dismissible?: boolean;
   role?: 'dialog' | 'alertdialog';
   descriptionId?: string;
+  /** Ícone num quadro à esquerda do título, como nos modais do Figma. */
+  icon?: IconName;
+  /** `wide` para formulários de duas colunas (48rem), como o cadastro de usuário no Figma. */
+  size?: 'default' | 'wide';
 }
 
 interface OverlayDialogWithPlacementProps extends OverlayDialogProps {
@@ -28,16 +34,24 @@ const closeOnBackdropClick = (onClose: () => void) => (event: MouseEvent) =>
 interface DialogHeaderProps {
   titleId: string;
   title: string;
+  icon?: IconName;
   dismissible: boolean;
   onClose: () => void;
 }
 
-function DialogHeader({ titleId, title, dismissible, onClose }: DialogHeaderProps) {
+function DialogHeader({ titleId, title, icon, dismissible, onClose }: DialogHeaderProps) {
   return (
     <header className={styles.header}>
-      <h2 id={titleId} className={styles.title}>
-        {title}
-      </h2>
+      <div className={styles.heading}>
+        {icon && (
+          <span className={styles.headerIcon} aria-hidden="true">
+            <Icon name={icon} size={22} />
+          </span>
+        )}
+        <h2 id={titleId} className={styles.title}>
+          {title}
+        </h2>
+      </div>
       <button
         type="button"
         className={styles.close}
@@ -57,8 +71,19 @@ interface DialogPanelProps extends Omit<OverlayDialogWithPlacementProps, 'open'>
   dismissible: boolean;
 }
 
-function DialogPanel({ ref, titleId, placement, role = 'dialog', ...content }: DialogPanelProps) {
-  const { title, dismissible, onClose, children, footer } = content;
+function dialogClassName(placement: 'center' | 'right', size: 'default' | 'wide') {
+  return cn(styles.dialog, styles[`${placement}Dialog`], size === 'wide' && styles.wideDialog);
+}
+
+function DialogPanel({
+  ref,
+  titleId,
+  placement,
+  role = 'dialog',
+  size = 'default',
+  ...content
+}: DialogPanelProps) {
+  const { title, icon, dismissible, onClose, children, footer } = content;
 
   return (
     <div
@@ -68,9 +93,9 @@ function DialogPanel({ ref, titleId, placement, role = 'dialog', ...content }: D
       aria-labelledby={titleId}
       aria-describedby={content.descriptionId}
       tabIndex={-1}
-      className={cn(styles.dialog, styles[`${placement}Dialog`])}
+      className={dialogClassName(placement, size)}
     >
-      <DialogHeader titleId={titleId} title={title} dismissible={dismissible} onClose={onClose} />
+      <DialogHeader {...{ titleId, title, icon, dismissible, onClose }} />
       <div className={styles.body}>{children}</div>
       {footer && <footer className={styles.footer}>{footer}</footer>}
     </div>

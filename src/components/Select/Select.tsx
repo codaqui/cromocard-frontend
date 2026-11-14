@@ -1,7 +1,7 @@
 import { type ComponentProps } from 'react';
 
 import { describedByOf } from '@/components/FormField/field-ids';
-import { FormField } from '@/components/FormField/FormField';
+import { type FieldLabelOptions, FormField } from '@/components/FormField/FormField';
 import { Icon } from '@/components/Icon/Icon';
 import type { IconName } from '@/components/Icon/icon-paths';
 import { useFieldId } from '@/hooks/useFieldId';
@@ -14,7 +14,7 @@ export interface SelectOption {
   label: string;
 }
 
-interface SelectProps extends ComponentProps<'select'> {
+interface SelectProps extends ComponentProps<'select'>, FieldLabelOptions {
   label: string;
   options: SelectOption[];
   placeholder?: string;
@@ -65,26 +65,22 @@ function SelectControl({
 
 export function Select({
   label,
-  options,
-  placeholder,
   hint,
   error,
-  icon,
   id,
-  ...selectProps
+  hideLabel,
+  labelAside,
+  ...controlProps
 }: SelectProps) {
   const selectId = useFieldId(id);
 
   return (
-    <FormField inputId={selectId} label={label} hint={hint} error={error}>
+    <FormField inputId={selectId} {...{ label, hint, error, hideLabel, labelAside }}>
       <SelectControl
         id={selectId}
-        icon={icon}
-        options={options}
-        placeholder={placeholder}
         aria-invalid={Boolean(error)}
         aria-describedby={describedByOf(selectId, { hint, error })}
-        {...selectProps}
+        {...controlProps}
       />
     </FormField>
   );
