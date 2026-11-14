@@ -99,5 +99,10 @@ export function useRemoveUser() {
 }
 
 export function useResendActivation() {
-  return useMutation({ mutationFn: usersApi.resendActivation });
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: usersApi.resendActivation,
+    onSuccess: (_, id) => queryClient.invalidateQueries({ queryKey: usersKeys.detail(id) }),
+  });
 }

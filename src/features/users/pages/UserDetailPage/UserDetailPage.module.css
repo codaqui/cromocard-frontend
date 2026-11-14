@@ -280,6 +280,8 @@
 }
 
 .field {
+  min-width: 0;
+  overflow-wrap: anywhere;
   padding: var(--space-3);
   border-radius: var(--radius-sm);
   background: var(--color-surface-sunken);
