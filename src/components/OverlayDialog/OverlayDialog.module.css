@@ -47,6 +47,12 @@
   padding: var(--space-6) var(--space-6) 0;
 }
 
+.heading {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
 .title {
   font-size: var(--font-size-heading);
   font-weight: 700;

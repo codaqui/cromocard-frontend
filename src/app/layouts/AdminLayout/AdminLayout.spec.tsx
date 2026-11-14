@@ -28,7 +28,6 @@ const routes = [
 const underConstructionModules = [
   { label: 'Notificação', story: 'CCD060' },
   { label: 'Catálogo', story: 'CCD061' },
-  { label: 'Comunidades', story: 'CCD062' },
   { label: 'Relatórios', story: 'CCD063' },
   { label: 'Solicitações', story: 'CCD064' },
   { label: 'Logs', story: 'CCD065' },

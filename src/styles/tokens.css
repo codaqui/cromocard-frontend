@@ -126,6 +126,9 @@
   --color-glow-primary: rgb(50 145 255 / 0.12);
   --color-glow-accent: rgb(0 210 255 / 0.14);
   --color-glow-warning: rgb(201 129 0 / 0.12);
+  --color-alert: #93000a;
+  --color-alert-text: #ffdad6;
+  --color-glow-overview: rgb(0 210 255 / 0.1);
 
   --font-family: 'Plus Jakarta Sans Variable', 'Inter', system-ui, sans-serif;
   --font-size-caption: 0.8125rem;
@@ -155,6 +158,10 @@
   --size-kpi-footer: 4.5rem;
   --size-side-card: 19rem;
   --size-seller-row: 5.5rem;
+  --size-overview-tile: 12.25rem;
+  --size-overview-tile-height: 10rem;
+  --size-group-icon: 2.25rem;
+  --size-report-card-action: 2.25rem;
 
   color-scheme: dark;
   color: var(--color-text);

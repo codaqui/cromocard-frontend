@@ -1,0 +1,117 @@
+.overview {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  overflow: hidden;
+  padding: var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-glass);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(var(--blur-glass));
+}
+
+.overview::before {
+  position: absolute;
+  top: calc(var(--space-8) * -1);
+  right: calc(var(--space-8) * -1);
+  width: var(--size-overview-tile);
+  height: var(--size-overview-tile);
+  border-radius: var(--radius-pill);
+  background: var(--color-glow-overview);
+  filter: blur(var(--blur-glow));
+  content: '';
+}
+
+.identity {
+  position: relative;
+  display: flex;
+  flex: 1 1 var(--size-side-card);
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: var(--size-side-card);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-caption);
+  letter-spacing: var(--letter-spacing-caps);
+  text-transform: uppercase;
+  color: var(--color-success);
+}
+
+.title {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--color-text);
+}
+
+.subtitle {
+  font-size: var(--font-size-caption);
+  color: var(--color-label);
+}
+
+.tiles {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: var(--size-overview-tile);
+  min-height: var(--size-overview-tile-height);
+  padding: var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+  color: var(--color-label);
+}
+
+.tileHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.tileLabel {
+  max-width: 50%;
+  font-size: var(--font-size-caption);
+  font-weight: 400;
+}
+
+.tileValue {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.tileHint {
+  font-size: var(--font-size-caption);
+}
+
+.alert {
+  background: var(--color-alert);
+  color: var(--color-alert-text);
+}
+
+.alert .tileLabel,
+.alert .tileValue {
+  font-weight: 700;
+  color: var(--color-alert-text);
+}
+
+.alert .tileHint {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+}
