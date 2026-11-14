@@ -47,7 +47,7 @@ function NameAndUsernameFields({ register, errors }: Pick<UserFormFields, 'regis
     <div className={styles.grid}>
       <TextField
         label="Nome completo"
-        hint="obrigatório"
+        labelAside="obrigatório"
         icon="badge"
         autoComplete="name"
         error={errors.name?.message}
@@ -55,7 +55,7 @@ function NameAndUsernameFields({ register, errors }: Pick<UserFormFields, 'regis
       />
       <TextField
         label="Nome de usuário"
-        hint="único"
+        labelAside="único"
         icon="mail"
         autoComplete="username"
         error={errors.username?.message}
@@ -205,8 +205,8 @@ function UserFormModalContent({
   return (
     <Modal
       open
-      title={user ? 'Editar usuário' : 'Novo usuário'}
-      onClose={onClose}
+      {...{ onClose, title: user ? 'Editar usuário' : 'Novo usuário', size: 'wide' as const }}
+      icon={user ? 'edit' : 'personAdd'}
       dismissible={!isSaving}
       footer={<UserFormModalActions {...actions} />}
     >

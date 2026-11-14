@@ -40,8 +40,24 @@
 .filters {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
-  gap: var(--space-4);
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+}
+
+.filters > :first-child {
+  flex: 2 1 var(--size-card-min);
+}
+
+.filters > :not(:first-child):not(.clearFilters) {
+  flex: 1 1 var(--size-card-min);
+}
+
+.filters > .clearFilters {
+  margin-left: auto;
 }
 
 .filters > * {

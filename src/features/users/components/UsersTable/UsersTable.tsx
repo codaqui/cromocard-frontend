@@ -6,6 +6,7 @@ import { DataTable, type DataTableColumn } from '@/components/DataTable/DataTabl
 import { Icon } from '@/components/Icon/Icon';
 import type { IconName } from '@/components/Icon/icon-paths';
 import type { UserRole } from '@/types/authenticated-user';
+import { cn } from '@/utils/cn';
 import { formatDate } from '@/utils/formatDate';
 import { formatLastAccess } from '@/utils/formatLastAccess';
 import { formatPhone } from '@/utils/formatPhone';
@@ -89,14 +90,17 @@ function StatusBadge({ status }: { status: UserStatus }) {
   );
 }
 
+/** Cor do ícone, como no Figma 208-1793: editar neutro, suspender/reativar âmbar, excluir vermelho. */
+type ActionTone = 'neutral' | 'warning' | 'danger';
+
 interface ActionIconButtonProps {
   label: string;
   icon: IconName;
-  variant: 'secondary' | 'danger';
+  tone: ActionTone;
   onClick: () => void;
 }
 
-function ActionIconButton({ label, icon, variant, onClick }: ActionIconButtonProps) {
+function ActionIconButton({ label, icon, tone, onClick }: ActionIconButtonProps) {
   const handleClick: MouseEventHandler = (event) => {
     event.stopPropagation();
     onClick();
@@ -104,8 +108,8 @@ function ActionIconButton({ label, icon, variant, onClick }: ActionIconButtonPro
 
   return (
     <Button
-      variant={variant}
-      className={styles.iconButton}
+      variant="secondary"
+      className={cn(styles.iconButton, styles[tone])}
       aria-label={label}
       title={label}
       onClick={handleClick}
@@ -124,9 +128,9 @@ function rowActionsFor({
   const toggleStatus = toggleStatusCopyFor(user.status);
 
   return [
-    { label: 'Editar', icon: 'edit', variant: 'secondary', onClick: () => onEdit(user) },
-    { ...toggleStatus, variant: 'secondary', onClick: () => onToggleStatus(user) },
-    { label: 'Excluir', icon: 'delete', variant: 'danger', onClick: () => onDelete(user) },
+    { label: 'Editar', icon: 'edit', tone: 'neutral', onClick: () => onEdit(user) },
+    { ...toggleStatus, tone: 'warning', onClick: () => onToggleStatus(user) },
+    { label: 'Excluir', icon: 'delete', tone: 'danger', onClick: () => onDelete(user) },
   ];
 }
 
