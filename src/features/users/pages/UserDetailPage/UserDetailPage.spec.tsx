@@ -247,6 +247,7 @@ describe('UserDetailPage', () => {
 
     expect(await screen.findByText('Link de ativação reenviado com sucesso.')).toBeInTheDocument();
     expect(vi.mocked(usersApi.resendActivation).mock.calls[0]?.[0]).toBe(user.id);
+    expect(usersApi.update).not.toHaveBeenCalled();
   });
 
   it('R15 (CCD098): se o reenvio falha, o modal fica aberto e mostra o erro', async () => {

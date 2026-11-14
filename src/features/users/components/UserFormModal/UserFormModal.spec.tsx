@@ -153,12 +153,13 @@ describe('UserFormModal', () => {
   it('R4 (CCD098): editar pela lista, sem o CPF carregado, não apaga o CPF', async () => {
     const user = buildUser();
     vi.mocked(usersApi.update).mockResolvedValue(user);
-    renderModal(user);
+    const { onSaved } = renderModal(user);
 
     expect(screen.getByLabelText('CPF')).toHaveValue('');
     await userEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }));
 
-    await vi.waitFor(() => expect(usersApi.update).toHaveBeenCalledWith(user.id, {}));
+    await vi.waitFor(() => expect(onSaved).toHaveBeenCalled());
+    expect(usersApi.update).not.toHaveBeenCalled();
   });
 
   it('R4 (CCD098): apagar @, CPF e telefone no formulário manda null para a API', async () => {
@@ -345,6 +346,7 @@ describe('UserFormModal', () => {
     vi.mocked(usersApi.update).mockReturnValue(new Promise(() => undefined));
     renderModal(buildUser());
 
+    await userEvent.type(screen.getByLabelText('Nome completo'), ' Silva');
     await userEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }));
 
     expect(await screen.findByRole('button', { name: 'Salvando…' })).toBeDisabled();

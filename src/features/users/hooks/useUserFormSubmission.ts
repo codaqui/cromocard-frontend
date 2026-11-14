@@ -30,18 +30,17 @@ function useUpdateWithResend(user: EditableUser | null, onSaved: OnSaved) {
   const updateUser = useUpdateUser();
   const resendActivation = useResendActivation();
 
-  const submit = (id: string, input: CreateUserInput, dirty: UserFormDirtyFields) => {
+  const submit = (current: UserSummary, input: CreateUserInput, dirty: UserFormDirtyFields) => {
     const resend = canResendActivation(user) && input.sendActivation;
     const finish = (saved: UserSummary) => onSaved({ user: saved, sendActivation: resend });
-    updateUser.mutate(
-      { id, input: toUpdateInput(input, dirty) },
-      {
-        onSuccess: (saved) =>
-          resend
-            ? resendActivation.mutate(saved.id, { onSuccess: () => finish(saved) })
-            : finish(saved),
-      },
-    );
+    const afterUpdate = (saved: UserSummary) =>
+      resend
+        ? resendActivation.mutate(saved.id, { onSuccess: () => finish(saved) })
+        : finish(saved);
+    const changes = toUpdateInput(input, dirty);
+    // Nada mudou: não chama o PATCH (a API recusa corpo vazio) e segue para o reenvio, se pedido.
+    if (Object.keys(changes).length === 0) return afterUpdate(current);
+    updateUser.mutate({ id: current.id, input: changes }, { onSuccess: afterUpdate });
   };
 
   return {
@@ -57,7 +56,7 @@ export function useUserFormSubmission(user: EditableUser | null, onSaved: OnSave
   const update = useUpdateWithResend(user, onSaved);
 
   const submit = (input: CreateUserInput, dirty: UserFormDirtyFields) => {
-    if (user) return update.submit(user.id, input, dirty);
+    if (user) return update.submit(user, input, dirty);
     createUser.mutate(input, {
       onSuccess: (saved) => onSaved({ user: saved, sendActivation: input.sendActivation }),
     });
