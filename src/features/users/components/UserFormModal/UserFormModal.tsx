@@ -3,40 +3,41 @@ import { useId } from 'react';
 import { Button } from '@/components/Button/Button';
 import { Checkbox } from '@/components/Checkbox/Checkbox';
 import { FormError } from '@/components/FormError/FormError';
-import { Icon } from '@/components/Icon/Icon';
 import { Modal } from '@/components/Modal/Modal';
 import { Select } from '@/components/Select/Select';
 import { TextField } from '@/components/TextField/TextField';
+import type { ApiError } from '@/lib/api-error';
 
-import { useUserForm } from '../../hooks/useUserForm';
-import type { UserFormSavedResult } from '../../hooks/useUserFormModal';
+import { type UserFormDirtyFields, useUserForm } from '../../hooks/useUserForm';
 import { roleSelectOptions } from '../../users.labels';
-import { useCreateUser, useResendActivation, useUpdateUser } from '../../users.queries';
-import type {
-  AdminUpdateUserInput,
-  CreateUserFormValues,
-  CreateUserInput,
-} from '../../users.schemas';
-import type { UserSummary } from '../../users.types';
+import type { CreateUserFormValues, CreateUserInput } from '../../users.schemas';
+import { canResendActivation } from '../../users.format';
+import type { EditableUser } from '../../users.types';
 import styles from './UserFormModal.module.css';
 
-function defaultValuesFor(user: UserSummary | null): CreateUserFormValues {
+function cpfOf(user: EditableUser | null): string {
+  return user && 'cpf' in user ? (user.cpf ?? '') : '';
+}
+
+function defaultValuesFor(user: EditableUser | null): CreateUserFormValues {
   return {
     name: user?.name ?? '',
     email: user?.email ?? '',
     role: user?.role ?? 'CUSTOMER',
     username: user?.username ?? '',
-    cpf: user?.cpf ?? '',
+    cpf: cpfOf(user),
     phone: user?.phone ?? '',
-    sendActivation: true,
+    sendActivation: !user,
   };
 }
 
 interface UserFormModalProps {
   open: boolean;
-  user: UserSummary | null;
+  user: EditableUser | null;
+  isSaving: boolean;
+  apiError: ApiError | null;
   onClose: () => void;
-  onSaved: (result: UserFormSavedResult) => void;
+  onSubmit: (input: CreateUserInput, dirtyFields: UserFormDirtyFields) => void;
 }
 
 type UserFormFields = ReturnType<typeof useUserForm>;
@@ -46,6 +47,7 @@ function NameAndUsernameFields({ register, errors }: Pick<UserFormFields, 'regis
     <div className={styles.grid}>
       <TextField
         label="Nome completo"
+        hint="obrigatório"
         icon="badge"
         autoComplete="name"
         error={errors.name?.message}
@@ -53,6 +55,7 @@ function NameAndUsernameFields({ register, errors }: Pick<UserFormFields, 'regis
       />
       <TextField
         label="Nome de usuário"
+        hint="único"
         icon="mail"
         autoComplete="username"
         error={errors.username?.message}
@@ -110,19 +113,22 @@ function PhoneAndRoleFields({ register, errors }: Pick<UserFormFields, 'register
 function ActivationField({
   register,
   user,
-}: Pick<UserFormFields, 'register'> & { user: UserSummary | null }) {
-  if (user?.emailVerified) return null;
+}: Pick<UserFormFields, 'register'> & { user: EditableUser | null }) {
+  if (!user) {
+    return (
+      <Checkbox
+        label="Enviar link de ativação de conta por e-mail"
+        hint="O link de ativação vale por 24 horas."
+        {...register('sendActivation')}
+      />
+    );
+  }
+  if (!canResendActivation(user)) return null;
 
-  return user ? (
+  return (
     <Checkbox
       label="Reenviar link de ativação"
       hint="O usuário ainda não ativou a conta. O novo link vale por 24 horas."
-      {...register('sendActivation')}
-    />
-  ) : (
-    <Checkbox
-      label="Enviar link de ativação de conta por e-mail"
-      hint="O link vale por 24 horas. Sem marcar, a conta é criada sem enviar e-mail."
       {...register('sendActivation')}
     />
   );
@@ -133,7 +139,7 @@ function UserFormFields({
   errors,
   formError,
   user,
-}: UserFormFields & { user: UserSummary | null }) {
+}: UserFormFields & { user: EditableUser | null }) {
   return (
     <>
       <NameAndUsernameFields register={register} errors={errors} />
@@ -154,7 +160,7 @@ interface UserFormModalActionsProps {
 
 function submitLabelFor(isCreating: boolean, isSaving: boolean): string {
   if (isCreating) return isSaving ? 'Cadastrando…' : 'Cadastrar Usuário';
-  return isSaving ? 'Salvando…' : 'Salvar';
+  return isSaving ? 'Salvando…' : 'Salvar alterações';
 }
 
 function UserFormModalActions({
@@ -165,77 +171,36 @@ function UserFormModalActions({
 }: UserFormModalActionsProps) {
   return (
     <div className={styles.footer}>
-      <span className={styles.protected}>
-        <Icon name="lock" size={16} />
-        protegido
-      </span>
-      <div className={styles.footerButtons}>
-        <Button variant="secondary" disabled={isSaving} onClick={onClose}>
-          Cancelar
-        </Button>
-        <Button type="submit" form={formId} disabled={isSaving}>
-          {submitLabelFor(isCreating, isSaving)}
-        </Button>
-      </div>
+      <Button variant="secondary" disabled={isSaving} onClick={onClose}>
+        Cancelar
+      </Button>
+      <Button type="submit" form={formId} disabled={isSaving}>
+        {submitLabelFor(isCreating, isSaving)}
+      </Button>
     </div>
   );
 }
 
-function toUpdateInput({
-  sendActivation: _sendActivation,
-  username,
-  cpf,
-  phone,
-  ...rest
-}: CreateUserInput): AdminUpdateUserInput {
-  return { ...rest, username: username ?? null, cpf: cpf ?? null, phone: phone ?? null };
-}
-
-function shouldResendActivation(user: UserSummary | null, sendActivation: boolean): boolean {
-  return Boolean(user && !user.emailVerified && sendActivation);
-}
-
-function useUserFormSubmission(
-  user: UserSummary | null,
-  onSaved: (result: UserFormSavedResult) => void,
-) {
-  const createUser = useCreateUser();
-  const updateUser = useUpdateUser();
-  const resendActivation = useResendActivation();
-  const mutation = user ? updateUser : createUser;
-  const isSaving = mutation.isPending || resendActivation.isPending;
-
-  const submit = (input: CreateUserInput) => {
-    const action = user
-      ? updateUser.mutateAsync({ id: user.id, input: toUpdateInput(input) })
-      : createUser.mutateAsync(input);
-
-    action
-      .then(async (saved) => {
-        if (shouldResendActivation(user, input.sendActivation)) {
-          await resendActivation.mutateAsync(saved.id);
-        }
-        onSaved({ user: saved, sendActivation: input.sendActivation });
-      })
-      .catch(() => undefined);
-  };
-
-  return { mutation, isSaving, form: useUserForm(defaultValuesFor(user), submit, mutation.error) };
-}
-
-function UserFormModalSubtitle({ user }: { user: UserSummary | null }) {
+function UserFormModalSubtitle({ user }: { user: EditableUser | null }) {
   return (
     <p className={styles.subtitle}>
       {user
-        ? 'Atualize as informações do usuário.'
-        : 'Cadastre um novo usuário atribuindo as informações corretamente.'}
+        ? `Altere os dados ou o papel de ${user.name}.`
+        : 'Preencha os dados do usuário. O papel define o que ele pode fazer na plataforma.'}
     </p>
   );
 }
 
-function UserFormModalContent({ user, onClose, onSaved }: Omit<UserFormModalProps, 'open'>) {
+function UserFormModalContent({
+  user,
+  isSaving,
+  apiError,
+  onClose,
+  onSubmit,
+}: Omit<UserFormModalProps, 'open'>) {
   const formId = useId();
-  const { isSaving, form } = useUserFormSubmission(user, onSaved);
+  const form = useUserForm(defaultValuesFor(user), onSubmit, apiError);
+  const actions = { formId, isSaving, isCreating: !user, onClose };
 
   return (
     <Modal
@@ -243,14 +208,7 @@ function UserFormModalContent({ user, onClose, onSaved }: Omit<UserFormModalProp
       title={user ? 'Editar usuário' : 'Novo usuário'}
       onClose={onClose}
       dismissible={!isSaving}
-      footer={
-        <UserFormModalActions
-          formId={formId}
-          isSaving={isSaving}
-          isCreating={!user}
-          onClose={onClose}
-        />
-      }
+      footer={<UserFormModalActions {...actions} />}
     >
       <UserFormModalSubtitle user={user} />
       <form id={formId} className={styles.form} noValidate onSubmit={form.submit}>

@@ -40,6 +40,7 @@ function buildUser(overrides: Partial<UserDetail> = {}): UserDetail {
     lastLoginAt: null,
     lastLoginIp: null,
     oauthProvider: null,
+    activationPending: false,
     addresses: [],
     adminActions: [],
     ...overrides,
@@ -74,7 +75,7 @@ describe('UserDetailPage', () => {
 
     expect(await screen.findByRole('heading', { name: user.name })).toBeInTheDocument();
     expect(screen.getByText(user.email)).toBeInTheDocument();
-    expect(screen.getByText('Vendedor')).toBeInTheDocument();
+    expect(screen.getAllByText('Vendedor')).toHaveLength(2);
     expect(screen.getAllByText('Suspenso').length).toBeGreaterThan(0);
     expect(screen.getByText(formatDate(user.createdAt))).toBeInTheDocument();
   });
@@ -99,7 +100,7 @@ describe('UserDetailPage', () => {
 
     expect(await screen.findByText('@ana.colecionadora')).toBeInTheDocument();
     expect(screen.getByText('+55 (11) 91234-5678')).toBeInTheDocument();
-    expect(screen.getByText('529.982.247-25')).toBeInTheDocument();
+    expect(screen.getByText('529.***.***-25')).toBeInTheDocument();
     expect(screen.getByText('189.40.12.91', { exact: false })).toBeInTheDocument();
   });
 
@@ -122,7 +123,7 @@ describe('UserDetailPage', () => {
     renderDetail(user);
     await screen.findByRole('heading', { name: user.name });
 
-    await userEvent.click(screen.getByRole('link', { name: 'Usuários' }));
+    await userEvent.click(screen.getByRole('link', { name: 'Gestão de Usuários' }));
 
     expect(await screen.findByText('Nenhum usuário encontrado')).toBeInTheDocument();
   });
@@ -137,7 +138,7 @@ describe('UserDetailPage', () => {
     const dialog = screen.getByRole('dialog');
     await userEvent.clear(within(dialog).getByLabelText('Nome completo'));
     await userEvent.type(within(dialog).getByLabelText('Nome completo'), 'Ana Silva');
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Salvar' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Salvar alterações' }));
 
     expect(await screen.findByText('Usuário atualizado com sucesso.')).toBeInTheDocument();
   });
@@ -148,7 +149,7 @@ describe('UserDetailPage', () => {
     await screen.findByRole('heading', { name: user.name });
     vi.mocked(usersApi.suspend).mockResolvedValue({ ...user, status: 'SUSPENDED' });
 
-    await userEvent.click(screen.getByRole('button', { name: 'Suspender' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Suspenso' }));
     const dialog = screen.getByRole('alertdialog');
     await userEvent.type(within(dialog).getByLabelText('Motivo'), 'Violou as regras da comunidade');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Suspender' }));
@@ -162,7 +163,7 @@ describe('UserDetailPage', () => {
     await screen.findByRole('heading', { name: user.name });
     vi.mocked(usersApi.suspend).mockResolvedValue({ ...user, status: 'SUSPENDED' });
 
-    await userEvent.click(screen.getByRole('button', { name: 'Suspender' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Suspenso' }));
     const dialog = screen.getByRole('alertdialog');
     await userEvent.type(within(dialog).getByLabelText('Motivo'), 'Violou as regras da comunidade');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Suspender' }));
@@ -178,7 +179,7 @@ describe('UserDetailPage', () => {
     renderDetail(user);
     await screen.findByRole('heading', { name: user.name });
 
-    await userEvent.click(screen.getByRole('button', { name: 'Suspender' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Suspenso' }));
     await userEvent.click(
       within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Cancelar' }),
     );
@@ -187,7 +188,7 @@ describe('UserDetailPage', () => {
     expect(usersApi.suspend).not.toHaveBeenCalled();
   });
 
-  it('exclui o usuário e volta para a lista', async () => {
+  it('CA6: exclui o usuário e volta para a lista, mesmo com o detalhe respondendo 404 depois', async () => {
     const user = buildUser();
     vi.mocked(usersApi.list).mockResolvedValue({
       data: [],
@@ -195,7 +196,10 @@ describe('UserDetailPage', () => {
     });
     renderDetail(user);
     await screen.findByRole('heading', { name: user.name });
-    vi.mocked(usersApi.remove).mockResolvedValue(undefined);
+    vi.mocked(usersApi.remove).mockImplementation(() => {
+      vi.mocked(usersApi.getById).mockRejectedValue(new Error('Usuário não encontrado'));
+      return Promise.resolve(undefined);
+    });
 
     await userEvent.click(screen.getByRole('button', { name: 'Excluir' }));
     const dialog = screen.getByRole('alertdialog');
@@ -218,7 +222,7 @@ describe('UserDetailPage', () => {
     await screen.findByRole('heading', { name: user.name });
     vi.mocked(usersApi.reactivate).mockResolvedValue({ ...user, status: 'ACTIVE' });
 
-    await userEvent.click(screen.getByRole('button', { name: 'Reativar' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Ativo' }));
     const dialog = screen.getByRole('alertdialog');
     expect(within(dialog).queryByLabelText('Motivo')).not.toBeInTheDocument();
     await userEvent.click(within(dialog).getByRole('button', { name: 'Reativar' }));
@@ -228,7 +232,7 @@ describe('UserDetailPage', () => {
   });
 
   it('R15 (CCD098): editar um usuário que não ativou a conta oferece reenviar o link', async () => {
-    const user = buildUser({ emailVerified: false });
+    const user = buildUser({ activationPending: true });
     renderDetail(user);
     await screen.findByRole('heading', { name: user.name });
     vi.mocked(usersApi.update).mockResolvedValue(user);
@@ -237,15 +241,32 @@ describe('UserDetailPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Editar' }));
     const dialog = screen.getByRole('dialog');
     const checkbox = within(dialog).getByLabelText('Reenviar link de ativação');
-    expect(checkbox).toBeInTheDocument();
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Salvar' }));
+    expect(checkbox).not.toBeChecked();
+    await userEvent.click(checkbox);
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Salvar alterações' }));
 
+    expect(await screen.findByText('Link de ativação reenviado com sucesso.')).toBeInTheDocument();
     expect(vi.mocked(usersApi.resendActivation).mock.calls[0]?.[0]).toBe(user.id);
-    expect(await screen.findByText('Usuário atualizado com sucesso.')).toBeInTheDocument();
   });
 
-  it('editar um usuário que já ativou a conta não mostra reenviar o link', async () => {
-    const user = buildUser({ emailVerified: true });
+  it('R15 (CCD098): se o reenvio falha, o modal fica aberto e mostra o erro', async () => {
+    const user = buildUser({ activationPending: true });
+    renderDetail(user);
+    await screen.findByRole('heading', { name: user.name });
+    vi.mocked(usersApi.update).mockResolvedValue(user);
+    vi.mocked(usersApi.resendActivation).mockRejectedValue(new Error('Falha ao reenviar o link'));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Editar' }));
+    const dialog = screen.getByRole('dialog');
+    await userEvent.click(within(dialog).getByLabelText('Reenviar link de ativação'));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Salvar alterações' }));
+
+    expect(await within(dialog).findByText('Falha ao reenviar o link')).toBeInTheDocument();
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('editar um usuário sem ativação pendente (já tem senha ou Google) não mostra reenviar o link', async () => {
+    const user = buildUser({ emailVerified: false, activationPending: false });
     renderDetail(user);
     await screen.findByRole('heading', { name: user.name });
 
@@ -286,7 +307,7 @@ describe('UserDetailPage', () => {
     await screen.findByRole('heading', { name: user.name });
 
     expect(screen.getByText(/Av\. Paulista, 1000/)).toBeInTheDocument();
-    expect(screen.getByText('Principal')).toBeInTheDocument();
+    expect(screen.getByText('Endereço principal')).toBeInTheDocument();
     expect(screen.getByText('Usuário suspenso')).toBeInTheDocument();
     expect(
       screen.getByText(/Arthur Valadares · Violou as regras da comunidade/),
@@ -307,7 +328,8 @@ describe('UserDetailPage', () => {
     renderDetail(user);
     await screen.findByRole('heading', { name: user.name });
 
-    expect(screen.getByText('Membro desde: Março de 2026')).toBeInTheDocument();
+    expect(screen.getByText('Membro desde:')).toBeInTheDocument();
+    expect(screen.getByText('Março de 2026')).toBeInTheDocument();
     expect(screen.getByText('Login com Google')).toBeInTheDocument();
   });
 
@@ -332,7 +354,7 @@ describe('UserDetailPage', () => {
     renderDetail(user, { id: user.id, role: 'ADMIN' });
     await screen.findByRole('heading', { name: user.name });
 
-    expect(screen.getByRole('button', { name: 'Suspender' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Suspenso' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Excluir' })).toBeDisabled();
   });
 

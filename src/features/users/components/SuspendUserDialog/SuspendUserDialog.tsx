@@ -1,5 +1,6 @@
 import { ConfirmDialog } from '@/components/ConfirmDialog/ConfirmDialog';
 
+import { toReasonInput } from '../../users.schemas';
 import { useReactivateUser, useSuspendUser } from '../../users.queries';
 import type { UserSummary } from '../../users.types';
 
@@ -51,7 +52,7 @@ function useSuspendOrReactivate(user: UserSummary, onSaved: () => void) {
       reactivateUser.mutate(user.id, { onSuccess: onSaved });
       return;
     }
-    suspendUser.mutate({ id: user.id, input: { reason: reason ?? '' } }, { onSuccess: onSaved });
+    suspendUser.mutate({ id: user.id, input: toReasonInput(reason) }, { onSuccess: onSaved });
   };
 
   return { isReactivating, mutation, confirm };

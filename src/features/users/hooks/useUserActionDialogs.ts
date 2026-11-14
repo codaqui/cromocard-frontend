@@ -5,7 +5,8 @@ import type { UserSummary } from '../users.types';
 
 type ActionDialog = 'suspend' | 'delete' | null;
 
-function suspendMessageFor(target: UserSummary): string {
+function suspendMessageFor(target: UserSummary | null): string | null {
+  if (!target) return null;
   return target.status === 'SUSPENDED'
     ? userActionMessages.reactivated
     : userActionMessages.suspended;
@@ -36,7 +37,7 @@ function buildActions(state: DialogState) {
     },
     close: () => closeDialog(state),
     savedSuspend: () => {
-      state.setToastMessage(suspendMessageFor(state.target!));
+      state.setToastMessage(suspendMessageFor(state.target));
       closeDialog(state);
     },
     savedDelete: () => {

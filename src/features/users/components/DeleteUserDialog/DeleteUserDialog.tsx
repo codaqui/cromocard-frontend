@@ -4,6 +4,7 @@ import { Checkbox } from '@/components/Checkbox/Checkbox';
 import { ConfirmDialog } from '@/components/ConfirmDialog/ConfirmDialog';
 import { Icon } from '@/components/Icon/Icon';
 
+import { toReasonInput } from '../../users.schemas';
 import { useRemoveUser } from '../../users.queries';
 import type { UserSummary } from '../../users.types';
 import styles from './DeleteUserDialog.module.css';
@@ -65,7 +66,7 @@ function useDeleteConfirm(user: UserSummary, onSaved: () => void) {
   const [aware, setAware] = useState(false);
 
   const confirm = (reason?: string) => {
-    removeUser.mutate({ id: user.id, input: { reason: reason! } }, { onSuccess: onSaved });
+    removeUser.mutate({ id: user.id, input: toReasonInput(reason) }, { onSuccess: onSaved });
   };
 
   return { removeUser, aware, setAware, confirm };

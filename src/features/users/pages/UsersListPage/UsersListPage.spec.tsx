@@ -31,7 +31,6 @@ function buildUser(overrides: Partial<UserSummary> = {}): UserSummary {
     createdAt: '2026-10-01T00:00:00.000Z',
     username: null,
     phone: null,
-    cpf: null,
     lastLoginAt: null,
     lastLoginIp: null,
     ...overrides,
@@ -123,8 +122,7 @@ describe('UsersListPage', () => {
   });
 
   it('CA2 (CCD098): busca por CPF mostra só o usuário dono do CPF', async () => {
-    const cpf = '52998224725';
-    mockList([buildUser({ name: 'Ana Colecionadora', cpf })]);
+    mockList([buildUser({ name: 'Ana Colecionadora' })]);
     renderPage();
     await screen.findByText('Ana Colecionadora');
 
@@ -142,9 +140,32 @@ describe('UsersListPage', () => {
     renderPage();
     await screen.findByText('Nenhum usuário encontrado');
 
-    await userEvent.selectOptions(screen.getByLabelText('Papel'), 'ADMIN');
+    await userEvent.selectOptions(screen.getByLabelText('Papel de acesso'), 'ADMIN');
 
     await vi.waitFor(() => expect(lastListCall()).toMatchObject({ role: 'ADMIN' }));
+  });
+
+  it('CA1: limpar filtros volta à lista sem busca, papel e status', async () => {
+    mockList([]);
+    renderPage();
+    await screen.findByText('Nenhum usuário encontrado');
+    const clear = screen.getByRole('button', { name: 'Limpar filtros' });
+    expect(clear).toBeDisabled();
+
+    await userEvent.selectOptions(screen.getByLabelText('Status'), 'SUSPENDED');
+    await userEvent.click(clear);
+
+    await vi.waitFor(() =>
+      expect(lastListCall()).toMatchObject({ status: undefined, role: undefined }),
+    );
+    expect(screen.getByLabelText('Status')).toHaveValue('');
+  });
+
+  it('mostra o carregando enquanto a lista não chega', async () => {
+    vi.mocked(usersApi.list).mockReturnValue(new Promise(() => undefined));
+    renderPage();
+
+    expect(await screen.findByText('Carregando…')).toBeInTheDocument();
   });
 
   it('CA1: filtra por status', async () => {
@@ -187,7 +208,7 @@ describe('UsersListPage - toasts das ações administrativas', () => {
     renderPage();
     await screen.findByText('Nenhum usuário encontrado');
 
-    await userEvent.click(screen.getByRole('button', { name: '+ Novo Usuário no Sistema' }));
+    await userEvent.click(screen.getByRole('button', { name: '+ Novo Usuário' }));
     const dialog = screen.getByRole('dialog');
     await userEvent.type(within(dialog).getByLabelText('Nome completo'), 'Bia Vendedora');
     await userEvent.type(within(dialog).getByLabelText('E-mail'), 'bia@cromocard.dev');
@@ -209,7 +230,7 @@ describe('UsersListPage - toasts das ações administrativas', () => {
     renderPage();
     await screen.findByText('Nenhum usuário encontrado');
 
-    await userEvent.click(screen.getByRole('button', { name: '+ Novo Usuário no Sistema' }));
+    await userEvent.click(screen.getByRole('button', { name: '+ Novo Usuário' }));
     const dialog = screen.getByRole('dialog');
     await userEvent.type(within(dialog).getByLabelText('Nome completo'), 'Bia Vendedora');
     await userEvent.type(within(dialog).getByLabelText('E-mail'), 'bia@cromocard.dev');
@@ -227,7 +248,7 @@ describe('UsersListPage - toasts das ações administrativas', () => {
     renderPage();
     await screen.findByText('Nenhum usuário encontrado');
 
-    await userEvent.click(screen.getByRole('button', { name: '+ Novo Usuário no Sistema' }));
+    await userEvent.click(screen.getByRole('button', { name: '+ Novo Usuário' }));
     await userEvent.click(
       within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancelar' }),
     );
@@ -244,7 +265,7 @@ describe('UsersListPage - toasts das ações administrativas', () => {
     renderPage();
     await screen.findByText('Nenhum usuário encontrado');
 
-    await userEvent.click(screen.getByRole('button', { name: '+ Novo Usuário no Sistema' }));
+    await userEvent.click(screen.getByRole('button', { name: '+ Novo Usuário' }));
     const dialog = screen.getByRole('dialog');
     await userEvent.type(within(dialog).getByLabelText('Nome completo'), 'Bia Vendedora');
     await userEvent.type(within(dialog).getByLabelText('E-mail'), 'bia@cromocard.dev');
@@ -273,7 +294,7 @@ describe('UsersListPage - toasts das ações administrativas', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Editar' }));
     await userEvent.clear(screen.getByLabelText('Nome completo'));
     await userEvent.type(screen.getByLabelText('Nome completo'), 'Ana Silva');
-    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }));
 
     expect(await screen.findByText('Usuário atualizado com sucesso.')).toBeInTheDocument();
   });

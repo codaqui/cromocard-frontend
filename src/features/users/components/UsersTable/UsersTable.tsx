@@ -17,6 +17,7 @@ import {
   statusTones,
   toggleStatusCopyFor,
 } from '../../users.labels';
+import { initialsOf, shortIdOf } from '../../users.format';
 import type { UserStatus, UserSummary } from '../../users.types';
 import styles from './UsersTable.module.css';
 
@@ -37,15 +38,6 @@ interface RowActionsProps {
 
 function RoleBadge({ role }: { role: UserRole }) {
   return <Badge tone={roleTones[role]}>{roleLabels[role]}</Badge>;
-}
-
-function initialsOf(name: string): string {
-  const [first, second] = name.trim().split(/\s+/);
-  return `${first![0]}${second?.[0] ?? ''}`.toUpperCase();
-}
-
-function shortIdOf(id: string): string {
-  return `#USR-${id.slice(-6).toUpperCase()}`;
 }
 
 function NameCell({ user }: { user: UserSummary }) {
@@ -150,16 +142,16 @@ function RowActions(props: RowActionsProps) {
 
 function buildColumns(actions: Omit<RowActionsProps, 'user'>): DataTableColumn<UserSummary>[] {
   return [
-    { key: 'name', header: 'Nome', render: (user) => <NameCell user={user} /> },
+    { key: 'name', header: 'Usuário', render: (user) => <NameCell user={user} /> },
     { key: 'contact', header: 'Contato', render: (user) => <ContactCell user={user} /> },
-    { key: 'role', header: 'Tipo', render: (user) => <RoleBadge role={user.role} /> },
-    { key: 'status', header: 'Situação', render: (user) => <StatusBadge status={user.status} /> },
-    { key: 'createdAt', header: 'Cadastro', render: (user) => formatDate(user.createdAt) },
+    { key: 'role', header: 'Papel', render: (user) => <RoleBadge role={user.role} /> },
+    { key: 'status', header: 'Status', render: (user) => <StatusBadge status={user.status} /> },
     {
       key: 'lastLogin',
       header: 'Último acesso',
       render: (user) => <LastLoginCell user={user} />,
     },
+    { key: 'createdAt', header: 'Cadastro', render: (user) => formatDate(user.createdAt) },
     { key: 'actions', header: 'Ações', render: (user) => <RowActions user={user} {...actions} /> },
   ];
 }

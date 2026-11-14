@@ -100,6 +100,26 @@ describe('http', () => {
     stopListening();
   });
 
+  it('sem renovador nem listener, o 401 rejeita sem tentar de novo', async () => {
+    let calls = 0;
+    useFakeApi(() => {
+      calls += 1;
+      return unauthorized;
+    });
+
+    await expect(api.get('/users/me')).rejects.toMatchObject({ status: 401 });
+    expect(calls).toBe(1);
+  });
+
+  it('depois de parar de ouvir, o 401 não avisa o listener antigo', async () => {
+    useFakeApi(() => unauthorized);
+    const listener = vi.fn();
+    onUnauthorized(listener)();
+
+    await expect(api.get('/users/me')).rejects.toMatchObject({ status: 401 });
+    expect(listener).not.toHaveBeenCalled();
+  });
+
   it('repassa um erro que não é do axios sem tentar renovar', async () => {
     http.defaults.adapter = () => Promise.reject(new Error('falha de rede'));
     const refresher = vi.fn(() => Promise.resolve(true));

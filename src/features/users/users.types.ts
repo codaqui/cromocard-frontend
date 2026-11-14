@@ -15,7 +15,6 @@ export interface UserSummary {
   createdAt: string;
   username: string | null;
   phone: string | null;
-  cpf: string | null;
   lastLoginAt: string | null;
   lastLoginIp: string | null;
 }
@@ -58,8 +57,15 @@ export interface AdminActionEntry {
   createdAt: string;
 }
 
+/** A lista não traz o CPF: ele só vem no detalhe (GET /users/:id), junto com a situação da ativação. */
 export interface UserDetail extends UserSummary {
+  cpf: string | null;
   oauthProvider: string | null;
+  /** Conta criada pelo admin que ainda não definiu senha nem entrou com o Google (R15). */
+  activationPending: boolean;
   addresses: UserAddress[];
   adminActions: AdminActionEntry[];
 }
+
+/** O modal de edição abre pela lista (resumo) ou pelo detalhe (com CPF e situação da ativação). */
+export type EditableUser = UserSummary | UserDetail;

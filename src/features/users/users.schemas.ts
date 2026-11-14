@@ -65,9 +65,9 @@ export const adminUpdateUserSchema = z.object({
   name: nameSchema.optional(),
   email: emailSchema.optional(),
   role: userRoleSchema.optional(),
-  username: usernameSchema.nullable(),
-  cpf: cpfSchema.nullable(),
-  phone: phoneSchema.nullable(),
+  username: usernameSchema.nullable().optional(),
+  cpf: cpfSchema.nullable().optional(),
+  phone: phoneSchema.nullable().optional(),
 });
 
 export const reasonBodySchema = z.object({
@@ -79,3 +79,8 @@ export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type CreateUserFormValues = z.input<typeof createUserSchema>;
 export type AdminUpdateUserInput = z.infer<typeof adminUpdateUserSchema>;
 export type ReasonInput = z.infer<typeof reasonBodySchema>;
+
+/** O ConfirmDialog entrega o motivo como opcional; nas ações de usuário ele é obrigatório e já validado. */
+export function toReasonInput(reason: string | undefined): ReasonInput {
+  return { reason: reason ?? '' };
+}

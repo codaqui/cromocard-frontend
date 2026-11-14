@@ -25,8 +25,8 @@
 }
 
 .statusDot {
-  width: 8px;
-  height: 8px;
+  width: var(--size-status-dot);
+  height: var(--size-status-dot);
   border-radius: 50%;
   background: currentColor;
 }
@@ -49,8 +49,8 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 32px;
-  height: 32px;
+  width: var(--size-avatar-sm);
+  height: var(--size-avatar-sm);
   border-radius: 50%;
   background: var(--color-info-soft);
   color: var(--color-info);

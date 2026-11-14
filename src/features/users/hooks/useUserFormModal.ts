@@ -1,17 +1,20 @@
 import { useState } from 'react';
 
 import { userActionMessages } from '../users.labels';
-import type { UserSummary } from '../users.types';
+import type { EditableUser, UserSummary } from '../users.types';
+type FormModalTarget = EditableUser | 'new' | null;
 
-type FormModalTarget = UserSummary | 'new' | null;
-
-function userFor(target: FormModalTarget): UserSummary | null {
+function userFor(target: FormModalTarget): EditableUser | null {
   return target === 'new' || target === null ? null : target;
 }
 
 export interface UserFormSavedResult {
   user: UserSummary;
   sendActivation: boolean;
+}
+
+function updatedMessageFor(activationResent: boolean): string {
+  return activationResent ? userActionMessages.activationResent : userActionMessages.updated;
 }
 
 export function useUserFormModal() {
@@ -22,7 +25,7 @@ export function useUserFormModal() {
     setToastMessage(
       target === 'new'
         ? userActionMessages.created(user.email, sendActivation)
-        : userActionMessages.updated,
+        : updatedMessageFor(sendActivation),
     );
     setTarget(null);
   };
@@ -31,7 +34,7 @@ export function useUserFormModal() {
     isOpen: target !== null,
     editingUser: userFor(target),
     openCreate: () => setTarget('new'),
-    openEdit: (user: UserSummary) => setTarget(user),
+    openEdit: (user: EditableUser) => setTarget(user),
     close: () => setTarget(null),
     saved,
     toastMessage,

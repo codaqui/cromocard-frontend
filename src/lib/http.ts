@@ -17,12 +17,13 @@ interface RetriableRequestConfig extends InternalAxiosRequestConfig {
 const noSession: SessionRefresher = () => Promise.resolve(false);
 let refreshSession: SessionRefresher = noSession;
 let refreshInFlight: Promise<boolean> | null = null;
-let notifyUnauthorized: () => void = () => undefined;
+const ignoreUnauthorized = () => undefined;
+let notifyUnauthorized: () => void = ignoreUnauthorized;
 
 export function onUnauthorized(listener: () => void): () => void {
   notifyUnauthorized = listener;
   return () => {
-    notifyUnauthorized = () => undefined;
+    notifyUnauthorized = ignoreUnauthorized;
   };
 }
 

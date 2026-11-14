@@ -7,8 +7,30 @@ import { paths } from '@/routes/paths';
 import { renderWithProviders } from '@/test/renderWithProviders';
 
 import { usersApi } from '../../users.api';
-import type { UserSummary } from '../../users.types';
+import type { UserDetail, UserSummary } from '../../users.types';
+import { useUserFormSubmission } from '../../hooks/useUserFormSubmission';
 import { UserFormModal } from './UserFormModal';
+
+interface HarnessProps {
+  user: UserSummary | null;
+  onClose: () => void;
+  onSaved: () => void;
+}
+
+/** O modal é só apresentação (ADR-042): o teste o liga à API como o container faz. */
+function ModalWithSubmission({ user, onClose, onSaved }: HarnessProps) {
+  const submission = useUserFormSubmission(user, onSaved);
+  return (
+    <UserFormModal
+      open
+      user={user}
+      isSaving={submission.isSaving}
+      apiError={submission.apiError}
+      onClose={onClose}
+      onSubmit={submission.submit}
+    />
+  );
+}
 
 vi.mock('../../users.api', () => ({
   usersApi: { create: vi.fn(), update: vi.fn() },
@@ -25,9 +47,20 @@ function buildUser(overrides: Partial<UserSummary> = {}): UserSummary {
     createdAt: '2026-10-01T00:00:00.000Z',
     username: null,
     phone: null,
-    cpf: null,
     lastLoginAt: null,
     lastLoginIp: null,
+    ...overrides,
+  };
+}
+
+function buildDetail(overrides: Partial<UserDetail> = {}): UserDetail {
+  return {
+    ...buildUser(),
+    cpf: null,
+    oauthProvider: null,
+    activationPending: false,
+    addresses: [],
+    adminActions: [],
     ...overrides,
   };
 }
@@ -37,7 +70,7 @@ function renderModal(user: UserSummary | null, onClose = vi.fn(), onSaved = vi.f
     routes: [
       {
         path: paths.backoffice.users,
-        element: <UserFormModal open user={user} onClose={onClose} onSaved={onSaved} />,
+        element: <ModalWithSubmission user={user} onClose={onClose} onSaved={onSaved} />,
       },
     ],
     initialPath: paths.backoffice.users,
@@ -91,23 +124,16 @@ describe('UserFormModal', () => {
     expect(screen.getByLabelText('Nome completo')).toHaveValue(user.name);
     await userEvent.clear(screen.getByLabelText('Nome completo'));
     await userEvent.type(screen.getByLabelText('Nome completo'), 'Ana Silva');
-    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }));
 
     await vi.waitFor(() =>
-      expect(usersApi.update).toHaveBeenCalledWith(user.id, {
-        name: 'Ana Silva',
-        email: user.email,
-        role: user.role,
-        username: null,
-        cpf: null,
-        phone: null,
-      }),
+      expect(usersApi.update).toHaveBeenCalledWith(user.id, { name: 'Ana Silva' }),
     );
     await vi.waitFor(() => expect(onSaved).toHaveBeenCalled());
   });
 
-  it('R4 (CCD098): edita mantendo @, CPF e telefone já cadastrados', async () => {
-    const user = buildUser({
+  it('R4 (CCD098): editar sem mexer em @, CPF e telefone não os manda, e o que existe fica', async () => {
+    const user = buildDetail({
       username: 'ana.colecionadora',
       cpf: '52998224725',
       phone: '11912345678',
@@ -115,22 +141,28 @@ describe('UserFormModal', () => {
     vi.mocked(usersApi.update).mockResolvedValue(user);
     renderModal(user);
 
-    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+    await userEvent.clear(screen.getByLabelText('Nome completo'));
+    await userEvent.type(screen.getByLabelText('Nome completo'), 'Ana Silva');
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }));
 
     await vi.waitFor(() =>
-      expect(usersApi.update).toHaveBeenCalledWith(
-        user.id,
-        expect.objectContaining({
-          username: 'ana.colecionadora',
-          cpf: '52998224725',
-          phone: '11912345678',
-        }),
-      ),
+      expect(usersApi.update).toHaveBeenCalledWith(user.id, { name: 'Ana Silva' }),
     );
   });
 
+  it('R4 (CCD098): editar pela lista, sem o CPF carregado, não apaga o CPF', async () => {
+    const user = buildUser();
+    vi.mocked(usersApi.update).mockResolvedValue(user);
+    renderModal(user);
+
+    expect(screen.getByLabelText('CPF')).toHaveValue('');
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }));
+
+    await vi.waitFor(() => expect(usersApi.update).toHaveBeenCalledWith(user.id, {}));
+  });
+
   it('R4 (CCD098): apagar @, CPF e telefone no formulário manda null para a API', async () => {
-    const user = buildUser({
+    const user = buildDetail({
       username: 'ana.colecionadora',
       cpf: '52998224725',
       phone: '11912345678',
@@ -141,7 +173,7 @@ describe('UserFormModal', () => {
     await userEvent.clear(screen.getByLabelText('Nome de usuário'));
     await userEvent.clear(screen.getByLabelText('CPF'));
     await userEvent.clear(screen.getByLabelText('Telefone com DDD'));
-    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }));
 
     await vi.waitFor(() =>
       expect(usersApi.update).toHaveBeenCalledWith(
@@ -296,5 +328,25 @@ describe('UserFormModal', () => {
 
     expect(onClose).toHaveBeenCalled();
     expect(usersApi.create).not.toHaveBeenCalled();
+  });
+
+  it('enquanto a API responde, o botão mostra que está salvando e fica desabilitado', async () => {
+    vi.mocked(usersApi.create).mockReturnValue(new Promise(() => undefined));
+    vi.mocked(usersApi.update).mockReturnValue(new Promise(() => undefined));
+    renderModal(null);
+
+    await fillIdentity('Bia Vendedora', 'bia@cromocard.dev');
+    await userEvent.click(screen.getByRole('button', { name: 'Cadastrar Usuário' }));
+
+    expect(await screen.findByRole('button', { name: 'Cadastrando…' })).toBeDisabled();
+  });
+
+  it('na edição, o botão salvando também aparece', async () => {
+    vi.mocked(usersApi.update).mockReturnValue(new Promise(() => undefined));
+    renderModal(buildUser());
+
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }));
+
+    expect(await screen.findByRole('button', { name: 'Salvando…' })).toBeDisabled();
   });
 });

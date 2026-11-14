@@ -13,9 +13,12 @@ import {
 
 const userFormFields = ['name', 'email', 'role', 'username', 'cpf', 'phone'] as const;
 
+/** Campos que a pessoa mexeu: a edição manda só eles, para não apagar o que o formulário não carregou. */
+export type UserFormDirtyFields = Partial<Record<keyof CreateUserFormValues, boolean>>;
+
 export function useUserForm(
   defaultValues: CreateUserFormValues,
-  onSubmit: (input: CreateUserInput) => void,
+  onSubmit: (input: CreateUserInput, dirtyFields: UserFormDirtyFields) => void,
   apiError: ApiError | null,
 ) {
   const { register, handleSubmit, setError, formState } = useForm({
@@ -25,7 +28,10 @@ export function useUserForm(
 
   const formError = useApiFieldErrors(apiError, userFormFields, setError);
 
-  const submit = (event: FormEvent) => void handleSubmit(onSubmit)(event);
+  // O formState do React Hook Form é um proxy: ler dirtyFields durante a renderização é o que assina as mudanças.
+  const { dirtyFields } = formState;
+  const submit = (event: FormEvent) =>
+    void handleSubmit((input) => onSubmit(input, dirtyFields))(event);
 
   return { register, errors: formState.errors, submit, formError };
 }
