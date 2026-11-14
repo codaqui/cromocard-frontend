@@ -77,3 +77,27 @@ export interface SellerVerificationSummary {
   pending: number;
   conversionRate: number;
 }
+
+export const DEADLINE_HOURS_OPTIONS = [24, 48, 72, 168] as const;
+
+export type DeadlineHours = (typeof DEADLINE_HOURS_OPTIONS)[number];
+
+export interface PendingTemplate {
+  key: string;
+  title: string;
+  body: string;
+}
+
+export interface PendingNoticeResult {
+  sentAt: string;
+  channels: ('SITE' | 'EMAIL')[];
+  emailDelivered: boolean;
+}
+
+export interface PendingNoticeTarget {
+  id: string;
+  sellerId: string;
+  sellerName: string;
+  sellerEmail: string;
+  cnpj: string;
+}

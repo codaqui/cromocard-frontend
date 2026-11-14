@@ -1,5 +1,8 @@
 import type { BadgeTone } from '@/components/Badge/Badge';
+import type { SelectOption } from '@/components/Select/Select';
 import type { SellerVerificationStatus } from '@/types/seller-verification';
+
+import { DEADLINE_HOURS_OPTIONS, type DeadlineHours } from './seller-verifications.types';
 
 export const statusLabels: Record<SellerVerificationStatus, string> = {
   UNDER_REVIEW: 'Em análise',
@@ -26,6 +29,20 @@ export const sellerVerificationMessages = {
   approved: 'Credenciamento aprovado com sucesso.',
   rejected: 'Credenciamento reprovado com sucesso.',
 } as const;
+
+export const deadlineHoursLabels: Record<DeadlineHours, string> = {
+  24: '24 horas',
+  48: '48 horas (padrão)',
+  72: '72 horas',
+  168: '7 dias',
+};
+
+export const deadlineHoursOptions: SelectOption[] = DEADLINE_HOURS_OPTIONS.map((hours) => ({
+  value: String(hours),
+  label: deadlineHoursLabels[hours],
+}));
+
+export const DEFAULT_DEADLINE_HOURS: DeadlineHours = 48;
 
 const DECIDABLE_STATUSES: SellerVerificationStatus[] = ['UNDER_REVIEW', 'PENDING'];
 
