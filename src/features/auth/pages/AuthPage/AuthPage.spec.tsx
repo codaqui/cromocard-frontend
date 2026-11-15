@@ -1,12 +1,15 @@
 import { screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 import { paths } from '@/routes/paths';
+import { preloadLazyRoutes } from '@/test/preloadLazyRoutes';
 import { renderWithProviders } from '@/test/renderWithProviders';
 
 import { authRoutes } from '../../auth.routes';
 
 describe('AuthPage', () => {
+  beforeAll(() => preloadLazyRoutes(authRoutes), 30_000);
+
   it('abre /login com a aba Fazer Login ativa', async () => {
     renderWithProviders({ routes: authRoutes, initialPath: paths.login });
 

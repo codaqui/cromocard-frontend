@@ -7,6 +7,7 @@
 
 .table {
   width: 100%;
+  min-width: max-content;
   border-collapse: collapse;
 }
 
@@ -41,6 +42,14 @@
 
 .table tbody tr:nth-child(even) td {
   background: var(--color-surface-raised);
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.clickable:hover td {
+  background: var(--color-surface-high);
 }
 
 .empty {

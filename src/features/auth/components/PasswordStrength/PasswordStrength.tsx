@@ -1,7 +1,7 @@
 import { cn } from '@/utils/cn';
 
 import styles from './PasswordStrength.module.css';
-import { MAX_PASSWORD_STRENGTH } from './passwordStrength';
+import { MAX_PASSWORD_STRENGTH } from './passwordStrengthScore';
 
 interface PasswordStrengthProps {
   strength: number;

@@ -21,6 +21,7 @@ export const paths = {
     root: '/backoffice',
     dashboard: '/backoffice/dashboard',
     users: '/backoffice/users',
+    userDetail: '/backoffice/users/:id',
     notifications: '/backoffice/notifications',
     catalog: '/backoffice/catalog',
     communities: '/backoffice/communities',
@@ -51,4 +52,8 @@ export function checkEmailPathFor(email: string): string {
 
 export function searchPathFor(term: string, scope: string): string {
   return `${paths.search}?${new URLSearchParams({ q: term, tipo: scope }).toString()}`;
+}
+
+export function userDetailPathFor(id: string): string {
+  return `${paths.backoffice.users}/${id}`;
 }
