@@ -33,7 +33,11 @@
     padding: var(--space-2) var(--space-4);
   }
 
+  .brand {
+    margin-right: auto;
+  }
+
   .actions {
-    flex-wrap: wrap;
+    display: contents;
   }
 }
