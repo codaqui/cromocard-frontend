@@ -1,17 +1,143 @@
-.field {
+.field,
+.compact {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
 }
 
+.labelRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.label {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-label);
+  letter-spacing: var(--letter-spacing-caps);
+  text-transform: uppercase;
+}
+
+.statusOk,
+.statusBelow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+
+.statusOk {
+  color: var(--color-info);
+}
+
+.statusBelow {
+  color: var(--color-danger);
+}
+
 .preview {
-  display: block;
-  max-width: var(--size-image-preview);
-  height: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-high);
+}
+
+.image {
+  width: auto;
+  max-width: 100%;
+  max-height: var(--size-card-preview);
   border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border);
+  object-fit: contain;
+}
+
+.caption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  max-width: 100%;
+  text-align: center;
+}
+
+.name {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: var(--font-size-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.replace,
+.remove {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-width: var(--size-control);
+  min-height: var(--size-control);
+  padding: 0 var(--space-3);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .remove {
-  align-self: flex-start;
+  color: var(--color-danger);
+}
+
+.replace:focus-within,
+.remove:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.hiddenInput {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.compact .preview {
+  flex-direction: row;
+  align-items: center;
+}
+
+.compact .image {
+  max-height: var(--size-control);
+}
+
+.compact .caption {
+  flex: 1;
+  align-items: flex-start;
+  min-width: 0;
+  text-align: left;
+}
+
+.error {
+  color: var(--color-danger);
+  font-size: var(--font-size-caption);
 }

@@ -4,6 +4,10 @@ export const CATEGORY_TYPES = ['ALBUM', 'CARD'] as const;
 
 export type CategoryType = (typeof CATEGORY_TYPES)[number];
 
+export const ALBUM_STATUSES = ['ACTIVE', 'INACTIVE'] as const;
+
+export type AlbumStatus = (typeof ALBUM_STATUSES)[number];
+
 export interface CatalogReference {
   id: string;
   name: string;
@@ -28,6 +32,7 @@ export interface Album {
   description: string | null;
   coverUrl: string | null;
   totalCards: number;
+  status: AlbumStatus;
   categoryId: string | null;
   category: CatalogReference | null;
   createdAt: string;
@@ -57,6 +62,7 @@ export interface Category {
   id: string;
   name: string;
   type: CategoryType;
+  description: string | null;
   parentCategoryId: string | null;
   parentCategory: CatalogReference | null;
   createdAt: string;
@@ -82,9 +88,15 @@ export interface ListCategoriesParams extends SearchParams {
   type?: CategoryType;
 }
 
+/** Aviso de sucesso: o título e a linha de detalhe, como no frame 832-1149. */
+export interface CatalogNotice {
+  title: string;
+  detail?: string;
+}
+
 export interface CatalogTabProps {
   pageSize: number;
-  notify: (message: string) => void;
+  notify: (notice: CatalogNotice) => void;
 }
 
 export type CatalogItemKind = 'card' | 'album' | 'category';

@@ -10,8 +10,11 @@ import styles from './CatalogFields.module.css';
 
 interface FieldFrame {
   label: string;
-  icon: CatalogIconName;
+  /** Ícone à esquerda do campo; os formulários do Figma usam só no álbum. */
+  icon?: CatalogIconName;
   error?: string;
+  /** Mostra o asterisco do Figma no rótulo e avisa o leitor de tela. */
+  required?: boolean;
 }
 
 interface IconFrameProps extends FieldFrame {
@@ -19,21 +22,27 @@ interface IconFrameProps extends FieldFrame {
   children: ReactNode;
 }
 
-function IconFrame({ label, icon, error, inputId, children }: IconFrameProps) {
+function IconFrame({ label, icon, error, required, inputId, children }: IconFrameProps) {
   return (
-    <FormField inputId={inputId} label={label} error={error}>
-      <div className={styles.control}>
-        <span className={styles.icon}>
-          <CatalogIcon name={icon} size={20} />
-        </span>
+    <FormField inputId={inputId} label={required ? `${label} *` : label} error={error}>
+      <div className={icon ? styles.control : styles.plainControl}>
+        {icon && (
+          <span className={styles.icon}>
+            <CatalogIcon name={icon} size={20} />
+          </span>
+        )}
         {children}
       </div>
     </FormField>
   );
 }
 
-function fieldAria(inputId: string, error?: string) {
-  return { 'aria-invalid': Boolean(error), 'aria-describedby': describedByOf(inputId, { error }) };
+function fieldAria(inputId: string, { error, required }: Pick<FieldFrame, 'error' | 'required'>) {
+  return {
+    'aria-invalid': Boolean(error),
+    'aria-required': required,
+    'aria-describedby': describedByOf(inputId, { error }),
+  };
 }
 
 function OptionList({ placeholder, options }: { placeholder: string; options: SelectOption[] }) {
@@ -55,12 +64,17 @@ export function WideRow({ children }: { children: ReactNode }) {
 
 type IconInputProps = FieldFrame & ComponentProps<'input'>;
 
-export function IconInput({ label, icon, error, ...inputProps }: IconInputProps) {
+export function IconInput({ label, icon, error, required, ...inputProps }: IconInputProps) {
   const inputId = useId();
 
   return (
-    <IconFrame label={label} icon={icon} error={error} inputId={inputId}>
-      <input id={inputId} className={styles.input} {...fieldAria(inputId, error)} {...inputProps} />
+    <IconFrame {...{ label, icon, error, required, inputId }}>
+      <input
+        id={inputId}
+        className={styles.input}
+        {...fieldAria(inputId, { error, required })}
+        {...inputProps}
+      />
     </IconFrame>
   );
 }
@@ -74,6 +88,7 @@ export function IconSelect({
   label,
   icon,
   error,
+  required,
   placeholder,
   options,
   ...selectProps
@@ -81,11 +96,11 @@ export function IconSelect({
   const selectId = useId();
 
   return (
-    <IconFrame label={label} icon={icon} error={error} inputId={selectId}>
+    <IconFrame {...{ label, icon, error, required, inputId: selectId }}>
       <select
         id={selectId}
         className={styles.input}
-        {...fieldAria(selectId, error)}
+        {...fieldAria(selectId, { error, required })}
         {...selectProps}
       >
         <OptionList placeholder={placeholder} options={options} />

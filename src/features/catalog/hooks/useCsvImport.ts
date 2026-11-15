@@ -1,24 +1,38 @@
 import { type ChangeEvent, useState } from 'react';
 
-import { importedCardsMessage } from '../catalog.labels';
+import { csvDataRowsOf, importedCardsNotice } from '../catalog.format';
 import { useDownloadImportTemplate, useImportCards } from '../catalog.queries';
+import type { CatalogNotice } from '../catalog.types';
 
-export function useCsvImport(onImported: (message: string) => void) {
+/** O arquivo escolhido e o total de linhas de cartas dele, lido no navegador. */
+function useCsvFile(onChoose: () => void) {
   const [file, setFile] = useState<File | null>(null);
+  const [rows, setRows] = useState<number>();
+
+  const choose = (next: File | null) => {
+    setFile(next);
+    setRows(undefined);
+    onChoose();
+    if (next) void next.text().then((text) => setRows(csvDataRowsOf(text)));
+  };
+
+  return { file, rows, choose };
+}
+
+export function useCsvImport(onImported: (notice: CatalogNotice) => void) {
   const importing = useImportCards();
   const template = useDownloadImportTemplate();
-
-  const selectFile = (event: ChangeEvent<HTMLInputElement>) => {
-    setFile(event.target.files?.[0] ?? null);
-    importing.reset();
-  };
+  const { file, rows, choose } = useCsvFile(importing.reset);
 
   const submit = () => {
     if (!file) return;
-    importing.mutate(file, {
-      onSuccess: ({ created }) => onImported(importedCardsMessage(created)),
-    });
+    const onSuccess = ({ created }: { created: number }) =>
+      onImported(importedCardsNotice(created, file.name));
+    importing.mutate(file, { onSuccess });
   };
 
-  return { file, selectFile, submit, importing, template };
+  const selectFile = (event: ChangeEvent<HTMLInputElement>) =>
+    choose(event.target.files?.[0] ?? null);
+
+  return { file, rows, selectFile, restart: () => choose(null), submit, importing, template };
 }

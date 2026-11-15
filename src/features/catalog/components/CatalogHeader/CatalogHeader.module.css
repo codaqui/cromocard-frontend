@@ -17,7 +17,7 @@
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-xs);
   background: var(--color-surface-high);
-  color: var(--color-success);
+  color: var(--color-primary);
   font-size: var(--font-size-xs);
   font-weight: 700;
   letter-spacing: var(--letter-spacing-caps);
@@ -42,9 +42,4 @@
   flex-wrap: wrap;
   gap: var(--space-3);
   padding-top: var(--space-4);
-}
-
-.albumIcon {
-  display: inline-flex;
-  color: var(--color-warning);
 }

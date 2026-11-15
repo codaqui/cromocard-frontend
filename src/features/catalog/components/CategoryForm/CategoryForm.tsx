@@ -1,14 +1,16 @@
 import type { UseFormRegisterReturn } from 'react-hook-form';
 
 import { FormError } from '@/components/FormError/FormError';
+import { Textarea } from '@/components/Textarea/Textarea';
 import type { ApiError } from '@/lib/api-error';
 
 import { categoryTypeLabels } from '../../catalog.labels';
 import type { CategoryInput } from '../../catalog.schemas';
-import { CATEGORY_TYPES, type Category } from '../../catalog.types';
-import { useCategoryForm } from '../../hooks/useCategoryForm';
+import { CATEGORY_TYPES, type Category, type CategoryType } from '../../catalog.types';
 import { useParentCategoryOptions } from '../../hooks/useCatalogFilterOptions';
+import { useCategoryForm } from '../../hooks/useCategoryForm';
 import { IconInput, IconSelect, WideRow } from '../CatalogFields/CatalogFields';
+import type { ReportInvalid } from '../CatalogFormModal/CatalogFormModal';
 import styles from './CategoryForm.module.css';
 
 const categoryTypeOptions = CATEGORY_TYPES.map((type) => ({
@@ -21,48 +23,72 @@ interface CategoryFormProps {
   category?: Category;
   apiError: ApiError | null;
   onSubmit: (input: CategoryInput) => void;
+  onInvalidChange?: ReportInvalid;
 }
 
 interface ParentCategoryFieldProps {
+  type?: CategoryType;
   category?: Category;
   error?: string;
   field: UseFormRegisterReturn<'parentCategoryId'>;
 }
 
-function ParentCategoryField({ category, error, field }: ParentCategoryFieldProps) {
+function ParentCategoryField({ type, category, error, field }: ParentCategoryFieldProps) {
   return (
     <IconSelect
       label="Categoria pai"
-      icon="accountTree"
-      placeholder="Sem categoria pai"
-      options={useParentCategoryOptions(category)}
+      placeholder={type ? 'Nenhuma' : 'Escolha o tipo primeiro'}
+      options={useParentCategoryOptions(type, category)}
       error={error}
       {...field}
+      disabled={!type}
     />
   );
 }
 
-export function CategoryForm({ formId, category, apiError, onSubmit }: CategoryFormProps) {
-  const { register, errors, formError, submit } = useCategoryForm(category, onSubmit, apiError);
+type CategoryFormState = ReturnType<typeof useCategoryForm>;
+
+function HierarchyFields({ form, category }: { form: CategoryFormState; category?: Category }) {
+  const { errors } = form;
 
   return (
-    <form id={formId} className={styles.form} noValidate onSubmit={submit}>
-      <IconInput label="Nome" icon="title" error={errors.name?.message} {...register('name')} />
+    <>
       <IconSelect
         label="Tipo"
-        icon="category"
-        placeholder="Escolha o tipo"
+        required
+        placeholder="Selecione"
         options={categoryTypeOptions}
         error={errors.type?.message}
-        {...register('type')}
+        {...form.registerType()}
       />
+      <ParentCategoryField
+        type={form.type}
+        category={category}
+        error={errors.parentCategoryId?.message}
+        field={form.register('parentCategoryId')}
+      />
+    </>
+  );
+}
+
+/** Nome, tipo, categoria pai e descrição, como no frame 833-10832 (slug e selo ficam para a CCD104). */
+export function CategoryForm({ formId, category, ...options }: CategoryFormProps) {
+  const form = useCategoryForm({ item: category, ...options });
+  const { register, errors } = form;
+
+  return (
+    <form id={formId} className={styles.form} noValidate onSubmit={form.submit}>
       <WideRow>
-        <ParentCategoryField
-          category={category}
-          error={errors.parentCategoryId?.message}
-          field={register('parentCategoryId')}
+        <IconInput label="Nome" required error={errors.name?.message} {...register('name')} />
+      </WideRow>
+      <HierarchyFields form={form} category={category} />
+      <WideRow>
+        <Textarea
+          label="Descrição"
+          error={errors.description?.message}
+          {...register('description')}
         />
-        <FormError message={formError} />
+        <FormError message={form.formError} />
       </WideRow>
     </form>
   );

@@ -1,22 +1,22 @@
-import { type Control, Controller, type FieldValues, type Path } from 'react-hook-form';
+import { type Control, Controller, type FieldPathByValue, type FieldValues } from 'react-hook-form';
 
-import type { UploadFolder } from '../../catalog.types';
-import { ImageUploadField } from '../ImageUploadField/ImageUploadField';
+import { ImageUploadField, type ImageUploadFieldProps } from '../ImageUploadField/ImageUploadField';
 
-interface ImageUploadControllerProps<TValues extends FieldValues, TOutput extends FieldValues> {
+type FieldOptions = Omit<ImageUploadFieldProps, 'value' | 'onChange' | 'error'>;
+
+interface ImageUploadControllerProps<
+  TValues extends FieldValues,
+  TOutput extends FieldValues,
+> extends FieldOptions {
   control: Control<TValues, unknown, TOutput>;
-  name: Path<TValues>;
-  label: string;
-  folder: UploadFolder;
-  removable?: boolean;
+  /** Só campos de texto: o valor do campo é a URL da imagem. */
+  name: FieldPathByValue<TValues, string>;
 }
 
 export function ImageUploadController<TValues extends FieldValues, TOutput extends FieldValues>({
   control,
   name,
-  label,
-  folder,
-  removable,
+  ...options
 }: ImageUploadControllerProps<TValues, TOutput>) {
   return (
     <Controller
@@ -24,12 +24,10 @@ export function ImageUploadController<TValues extends FieldValues, TOutput exten
       name={name}
       render={({ field, fieldState }) => (
         <ImageUploadField
-          label={label}
-          folder={folder}
-          value={typeof field.value === 'string' ? field.value : ''}
+          {...options}
+          value={field.value}
           onChange={field.onChange}
           error={fieldState.error?.message}
-          removable={removable}
         />
       )}
     />

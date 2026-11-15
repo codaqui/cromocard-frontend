@@ -15,6 +15,20 @@ describe('Toast', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Notificação enviada para 120 usuários');
   });
 
+  it('mostra o detalhe abaixo da mensagem', () => {
+    render(
+      <Toast
+        message="Carta cadastrada no catálogo"
+        detail="Charizard foi publicada e já aparece nas buscas."
+        onDismiss={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Carta cadastrada no catálogoCharizard foi publicada e já aparece nas buscas.',
+    );
+  });
+
   it('anuncia o erro como alerta', () => {
     render(<Toast tone="danger" message="Não foi possível enviar" onDismiss={vi.fn()} />);
 

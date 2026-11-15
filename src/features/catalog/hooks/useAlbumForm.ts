@@ -3,10 +3,11 @@ import type { FormEvent } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { useApiFieldErrors } from '@/hooks/useApiFieldErrors';
-import type { ApiError } from '@/lib/api-error';
 
 import { type AlbumFormValues, type AlbumInput, albumFormSchema } from '../catalog.schemas';
 import type { Album } from '../catalog.types';
+import type { CatalogFormOptions } from './catalogFormOptions';
+import { useReportInvalid } from './useReportInvalid';
 
 const albumFields = [
   'title',
@@ -15,6 +16,7 @@ const albumFields = [
   'description',
   'coverUrl',
   'categoryId',
+  'status',
 ] as const;
 
 function albumFormDefaults(album?: Album): AlbumFormValues {
@@ -25,14 +27,16 @@ function albumFormDefaults(album?: Album): AlbumFormValues {
     description: album?.description ?? '',
     coverUrl: album?.coverUrl ?? '',
     categoryId: album?.categoryId ?? '',
+    status: album?.status ?? 'ACTIVE',
   };
 }
 
-export function useAlbumForm(
-  album: Album | undefined,
-  onSubmit: (input: AlbumInput) => void,
-  apiError: ApiError | null,
-) {
+export function useAlbumForm({
+  item: album,
+  onSubmit,
+  apiError,
+  onInvalidChange,
+}: CatalogFormOptions<Album, AlbumInput>) {
   const { register, control, handleSubmit, setError, formState } = useForm<
     AlbumFormValues,
     unknown,
@@ -40,6 +44,7 @@ export function useAlbumForm(
   >({ resolver: zodResolver(albumFormSchema), defaultValues: albumFormDefaults(album) });
 
   const formError = useApiFieldErrors(apiError, albumFields, setError);
+  useReportInvalid(formState.errors, onInvalidChange);
   const submit = (event: FormEvent) => void handleSubmit(onSubmit)(event);
 
   return { register, control, errors: formState.errors, formError, submit };

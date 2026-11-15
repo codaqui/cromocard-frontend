@@ -35,6 +35,7 @@
   font-size: var(--font-size-xs);
   font-weight: 700;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .titleCell,
@@ -101,10 +102,24 @@
 
 .albumNumber {
   display: inline-flex;
-  flex-direction: column;
   align-items: center;
   gap: var(--space-1);
+  white-space: nowrap;
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-xs);
   background: var(--color-surface-high);
+}
+
+.active,
+.inactive {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.active {
+  color: var(--color-success);
+}
+
+.inactive {
+  color: var(--color-text-muted);
 }

@@ -1,5 +1,28 @@
+/* Dois painéis lado a lado no desktop, como no frame 833-9661; um embaixo do outro no celular. */
 .form {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-6);
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-4);
+}
+
+.formError {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 48rem) {
+  .fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 64rem) {
+  .form {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  }
 }

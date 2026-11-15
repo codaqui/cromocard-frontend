@@ -1,5 +1,5 @@
 import { useIsMutating } from '@tanstack/react-query';
-import { type ReactNode, useEffect, useId, useRef } from 'react';
+import { type ReactNode, useEffect, useId, useRef, useState } from 'react';
 
 import { Button } from '@/components/Button/Button';
 import { Modal } from '@/components/Modal/Modal';
@@ -10,12 +10,27 @@ import styles from './CatalogFormModal.module.css';
 
 type SaveControls = ConfirmedSaveControls<never>;
 
-interface CatalogFormModalProps {
+/** Textos do modal, que mudam entre cadastrar e editar (frames 278-3246 e 832-5744). */
+export interface CatalogFormModalTexts {
   title: string;
+  subtitle: string;
+  submitLabel: string;
+  note?: string;
+  invalidNote: (count: number) => string;
   confirmMessage: string;
+}
+
+/** O formulário avisa quantos campos estão com erro, para o rodapé contar como no Figma. */
+export type ReportInvalid = (count: number) => void;
+
+type ModalSize = 'default' | 'large';
+
+interface CatalogFormModalProps {
+  texts: CatalogFormModalTexts;
+  size?: ModalSize;
   save: SaveControls;
   onClose: () => void;
-  children: (formId: string) => ReactNode;
+  children: (formId: string, reportInvalid: ReportInvalid) => ReactNode;
 }
 
 interface CatalogFormIds {
@@ -28,6 +43,7 @@ interface CatalogFormIds {
 interface CatalogFormActionsProps {
   ids: CatalogFormIds;
   save: SaveControls;
+  submitLabel: string;
   onClose: () => void;
 }
 
@@ -44,7 +60,7 @@ function useCatalogFormIds(isReviewing: boolean): CatalogFormIds {
   return ids;
 }
 
-function EditStepActions({ ids, onClose }: CatalogFormActionsProps) {
+function EditStepActions({ ids, submitLabel, onClose }: CatalogFormActionsProps) {
   const isUploading = useIsMutating({ mutationKey: catalogKeys.uploads() }) > 0;
 
   return (
@@ -53,7 +69,7 @@ function EditStepActions({ ids, onClose }: CatalogFormActionsProps) {
         Cancelar
       </Button>
       <Button id={ids.saveId} type="submit" form={ids.formId} disabled={isUploading}>
-        Salvar
+        {submitLabel}
       </Button>
     </>
   );
@@ -77,27 +93,62 @@ function ReviewStepActions({ ids, save }: CatalogFormActionsProps) {
   );
 }
 
+interface FooterNote {
+  note?: string;
+  invalidNote?: string;
+}
+
+function CatalogFormFooter({
+  note,
+  invalidNote,
+  ...actions
+}: CatalogFormActionsProps & FooterNote) {
+  const Actions = actions.save.isReviewing ? ReviewStepActions : EditStepActions;
+  const text = invalidNote ?? note;
+
+  return (
+    <div className={styles.footer}>
+      {text && <p className={invalidNote ? styles.invalidNote : styles.note}>{text}</p>}
+      <div className={styles.actions}>
+        <Actions {...actions} />
+      </div>
+    </div>
+  );
+}
+
+/** "Corrija os N campos destacados…" no lugar da nota, enquanto houver erro. */
+function useInvalidNote(texts: CatalogFormModalTexts) {
+  const [invalidCount, setInvalidCount] = useState(0);
+  const invalidNote = invalidCount > 0 ? texts.invalidNote(invalidCount) : undefined;
+  return { invalidNote, reportInvalid: setInvalidCount };
+}
+
+function dialogPropsOf({ title, subtitle }: CatalogFormModalTexts, size: ModalSize) {
+  return { title, subtitle, size, icon: 'cards' as const };
+}
+
 export function CatalogFormModal({
-  title,
-  confirmMessage,
+  texts,
+  size = 'default',
   save,
   onClose,
   children,
 }: CatalogFormModalProps) {
   const ids = useCatalogFormIds(save.isReviewing);
-  const Actions = save.isReviewing ? ReviewStepActions : EditStepActions;
+  const { invalidNote, reportInvalid } = useInvalidNote(texts);
+  const { submitLabel, note } = texts;
 
   return (
     <Modal
       open
-      title={title}
+      {...dialogPropsOf(texts, size)}
       dismissible={!save.isSaving}
       onClose={onClose}
-      footer={<Actions ids={ids} save={save} onClose={onClose} />}
+      footer={<CatalogFormFooter {...{ ids, save, submitLabel, note, invalidNote, onClose }} />}
     >
-      <div hidden={save.isReviewing}>{children(ids.formId)}</div>
+      <div hidden={save.isReviewing}>{children(ids.formId, reportInvalid)}</div>
       <p id={ids.messageId} className={styles.confirm} hidden={!save.isReviewing}>
-        {confirmMessage}
+        {texts.confirmMessage}
       </p>
     </Modal>
   );

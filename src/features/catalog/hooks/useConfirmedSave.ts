@@ -14,7 +14,7 @@ export interface ConfirmedSaveControls<TInput> {
 
 export function useConfirmedSave<TInput>(
   mutation: UseMutationResult<unknown, Error, TInput>,
-  onSaved: () => void,
+  onSaved: (input: TInput) => void,
 ): ConfirmedSaveControls<TInput> {
   const [pending, setPending] = useState<{ input: TInput } | null>(null);
 
@@ -25,7 +25,8 @@ export function useConfirmedSave<TInput>(
 
   const confirm = () => {
     if (!pending) return;
-    mutation.mutate(pending.input, { onSuccess: onSaved, onSettled: () => setPending(null) });
+    const { input } = pending;
+    mutation.mutate(input, { onSuccess: () => onSaved(input), onSettled: () => setPending(null) });
   };
 
   return {

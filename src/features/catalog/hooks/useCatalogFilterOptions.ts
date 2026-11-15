@@ -1,7 +1,13 @@
 import type { SelectOption } from '@/components/Select/Select';
 
 import { useAlbumsList, useCategoriesList, useLanguages, useRarities } from '../catalog.queries';
-import type { AlbumReference, CatalogReference, Category, CategoryType } from '../catalog.types';
+import type {
+  AlbumReference,
+  CardAlbum,
+  CatalogReference,
+  Category,
+  CategoryType,
+} from '../catalog.types';
 
 const OPTIONS_PAGE = { page: 1, pageSize: 100 };
 
@@ -33,16 +39,47 @@ export function useAlbumOptions(current?: SelectOption): SelectOption[] {
   return withCurrentOption(options, current);
 }
 
-export function useParentCategoryOptions(category?: Category): SelectOption[] {
-  const { data } = useCategoriesList(OPTIONS_PAGE);
-  const options = referenceOptionsOf(data?.data.filter(({ id }) => id !== category?.id));
-  return withCurrentOption(options, optionOfReference(category?.parentCategory));
+/** A própria categoria e todas as que descendem dela: nenhuma pode ser a categoria pai (L9). */
+export function selfAndDescendantIdsOf(categories: Category[], rootId?: string): Set<string> {
+  const ids = new Set<string>(rootId ? [rootId] : []);
+  const isNewChild = ({ id, parentCategoryId }: Category) =>
+    !ids.has(id) && parentCategoryId !== null && ids.has(parentCategoryId);
+  let children = categories.filter(isNewChild);
+  while (children.length > 0) {
+    children.forEach(({ id }) => ids.add(id));
+    children = categories.filter(isNewChild);
+  }
+  return ids;
 }
 
-export function useRarityOptions(): SelectOption[] {
-  return referenceOptionsOf(useRarities().data);
+/** Só categorias do mesmo tipo podem ser a categoria pai; sem tipo escolhido, não há opções. */
+export function useParentCategoryOptions(
+  type: CategoryType | undefined,
+  category?: Category,
+): SelectOption[] {
+  const { data } = useCategoriesList({ ...OPTIONS_PAGE, type });
+  if (!type) return [];
+
+  const categories = data?.data ?? [];
+  const blocked = selfAndDescendantIdsOf(categories, category?.id);
+  const options = referenceOptionsOf(categories.filter(({ id }) => !blocked.has(id)));
+  const current = category?.type === type ? optionOfReference(category.parentCategory) : undefined;
+  return withCurrentOption(options, current);
 }
 
-export function useLanguageOptions(): SelectOption[] {
-  return referenceOptionsOf(useLanguages().data);
+/** `current` mantém a raridade da carta na lista enquanto as opções carregam, como no álbum. */
+export function useRarityOptions(current?: SelectOption): SelectOption[] {
+  return withCurrentOption(referenceOptionsOf(useRarities().data), current);
+}
+
+export function useLanguageOptions(current?: SelectOption): SelectOption[] {
+  return withCurrentOption(referenceOptionsOf(useLanguages().data), current);
+}
+
+/** Total de cartas do álbum escolhido, para a numeração "004 / 102" do formulário (L5). */
+export function useAlbumTotal(albumId: string, current?: CardAlbum | null): number | undefined {
+  const { data } = useAlbumsList(OPTIONS_PAGE);
+  const album = data?.data.find(({ id }) => id === albumId);
+  if (album) return album.totalCards;
+  return current?.id === albumId ? current.totalCards : undefined;
 }

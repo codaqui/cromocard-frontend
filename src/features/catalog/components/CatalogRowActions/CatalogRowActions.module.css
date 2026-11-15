@@ -8,8 +8,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--size-catalog-icon-button);
-  height: var(--size-catalog-icon-button);
+  width: var(--size-control);
+  height: var(--size-control);
   border: none;
   border-radius: var(--radius-sm);
   background: var(--color-surface-high);

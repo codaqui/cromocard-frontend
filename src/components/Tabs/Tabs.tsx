@@ -4,17 +4,18 @@ import { cn } from '@/utils/cn';
 
 import styles from './Tabs.module.css';
 
-export interface TabItem {
-  id: string;
+export interface TabItem<TId extends string = string> {
+  id: TId;
   label: ReactNode;
   count?: number;
 }
 
-interface TabsProps {
+/** `TId` deixa a tela receber o id já com o tipo das abas dela, sem conferir nem converter. */
+interface TabsProps<TId extends string> {
   label: string;
-  items: TabItem[];
-  activeId: string;
-  onChange: (id: string) => void;
+  items: TabItem<TId>[];
+  activeId: TId;
+  onChange: (id: TId) => void;
   children: ReactNode;
   actions?: ReactNode;
 }
@@ -28,15 +29,32 @@ function nextIndex(key: string, current: number, total: number): number | undefi
   return step === undefined ? undefined : (current + step + total) % total;
 }
 
-interface TabButtonProps {
-  item: TabItem;
+interface TabButtonProps<TId extends string> {
+  item: TabItem<TId>;
   tabId: string;
   panelId: string;
   active: boolean;
-  onSelect: (id: string) => void;
+  onSelect: (id: TId) => void;
 }
 
-function TabButton({ item, tabId, panelId, active, onSelect }: TabButtonProps) {
+function TabCount({ count }: { count?: number }) {
+  if (count === undefined) return null;
+
+  return (
+    <>
+      {' '}
+      <span className={styles.count}>{count}</span>
+    </>
+  );
+}
+
+function TabButton<TId extends string>({
+  item,
+  tabId,
+  panelId,
+  active,
+  onSelect,
+}: TabButtonProps<TId>) {
   return (
     <button
       id={tabId}
@@ -49,24 +67,24 @@ function TabButton({ item, tabId, panelId, active, onSelect }: TabButtonProps) {
       onClick={() => onSelect(item.id)}
     >
       {item.label}
-      {item.count !== undefined && (
-        <>
-          {' '}
-          <span className={styles.count}>{item.count}</span>
-        </>
-      )}
+      <TabCount count={item.count} />
     </button>
   );
 }
 
-interface KeyboardNavigationOptions {
-  items: TabItem[];
-  activeId: string;
-  onChange: (id: string) => void;
+interface KeyboardNavigationOptions<TId extends string> {
+  items: TabItem<TId>[];
+  activeId: TId;
+  onChange: (id: TId) => void;
   tabIdOf: (id: string) => string;
 }
 
-function keyboardNavigation({ items, activeId, onChange, tabIdOf }: KeyboardNavigationOptions) {
+function keyboardNavigation<TId extends string>({
+  items,
+  activeId,
+  onChange,
+  tabIdOf,
+}: KeyboardNavigationOptions<TId>) {
   const activeIndex = items.findIndex((item) => item.id === activeId);
 
   return (event: KeyboardEvent<HTMLDivElement>) => {
@@ -92,12 +110,19 @@ function TabPanel({ id, labelledBy, children }: TabPanelProps) {
   );
 }
 
-interface TabListProps extends Omit<TabsProps, 'children' | 'actions'> {
+interface TabListProps<TId extends string> extends Omit<TabsProps<TId>, 'children' | 'actions'> {
   panelId: string;
   tabIdOf: (id: string) => string;
 }
 
-function TabList({ label, items, activeId, onChange, panelId, tabIdOf }: TabListProps) {
+function TabList<TId extends string>({
+  label,
+  items,
+  activeId,
+  onChange,
+  panelId,
+  tabIdOf,
+}: TabListProps<TId>) {
   const moveFocus = keyboardNavigation({ items, activeId, onChange, tabIdOf });
 
   return (
@@ -116,7 +141,7 @@ function TabList({ label, items, activeId, onChange, panelId, tabIdOf }: TabList
   );
 }
 
-export function Tabs({ children, actions, ...listProps }: TabsProps) {
+export function Tabs<TId extends string>({ children, actions, ...listProps }: TabsProps<TId>) {
   const baseId = useId();
   const panelId = `${baseId}-panel`;
   const tabIdOf = (id: string) => `${baseId}-tab-${id}`;

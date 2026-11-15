@@ -1,4 +1,5 @@
-.control {
+.control,
+.plainControl {
   position: relative;
   display: flex;
   align-items: center;
@@ -25,6 +26,10 @@
   font-size: var(--font-size-sm);
 }
 
+.plainControl .input {
+  padding-left: var(--space-4);
+}
+
 .input::placeholder {
   color: var(--color-placeholder);
 }
@@ -42,4 +47,11 @@
   display: grid;
   grid-column: 1 / -1;
   gap: var(--space-4);
+}
+
+/* Fonte de 16 px no celular: com menos, o iOS dá zoom ao focar o campo. */
+@media (max-width: 48rem) {
+  .input {
+    font-size: var(--font-size-md);
+  }
 }

@@ -1,12 +1,17 @@
 import { EMPTY_VALUE_LABEL } from '../../catalog.labels';
 import { filtersStateOf, listSummary, selectChips } from '../../catalog.filter-chips';
-import { formatEdition } from '../../catalog.format';
 import { useAlbumsList } from '../../catalog.queries';
 import type { Album, CatalogTabProps } from '../../catalog.types';
 import { useCategoryOptions } from '../../hooks/useCatalogFilterOptions';
 import { type CatalogItemDialogs, useCatalogItemDialogs } from '../../hooks/useCatalogItemDialogs';
 import { type CatalogListFilters, useCatalogListFilters } from '../../hooks/useCatalogListFilters';
-import { CountCell, FranchiseBadge, Thumbnail, TitleCell } from '../CatalogCells/CatalogCells';
+import {
+  AlbumStatusCell,
+  CountCell,
+  FranchiseBadge,
+  Thumbnail,
+  TitleCell,
+} from '../CatalogCells/CatalogCells';
 import { CatalogDialogs } from '../CatalogDialogs/CatalogDialogs';
 import {
   CatalogFilterSelect,
@@ -14,7 +19,6 @@ import {
 } from '../CatalogFilterSelect/CatalogFilterSelect';
 import { CatalogFilters } from '../CatalogFilters/CatalogFilters';
 import { CatalogListResult, type CatalogTable } from '../CatalogListResult/CatalogListResult';
-import { CatalogSearchField } from '../CatalogSearchField/CatalogSearchField';
 import { catalogActionsColumn } from '../CatalogRowActions/catalogActionsColumn';
 import { AlbumFormModal } from '../AlbumFormModal/AlbumFormModal';
 import styles from './AlbumsTab.module.css';
@@ -25,18 +29,18 @@ const albumsTable: CatalogTable<Album> = {
   columns: [
     {
       key: 'cover',
-      header: 'Álbum & capa',
+      header: 'Capa',
       render: (album) => <Thumbnail imageUrl={album.coverUrl} />,
     },
     {
       key: 'title',
-      header: 'Título oficial',
-      render: (album) => <TitleCell title={album.title} />,
+      header: 'Título e editora',
+      render: (album) => <TitleCell title={album.title} detail={album.publisher} />,
     },
     {
-      key: 'edition',
-      header: 'Editora & ano',
-      render: (album) => formatEdition(album) ?? EMPTY_VALUE_LABEL,
+      key: 'year',
+      header: 'Ano',
+      render: (album) => album.year ?? EMPTY_VALUE_LABEL,
     },
     {
       key: 'category',
@@ -48,18 +52,25 @@ const albumsTable: CatalogTable<Album> = {
       header: 'Cartas',
       render: (album) => <CountCell value={album.totalCards} />,
     },
+    {
+      key: 'status',
+      header: 'Status',
+      render: (album) => <AlbumStatusCell status={album.status} />,
+    },
   ],
 };
 
 const albumFiltersTexts = {
   label: 'Filtros dos álbuns',
   searchLabel: 'Buscar álbum pelo título',
-  searchPlaceholder: 'Buscar por título do álbum…',
+  searchPlaceholder: 'Buscar por título…',
 };
 
-const initialFilters = { categoryId: '', year: '' };
+const initialFilters = { categoryId: '' };
 
 type AlbumFilters = typeof initialFilters;
+
+const albumsFound = { one: 'álbum encontrado', many: 'álbuns encontrados' };
 
 function albumsTableWith(dialogs: CatalogItemDialogs<Album>): CatalogTable<Album> {
   const actions = catalogActionsColumn<Album>('album', (album) => album.title, dialogs);
@@ -72,38 +83,15 @@ function renderAlbumForm(dialogs: CatalogItemDialogs<Album>) {
   );
 }
 
-function yearFilterOf(value: string): number | undefined {
-  const year = Number(value);
-  return Number.isInteger(year) && year > 0 ? year : undefined;
-}
-
 function useFranchiseSelect(): CatalogFilterSelectConfig<'categoryId'> {
   return {
     name: 'categoryId',
     label: 'Franquia',
     chipLabel: 'Franquia',
-    placeholder: 'Todas as Franquias',
+    placeholder: 'Todas as franquias',
     icon: 'gamepad',
     options: useCategoryOptions('ALBUM'),
   };
-}
-
-function yearChip(list: CatalogListFilters<AlbumFilters>) {
-  const { year } = list.filters;
-  return year
-    ? [{ key: 'year', label: `Ano: ${year}`, onRemove: () => list.changeFilter('year', '') }]
-    : [];
-}
-
-function albumChips(
-  list: CatalogListFilters<AlbumFilters>,
-  franchise: CatalogFilterSelectConfig<'categoryId'>,
-) {
-  const onRemove = () => list.changeFilter('categoryId', '');
-  return [
-    ...selectChips({ selects: [franchise], values: list.filters, onRemove }),
-    ...yearChip(list),
-  ];
 }
 
 interface AlbumFiltersProps {
@@ -113,7 +101,9 @@ interface AlbumFiltersProps {
 
 function AlbumFilters({ list, summary }: AlbumFiltersProps) {
   const franchise = useFranchiseSelect();
-  const state = filtersStateOf(list, albumChips(list, franchise), summary);
+  const onRemove = () => list.changeFilter('categoryId', '');
+  const chips = selectChips({ selects: [franchise], values: list.filters, onRemove });
+  const state = filtersStateOf(list, chips, summary);
 
   return (
     <CatalogFilters texts={albumFiltersTexts} state={state}>
@@ -122,31 +112,19 @@ function AlbumFilters({ list, summary }: AlbumFiltersProps) {
         value={list.filters.categoryId}
         onChange={list.changeFilter}
       />
-      <CatalogSearchField
-        label="Ano"
-        placeholder="Edição / Ano"
-        icon="calendar"
-        numeric
-        value={list.filters.year}
-        onChange={(value) => list.changeFilter('year', value)}
-      />
     </CatalogFilters>
   );
 }
 
 export function AlbumsTab({ pageSize, notify }: CatalogTabProps) {
   const list = useCatalogListFilters(initialFilters, pageSize);
-  const albumsQuery = useAlbumsList({ ...list.params, year: yearFilterOf(list.filters.year) });
+  const albumsQuery = useAlbumsList(list.params);
   const dialogs = useCatalogItemDialogs<Album>(notify);
-  const result = albumsQuery.data;
 
   return (
     <div className={styles.tab}>
       <CatalogDialogs dialogs={dialogs} renderForm={renderAlbumForm(dialogs)} />
-      <AlbumFilters
-        list={list}
-        summary={listSummary(result?.data.length, result?.meta.total, 'álbuns')}
-      />
+      <AlbumFilters list={list} summary={listSummary(albumsQuery.data?.meta.total, albumsFound)} />
       <CatalogListResult
         query={albumsQuery}
         table={albumsTableWith(dialogs)}

@@ -58,6 +58,16 @@ describe('Tabs', () => {
     expect(screen.getByRole('tab', { name: 'Cartas' })).toHaveAttribute('aria-selected', 'true');
   });
 
+  it('ignora as teclas que não são de navegação', async () => {
+    render(<CatalogTabs />);
+    await userEvent.click(screen.getByRole('tab', { name: 'Álbuns' }));
+
+    await userEvent.keyboard('a');
+
+    expect(screen.getByRole('tab', { name: 'Álbuns' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'Álbuns' })).toHaveFocus();
+  });
+
   it('mostra o contador ao lado do rótulo da aba', () => {
     render(
       <Tabs

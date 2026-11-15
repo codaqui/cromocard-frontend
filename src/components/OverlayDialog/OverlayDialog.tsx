@@ -18,13 +18,20 @@ export interface OverlayDialogProps {
   descriptionId?: string;
   /** Ícone num quadro à esquerda do título, como nos modais do Figma. */
   icon?: IconName;
-  /** `wide` para formulários de duas colunas (48rem), como o cadastro de usuário no Figma. */
-  size?: 'default' | 'wide';
+  /** Linha de apoio abaixo do título, como nos formulários do catálogo no Figma. */
+  subtitle?: string;
+  /**
+   * `wide` para formulários de duas colunas (48rem), como o cadastro de usuário no Figma;
+   * `large` para formulários com dois painéis (64rem), como o cadastro de carta.
+   */
+  size?: DialogSize;
 }
 
 interface OverlayDialogWithPlacementProps extends OverlayDialogProps {
   placement: 'center' | 'right';
 }
+
+type DialogSize = 'default' | 'wide' | 'large';
 
 const keepOpen = () => undefined;
 
@@ -34,12 +41,28 @@ const closeOnBackdropClick = (onClose: () => void) => (event: MouseEvent) =>
 interface DialogHeaderProps {
   titleId: string;
   title: string;
+  subtitle?: string;
   icon?: IconName;
   dismissible: boolean;
   onClose: () => void;
 }
 
-function DialogHeader({ titleId, title, icon, dismissible, onClose }: DialogHeaderProps) {
+function DialogTitles({
+  titleId,
+  title,
+  subtitle,
+}: Pick<DialogHeaderProps, 'titleId' | 'title' | 'subtitle'>) {
+  return (
+    <div className={styles.titles}>
+      <h2 id={titleId} className={styles.title}>
+        {title}
+      </h2>
+      {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
+    </div>
+  );
+}
+
+function DialogHeader({ titleId, title, subtitle, icon, dismissible, onClose }: DialogHeaderProps) {
   return (
     <header className={styles.header}>
       <div className={styles.heading}>
@@ -48,9 +71,7 @@ function DialogHeader({ titleId, title, icon, dismissible, onClose }: DialogHead
             <Icon name={icon} size={22} />
           </span>
         )}
-        <h2 id={titleId} className={styles.title}>
-          {title}
-        </h2>
+        <DialogTitles titleId={titleId} title={title} subtitle={subtitle} />
       </div>
       <button
         type="button"
@@ -71,8 +92,14 @@ interface DialogPanelProps extends Omit<OverlayDialogWithPlacementProps, 'open'>
   dismissible: boolean;
 }
 
-function dialogClassName(placement: 'center' | 'right', size: 'default' | 'wide') {
-  return cn(styles.dialog, styles[`${placement}Dialog`], size === 'wide' && styles.wideDialog);
+const sizeClassName: Record<DialogSize, string | undefined> = {
+  default: undefined,
+  wide: styles.wideDialog,
+  large: styles.largeDialog,
+};
+
+function dialogClassName(placement: 'center' | 'right', size: DialogSize) {
+  return cn(styles.dialog, styles[`${placement}Dialog`], sizeClassName[size]);
 }
 
 function DialogPanel({
@@ -83,7 +110,7 @@ function DialogPanel({
   size = 'default',
   ...content
 }: DialogPanelProps) {
-  const { title, icon, dismissible, onClose, children, footer } = content;
+  const { title, subtitle, icon, dismissible, onClose, children, footer } = content;
 
   return (
     <div
@@ -95,7 +122,7 @@ function DialogPanel({
       tabIndex={-1}
       className={dialogClassName(placement, size)}
     >
-      <DialogHeader {...{ titleId, title, icon, dismissible, onClose }} />
+      <DialogHeader {...{ titleId, title, subtitle, icon, dismissible, onClose }} />
       <div className={styles.body}>{children}</div>
       {footer && <footer className={styles.footer}>{footer}</footer>}
     </div>

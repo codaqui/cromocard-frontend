@@ -1,21 +1,24 @@
 import { Toast } from '@/components/Toast/Toast';
 
+import type { CatalogNotice } from '../../catalog.types';
 import type { CatalogCreateAction } from '../CatalogHeader/CatalogHeader';
 import { AlbumFormModal } from '../AlbumFormModal/AlbumFormModal';
 import { CardFormModal } from '../CardFormModal/CardFormModal';
+import { CategoryFormModal } from '../CategoryFormModal/CategoryFormModal';
 import { ImportCsvModal } from '../ImportCsvModal/ImportCsvModal';
 
 export interface CatalogCreateState {
   action: CatalogCreateAction | null;
-  message: string | null;
+  message: CatalogNotice | null;
   close: () => void;
-  finish: (message: string) => void;
+  finish: (notice: CatalogNotice) => void;
   clearMessage: () => void;
 }
 
 const dialogsByAction = {
   card: CardFormModal,
   album: AlbumFormModal,
+  category: CategoryFormModal,
 } as const;
 
 function CreateDialog({ state }: { state: CatalogCreateState }) {
@@ -32,7 +35,11 @@ export function CatalogCreateDialogs({ state }: { state: CatalogCreateState }) {
   return (
     <>
       <CreateDialog state={state} />
-      <Toast message={state.message} onDismiss={state.clearMessage} />
+      <Toast
+        message={state.message?.title ?? null}
+        detail={state.message?.detail}
+        onDismiss={state.clearMessage}
+      />
     </>
   );
 }

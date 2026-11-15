@@ -1,6 +1,6 @@
 import { z } from '@/lib/zod';
 
-import { CATEGORY_TYPES } from './catalog.types';
+import { ALBUM_STATUSES, CATEGORY_TYPES } from './catalog.types';
 
 const SMALLINT_MAX = 32767;
 const URL_MAX_LENGTH = 255;
@@ -10,8 +10,9 @@ export const ALBUM_PUBLISHER_MAX_LENGTH = 120;
 export const CARD_NAME_MAX_LENGTH = 160;
 export const CARD_NUMBER_MAX_LENGTH = 20;
 export const CATEGORY_NAME_MAX_LENGTH = 90;
+export const CATEGORY_DESCRIPTION_MAX_LENGTH = 255;
 
-const tooLong = (max: number) => `Use no máximo ${max} caracteres`;
+const tooLong = (max: number) => `Use no máximo ${max} caracteres.`;
 
 const requiredText = (max: number, missing: string) =>
   z
@@ -32,7 +33,7 @@ const optionalLongText = z
   .trim()
   .transform((value) => value || null);
 
-const imageUrl = z.url({ error: 'Envie a imagem' }).max(URL_MAX_LENGTH);
+const imageUrl = z.url({ error: 'Envie a imagem.' }).max(URL_MAX_LENGTH);
 
 const optionalImageUrl = z
   .string()
@@ -42,7 +43,14 @@ const optionalImageUrl = z
 const optionalReference = z
   .string()
   .transform((value) => value || null)
-  .pipe(z.uuid({ error: 'Selecione uma opção da lista' }).nullable());
+  .pipe(z.uuid({ error: 'Selecione uma opção da lista.' }).nullable());
+
+/** Referência que a carta precisa para ser publicada (R6, CA8). */
+const requiredReference = (missing: string) =>
+  z
+    .string()
+    .min(1, { error: missing })
+    .pipe(z.uuid({ error: 'Selecione uma opção da lista.' }));
 
 const optionalYear = z
   .string()
@@ -50,38 +58,40 @@ const optionalYear = z
   .transform((value) => (value ? Number(value) : null))
   .pipe(
     z
-      .number({ error: 'Informe o ano com números' })
-      .int({ error: 'Informe o ano com números' })
-      .min(1, { error: 'Informe um ano válido' })
-      .max(SMALLINT_MAX, { error: 'Informe um ano válido' })
+      .number({ error: 'Informe o ano com números.' })
+      .int({ error: 'Informe o ano com números.' })
+      .min(1, { error: 'Informe um ano válido.' })
+      .max(SMALLINT_MAX, { error: 'Informe um ano válido.' })
       .nullable(),
   );
 
 export const albumFormSchema = z.object({
-  title: requiredText(ALBUM_TITLE_MAX_LENGTH, 'Informe o título do álbum'),
+  title: requiredText(ALBUM_TITLE_MAX_LENGTH, 'Informe o título do álbum.'),
   publisher: optionalText(ALBUM_PUBLISHER_MAX_LENGTH),
   year: optionalYear,
   description: optionalLongText,
   coverUrl: optionalImageUrl,
   categoryId: optionalReference,
+  status: z.enum(ALBUM_STATUSES, { error: 'Escolha o status do álbum.' }),
 });
 
 export const cardFormSchema = z.object({
-  name: requiredText(CARD_NAME_MAX_LENGTH, 'Informe o nome da carta'),
+  name: requiredText(CARD_NAME_MAX_LENGTH, 'Informe o nome da carta.'),
   number: optionalText(CARD_NUMBER_MAX_LENGTH),
   description: optionalLongText,
   frontImageUrl: imageUrl,
   backImageUrl: optionalImageUrl,
   albumId: optionalReference,
-  categoryId: optionalReference,
-  rarityId: optionalReference,
-  languageId: optionalReference,
+  categoryId: requiredReference('Selecione a franquia.'),
+  rarityId: requiredReference('Selecione a raridade.'),
+  languageId: requiredReference('Selecione o idioma.'),
 });
 
 export const categoryFormSchema = z.object({
-  name: requiredText(CATEGORY_NAME_MAX_LENGTH, 'Informe o nome da categoria'),
-  type: z.string().pipe(z.enum(CATEGORY_TYPES, { error: 'Escolha o tipo da categoria' })),
+  name: requiredText(CATEGORY_NAME_MAX_LENGTH, 'Informe o nome da categoria.'),
+  type: z.string().pipe(z.enum(CATEGORY_TYPES, { error: 'Escolha o tipo da categoria.' })),
   parentCategoryId: optionalReference,
+  description: optionalText(CATEGORY_DESCRIPTION_MAX_LENGTH),
 });
 
 export type AlbumFormValues = z.input<typeof albumFormSchema>;

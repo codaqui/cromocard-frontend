@@ -2,7 +2,6 @@
   position: relative;
   display: flex;
   align-items: center;
-  flex: 1 1 var(--size-card-min);
 }
 
 .icon {
@@ -29,4 +28,11 @@
 .select:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 0;
+}
+
+/* Fonte de 16 px no celular: com menos, o iOS dá zoom ao focar o campo. */
+@media (max-width: 48rem) {
+  .select {
+    font-size: var(--font-size-md);
+  }
 }

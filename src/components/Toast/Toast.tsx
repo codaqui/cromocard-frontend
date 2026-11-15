@@ -8,6 +8,8 @@ type ToastTone = 'success' | 'danger';
 
 interface ToastProps {
   message: string | null;
+  /** Segunda linha do aviso, como no Figma: "Charizard foi publicada e já aparece nas buscas." */
+  detail?: string;
   tone?: ToastTone;
   durationMs?: number;
   onDismiss: () => void;
@@ -17,14 +19,18 @@ const DEFAULT_DURATION_MS = 5000;
 
 interface ToastMessageProps {
   message: string;
+  detail?: string;
   tone: ToastTone;
   onDismiss: () => void;
 }
 
-function ToastMessage({ message, tone, onDismiss }: ToastMessageProps) {
+function ToastMessage({ message, detail, tone, onDismiss }: ToastMessageProps) {
   return (
     <div className={cn(styles.toast, styles[tone])}>
-      <span>{message}</span>
+      <span className={styles.text}>
+        <span className={detail && styles.title}>{message}</span>
+        {detail && <span className={styles.detail}>{detail}</span>}
+      </span>
       <button type="button" className={styles.close} aria-label="Fechar aviso" onClick={onDismiss}>
         ×
       </button>
@@ -34,6 +40,7 @@ function ToastMessage({ message, tone, onDismiss }: ToastMessageProps) {
 
 export function Toast({
   message,
+  detail,
   tone = 'success',
   durationMs = DEFAULT_DURATION_MS,
   onDismiss,
@@ -48,7 +55,9 @@ export function Toast({
 
   return (
     <div className={styles.region} role={tone === 'danger' ? 'alert' : 'status'}>
-      {message && <ToastMessage message={message} tone={tone} onDismiss={onDismiss} />}
+      {message && (
+        <ToastMessage message={message} detail={detail} tone={tone} onDismiss={onDismiss} />
+      )}
     </div>
   );
 }

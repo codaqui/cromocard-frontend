@@ -33,8 +33,8 @@ function renderModal(editing?: Album) {
   });
 }
 
-async function saveAndConfirm() {
-  await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+async function saveAndConfirm(submit = 'Cadastrar álbum') {
+  await userEvent.click(screen.getByRole('button', { name: submit }));
   await userEvent.click(await screen.findByRole('button', { name: 'Confirmar' }));
 }
 
@@ -48,9 +48,13 @@ describe('AlbumFormModal', () => {
 
   it('R5: cadastra o álbum com o ano como número e só oferece categorias de álbum', async () => {
     renderModal();
-    await userEvent.type(screen.getByLabelText('Título'), 'Copa 2030');
+    expect(screen.getByRole('dialog', { name: 'Novo álbum' })).toBeInTheDocument();
+    expect(
+      screen.getByText('O total de cartas é calculado pelas cartas do álbum.'),
+    ).toBeInTheDocument();
+    await userEvent.type(screen.getByLabelText('Título *'), 'Copa 2030');
     await userEvent.type(screen.getByLabelText('Ano'), '2030');
-    const categorySelect = screen.getByLabelText('Categoria');
+    const categorySelect = screen.getByLabelText('Franquia');
     await screen.findByRole('option', { name: albumCategory.name });
     expect(
       within(categorySelect).queryByRole('option', { name: cardCategory.name }),
@@ -58,22 +62,56 @@ describe('AlbumFormModal', () => {
     await userEvent.selectOptions(categorySelect, albumCategory.id);
     await saveAndConfirm();
 
-    await vi.waitFor(() => expect(onSaved).toHaveBeenCalledWith('Álbum cadastrado com sucesso.'));
+    await vi.waitFor(() =>
+      expect(onSaved).toHaveBeenCalledWith({
+        title: 'Álbum cadastrado no catálogo',
+        detail: 'Copa 2030 já aparece na lista de álbuns.',
+      }),
+    );
     expect(vi.mocked(catalogApi.createAlbum).mock.calls[0]?.[0]).toMatchObject({
       title: 'Copa 2030',
       year: 2030,
       categoryId: albumCategory.id,
       publisher: null,
       coverUrl: null,
+      status: 'ACTIVE',
     });
+  });
+
+  it('R5: cadastra o álbum inativo', async () => {
+    renderModal();
+    await userEvent.type(screen.getByLabelText('Título *'), 'Copa 1950');
+    await userEvent.selectOptions(screen.getByLabelText('Status'), 'INACTIVE');
+    await saveAndConfirm();
+
+    await vi.waitFor(() =>
+      expect(vi.mocked(catalogApi.createAlbum).mock.calls[0]?.[0]).toMatchObject({
+        status: 'INACTIVE',
+      }),
+    );
   });
 
   it('R5: recusa o álbum sem título', async () => {
     renderModal();
-    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Cadastrar álbum' }));
 
-    expect(await screen.findByText('Informe o título do álbum')).toBeInTheDocument();
+    expect(await screen.findByText('Informe o título do álbum.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Corrija o campo destacado para cadastrar o álbum.'),
+    ).toBeInTheDocument();
     expect(catalogApi.createAlbum).not.toHaveBeenCalled();
+  });
+
+  it('R4: edita o álbum e avisa a auditoria', async () => {
+    renderModal(album);
+    await saveAndConfirm('Salvar alterações');
+
+    await vi.waitFor(() =>
+      expect(onSaved).toHaveBeenCalledWith({
+        title: 'Álbum atualizado no catálogo',
+        detail: 'Copa 2026: Alterações registradas no log de auditoria.',
+      }),
+    );
   });
 
   it('R4: edita o álbum e mostra o motivo quando a API recusa', async () => {
@@ -82,7 +120,8 @@ describe('AlbumFormModal', () => {
     );
     renderModal(album);
     expect(screen.getByRole('dialog', { name: 'Editar álbum' })).toBeInTheDocument();
-    await saveAndConfirm();
+    expect(screen.getByLabelText('Status')).toHaveValue('ACTIVE');
+    await saveAndConfirm('Salvar alterações');
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Álbum não encontrado');
     expect(vi.mocked(catalogApi.updateAlbum).mock.calls[0]?.[0]).toBe(album.id);

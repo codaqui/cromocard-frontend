@@ -140,15 +140,64 @@ describe('CatalogAdminPage', () => {
     );
   });
 
-  it('CA1: a aba de álbuns lista os álbuns e filtra pelo ano', async () => {
+  it('CA1: a aba de álbuns lista título, editora, ano, cartas e status', async () => {
     renderPage();
     await userEvent.click(screen.getByRole('tab', { name: /Álbuns Oficiais/ }));
 
     const table = await screen.findByRole('table', { name: 'Álbuns do catálogo' });
+    const headers = within(table)
+      .getAllByRole('columnheader')
+      .map((cell) => cell.textContent);
+    expect(headers).toEqual([
+      'Capa',
+      'Título e editora',
+      'Ano',
+      'Franquia',
+      'Cartas',
+      'Status',
+      'Ações',
+    ]);
+    expect(within(table).getByText('Panini')).toBeInTheDocument();
+    expect(within(table).getByText('2026')).toBeInTheDocument();
     expect(within(table).getByText('670')).toBeInTheDocument();
-    await userEvent.type(screen.getByLabelText('Ano'), '2026');
+    expect(within(table).getByText('Ativo')).toBeInTheDocument();
+    expect(screen.getByText('1 álbum encontrado')).toBeInTheDocument();
+  });
 
-    expect(catalogApi.listAlbums).toHaveBeenLastCalledWith({ page: 1, pageSize: 20, year: 2026 });
+  it('R5: álbum inativo e sem ano aparece com o status e o travessão', async () => {
+    vi.mocked(catalogApi.listAlbums).mockResolvedValue(
+      pageOf([{ ...album, year: null, status: 'INACTIVE' as const }]),
+    );
+    renderPage();
+    await userEvent.click(screen.getByRole('tab', { name: /Álbuns Oficiais/ }));
+
+    const table = await screen.findByRole('table', { name: 'Álbuns do catálogo' });
+    expect(within(table).getByText('Inativo')).toBeInTheDocument();
+    expect(within(table).getAllByRole('cell')[2]).toHaveTextContent('—');
+  });
+
+  it('R2: os botões do topo mudam com a aba, como no Figma', async () => {
+    renderPage();
+    expect(screen.getByRole('button', { name: 'Importar CSV' })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('tab', { name: /Álbuns Oficiais/ }));
+
+    expect(screen.getByRole('button', { name: '+ Novo Álbum' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Importar CSV' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '+ Cadastrar Carta' })).not.toBeInTheDocument();
+  });
+
+  it('CA9: excluir o álbum pede a confirmação e só exclui depois dela', async () => {
+    renderPage();
+    await userEvent.click(screen.getByRole('tab', { name: /Álbuns Oficiais/ }));
+    await userEvent.click(await screen.findByRole('button', { name: `Excluir ${album.title}` }));
+
+    expect(screen.getByText(`Excluir "${album.title}" do catálogo?`)).toBeInTheDocument();
+    expect(catalogApi.deleteItem).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole('button', { name: 'Excluir' }));
+
+    await vi.waitFor(() => expect(catalogApi.deleteItem).toHaveBeenCalledWith('album', album.id));
+    expect(await screen.findByText('Álbum excluído do catálogo')).toBeInTheDocument();
   });
 
   it('R15: a aba de categorias lista nome, tipo e categoria pai', async () => {
@@ -174,7 +223,8 @@ describe('CatalogAdminPage', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Excluir Pelé' }));
     await userEvent.click(screen.getByRole('button', { name: 'Excluir' }));
 
-    expect(await screen.findByText('Carta excluída com sucesso.')).toBeInTheDocument();
+    expect(await screen.findByText('Carta excluída do catálogo')).toBeInTheDocument();
+    expect(screen.getByText('Pelé saiu das buscas.')).toBeInTheDocument();
     expect(catalogApi.deleteItem).toHaveBeenCalledWith('card', card.id);
     await vi.waitFor(() => expect(listCalls()).toHaveLength(2));
   });
@@ -183,7 +233,7 @@ describe('CatalogAdminPage', () => {
     renderPage();
     await userEvent.click(screen.getByRole('button', { name: '+ Cadastrar Carta' }));
 
-    expect(screen.getByRole('dialog', { name: 'Cadastrar carta' })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Cadastrar nova carta' })).toBeInTheDocument();
   });
 
   it('R13: o botão de importação abre o modal do CSV', async () => {
@@ -208,6 +258,38 @@ describe('CatalogAdminPage', () => {
     expect(screen.getByRole('dialog', { name: 'Nova categoria' })).toBeInTheDocument();
   });
 
+  it('R4: o lápis da linha abre a edição da carta e do álbum', async () => {
+    renderPage();
+    await userEvent.click(await screen.findByRole('button', { name: 'Editar Pelé' }));
+    expect(screen.getByRole('dialog', { name: 'Editar carta' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+
+    await userEvent.click(screen.getByRole('tab', { name: /Álbuns Oficiais/ }));
+    await userEvent.click(await screen.findByRole('button', { name: `Editar ${album.title}` }));
+    expect(screen.getByRole('dialog', { name: 'Editar álbum' })).toBeInTheDocument();
+  });
+
+  it('CA1: a busca vira chip e sai pelo chip', async () => {
+    renderPage();
+    await userEvent.type(await screen.findByLabelText('Buscar carta pelo nome ou número'), 'Pelé');
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Remover filtro Busca: Pelé' }),
+    );
+
+    expect(screen.getByLabelText('Buscar carta pelo nome ou número')).toHaveValue('');
+  });
+
+  it('CA1: avança de página pelo botão da paginação', async () => {
+    renderPage();
+    await userEvent.click(await screen.findByRole('button', { name: 'Próxima página' }));
+
+    await vi.waitFor(() =>
+      expect(catalogApi.listCards).toHaveBeenLastCalledWith(
+        expect.objectContaining({ ...LIST_PAGE, page: 2 }),
+      ),
+    );
+  });
+
   it('CA1: remove um filtro pelo chip', async () => {
     renderPage();
     await screen.findByRole('option', { name: 'Lendária' });
@@ -219,12 +301,26 @@ describe('CatalogAdminPage', () => {
     expect(catalogApi.listCards).toHaveBeenLastCalledWith(LIST_PAGE);
   });
 
-  it('CA1: o filtro de ano dos álbuns vira chip', async () => {
+  it('R15: a aba de categorias filtra pelo tipo e mostra o filtro como chip', async () => {
+    renderPage();
+    await userEvent.click(screen.getByRole('tab', { name: /Categorias & Franquias/ }));
+    await userEvent.selectOptions(await screen.findByLabelText('Tipo'), 'ALBUM');
+
+    expect(catalogApi.listCategories).toHaveBeenLastCalledWith({ ...LIST_PAGE, type: 'ALBUM' });
+    await userEvent.click(screen.getByRole('button', { name: 'Remover filtro Tipo: Álbum' }));
+    expect(catalogApi.listCategories).toHaveBeenLastCalledWith(LIST_PAGE);
+  });
+
+  it('CA1: a aba de álbuns filtra pela franquia', async () => {
     renderPage();
     await userEvent.click(screen.getByRole('tab', { name: /Álbuns Oficiais/ }));
-    await userEvent.type(await screen.findByLabelText('Ano'), '2026');
-    await userEvent.click(screen.getByRole('button', { name: 'Remover filtro Ano: 2026' }));
+    const franchise = await screen.findByLabelText('Franquia');
+    await within(franchise).findByRole('option', { name: 'Futebol' });
+    await userEvent.selectOptions(
+      franchise,
+      within(franchise).getByRole('option', { name: 'Futebol' }),
+    );
 
-    expect(catalogApi.listAlbums).toHaveBeenLastCalledWith(LIST_PAGE);
+    expect(screen.getByText('Franquia: Futebol')).toBeInTheDocument();
   });
 });

@@ -1,4 +1,5 @@
-import { EMPTY_VALUE_LABEL } from '../../catalog.labels';
+import { albumStatusLabels, EMPTY_VALUE_LABEL } from '../../catalog.labels';
+import type { AlbumStatus } from '../../catalog.types';
 import { formatAlbumNumber } from '../../catalog.format';
 import { CatalogIcon } from '../CatalogIcon/CatalogIcon';
 import styles from './CatalogCells.module.css';
@@ -82,4 +83,12 @@ export function AlbumNumberCell({ number, total }: { number: string | null; tota
 
 export function CountCell({ value }: { value: number }) {
   return <span className={styles.count}>{value}</span>;
+}
+
+export function AlbumStatusCell({ status }: { status: AlbumStatus }) {
+  return (
+    <span className={styles[status === 'ACTIVE' ? 'active' : 'inactive']}>
+      {albumStatusLabels[status]}
+    </span>
+  );
 }

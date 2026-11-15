@@ -1,3 +1,45 @@
 .confirm {
   font-size: var(--font-size-md);
 }
+
+.footer {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.note,
+.invalidNote {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-caption);
+}
+
+.note::before,
+.invalidNote::before {
+  content: '';
+  width: var(--size-status-dot);
+  height: var(--size-status-dot);
+  border-radius: 50%;
+  background: var(--color-info);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-left: auto;
+}
+
+.invalidNote {
+  color: var(--color-danger);
+}
+
+.invalidNote::before {
+  background: var(--color-danger);
+}

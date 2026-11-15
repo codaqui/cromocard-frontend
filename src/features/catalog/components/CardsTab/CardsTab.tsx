@@ -35,17 +35,17 @@ const cardsTable: CatalogTable<Card> = {
   columns: [
     {
       key: 'image',
-      header: 'Carta & imagem',
+      header: 'Carta',
       render: (card) => <Thumbnail imageUrl={card.frontImageUrl} badge={card.rarity?.name} />,
     },
     {
       key: 'name',
-      header: 'Nome oficial & idioma',
+      header: 'Nome e código',
       render: (card) => <TitleCell title={card.name} tags={[card.language?.name]} />,
     },
     {
       key: 'album',
-      header: 'Álbum / coleção vinculada',
+      header: 'Álbum',
       render: ({ album }) => (
         <EditionCell title={album?.title} edition={album && formatEdition(album)} />
       ),
@@ -57,7 +57,7 @@ const cardsTable: CatalogTable<Card> = {
     },
     {
       key: 'number',
-      header: 'Nº álbum',
+      header: 'Nº',
       render: (card) => <AlbumNumberCell number={card.number} total={card.album?.totalCards} />,
     },
   ],
@@ -66,10 +66,12 @@ const cardsTable: CatalogTable<Card> = {
 const cardFiltersTexts = {
   label: 'Filtros das cartas',
   searchLabel: 'Buscar carta pelo nome ou número',
-  searchPlaceholder: 'Buscar por nome ou número da carta…',
+  searchPlaceholder: 'Buscar por nome ou código…',
 };
 
-const initialFilters = { categoryId: '', rarityId: '', albumId: '' };
+const initialFilters = { categoryId: '', albumId: '', rarityId: '' };
+
+const cardsFound = { one: 'carta encontrada', many: 'cartas encontradas' };
 
 type CardFilterName = keyof typeof initialFilters;
 
@@ -91,7 +93,7 @@ function franchiseSelect(options: SelectOption[]): CardFilterSelect {
     name: 'categoryId',
     label: 'Franquia',
     chipLabel: 'Franquia',
-    placeholder: 'Todas as Franquias',
+    placeholder: 'Todas as franquias',
     icon: 'gamepad',
     options,
   };
@@ -101,20 +103,20 @@ function useCardFilterSelects(): CardFilterSelect[] {
   return [
     franchiseSelect(useCategoryOptions('CARD')),
     {
-      name: 'rarityId',
-      label: 'Raridade',
-      chipLabel: 'Raridade',
-      placeholder: 'Todas as Raridades',
-      icon: 'diamond',
-      options: useRarityOptions(),
-    },
-    {
       name: 'albumId',
       label: 'Álbum',
       chipLabel: 'Álbum',
-      placeholder: 'Todos os Álbuns',
-      icon: 'calendar',
+      placeholder: 'Todos os álbuns',
+      icon: 'gamepad',
       options: useAlbumOptions(),
+    },
+    {
+      name: 'rarityId',
+      label: 'Raridade',
+      chipLabel: 'Raridade',
+      placeholder: 'Todas as raridades',
+      icon: 'diamond',
+      options: useRarityOptions(),
     },
   ];
 }
@@ -148,15 +150,11 @@ export function CardsTab({ pageSize, notify }: CatalogTabProps) {
   const list = useCatalogListFilters(initialFilters, pageSize);
   const cardsQuery = useCardsList(list.params);
   const dialogs = useCatalogItemDialogs<Card>(notify);
-  const result = cardsQuery.data;
 
   return (
     <div className={styles.tab}>
       <CatalogDialogs dialogs={dialogs} renderForm={renderCardForm(dialogs)} />
-      <CardFilters
-        list={list}
-        summary={listSummary(result?.data.length, result?.meta.total, 'cartas')}
-      />
+      <CardFilters list={list} summary={listSummary(cardsQuery.data?.meta.total, cardsFound)} />
       <CatalogListResult
         query={cardsQuery}
         table={cardsTableWith(dialogs)}

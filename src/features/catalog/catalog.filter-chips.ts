@@ -1,3 +1,4 @@
+import { formatCount } from './catalog.format';
 import type { FilterChip } from './components/ActiveFilters/ActiveFilters';
 import type { CatalogFilterSelectConfig } from './components/CatalogFilterSelect/CatalogFilterSelect';
 
@@ -49,7 +50,13 @@ export function filtersStateOf(list: SearchableList, chips: FilterChip[], summar
   };
 }
 
-export function listSummary(shown: number | undefined, total: number | undefined, noun: string) {
-  if (shown === undefined || total === undefined) return undefined;
-  return `Exibindo ${shown} de ${total} ${noun}`;
+export interface CountNoun {
+  one: string;
+  many: string;
+}
+
+/** Total da lista, como no Figma: "102 cartas encontradas", "12 categorias". */
+export function listSummary(total: number | undefined, noun: CountNoun) {
+  if (total === undefined) return undefined;
+  return `${formatCount(total)} ${total === 1 ? noun.one : noun.many}`;
 }
