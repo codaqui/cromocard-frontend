@@ -30,7 +30,6 @@ const underConstructionModules = [
   { label: 'Notificação', story: 'CCD060' },
   { label: 'Relatórios', story: 'CCD063' },
   { label: 'Solicitações', story: 'CCD064' },
-  { label: 'Logs', story: 'CCD065' },
   { label: 'Configurações', story: 'CCD066' },
 ];
 
@@ -68,6 +67,21 @@ describe('AdminLayout', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Visão Executiva & Gerencial' }),
     ).toBeInTheDocument();
+  });
+
+  it('navega para os Logs do sistema', async () => {
+    renderBackoffice();
+    const menu = await screen.findByRole('navigation', { name: 'Módulos oficiais' });
+
+    await userEvent.click(within(menu).getByRole('link', { name: 'Logs' }));
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Logs do sistema' }),
+    ).toBeInTheDocument();
+    expect(within(menu).getByRole('link', { name: 'Logs' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
   });
 
   it.each(underConstructionModules)(
