@@ -1,1 +1,1 @@
-export { catalogBackofficeRoutes } from './catalog.routes';
+export { catalogBackofficeRoutes, catalogRoutes } from './catalog.routes';

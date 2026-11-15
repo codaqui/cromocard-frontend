@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { paths } from '@/routes/paths';
 
-import { usersBackofficeRoutes, usersRoutes } from './users.routes';
+import { usersBackofficeRoutes, usersPublicRoutes, usersRoutes } from './users.routes';
 
 vi.mock('./pages/ProfilePage/ProfilePage', () => ({ ProfilePage: () => null }));
 vi.mock('./pages/UsersListPage/UsersListPage', () => ({ UsersListPage: () => null }));
@@ -15,7 +15,8 @@ async function componentNameOf(route: { lazy?: unknown }) {
 
 describe('users.routes', () => {
   it('carrega o perfil e as telas do BackOffice sob demanda, cada uma no seu caminho', async () => {
-    expect(usersRoutes.map((route) => route.path)).toEqual([paths.profile]);
+    expect(usersRoutes.map((route) => route.path)).toEqual([paths.profile, paths.settings]);
+    expect(usersPublicRoutes.map((route) => route.path)).toEqual([paths.help]);
     expect(usersBackofficeRoutes.map((route) => route.path)).toEqual([
       paths.backoffice.users,
       paths.backoffice.userDetail,
