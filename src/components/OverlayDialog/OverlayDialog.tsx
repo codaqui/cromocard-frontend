@@ -103,7 +103,15 @@ function CloseButton({ dismissible, onClose }: Pick<DialogHeaderProps, 'dismissi
   );
 }
 
-function DialogHeader({ titleId, title, subtitle, icon, eyebrow, closable, ...close }: DialogHeaderProps) {
+function DialogHeader({
+  titleId,
+  title,
+  subtitle,
+  icon,
+  eyebrow,
+  closable,
+  ...close
+}: DialogHeaderProps) {
   return (
     <header className={styles.header}>
       <div className={styles.heading}>
