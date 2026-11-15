@@ -38,6 +38,10 @@
   width: min(var(--size-dialog-wide), 100%);
 }
 
+.largeDialog {
+  width: min(var(--size-dialog-large), 100%);
+}
+
 .rightDialog {
   width: min(var(--size-drawer), 100%);
   height: 100%;
@@ -69,9 +73,20 @@
   color: var(--color-info);
 }
 
+.titles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
 .title {
   font-size: var(--font-size-heading);
   font-weight: 700;
+}
+
+.subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
 }
 
 .close {
@@ -106,4 +121,114 @@
   justify-content: flex-end;
   gap: var(--space-3);
   padding: var(--space-4) var(--space-6) var(--space-6);
+}
+
+/* Formulários do catálogo no Figma (278-3246, 833-9661): cabeçalho e rodapé em faixas, campos
+   mais escuros que o modal e a mensagem de erro menor, em negrito. */
+.framedDialog {
+  --color-input-background: var(--color-surface-sunken);
+  --field-error-size: var(--font-size-xs);
+  --field-error-weight: 600;
+
+  border: 1px solid var(--color-border);
+}
+
+.framedDialog .header {
+  align-items: center;
+  padding: var(--space-6) var(--space-8);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.framedDialog .heading {
+  gap: var(--space-4);
+}
+
+.framedDialog .headerIcon svg {
+  width: var(--size-field-icon);
+  height: var(--size-field-icon);
+  transform: scale(1.4);
+}
+
+.framedDialog .headerIcon {
+  width: var(--size-dialog-icon);
+  height: var(--size-dialog-icon);
+  border: 1px solid var(--color-surface-high);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  color: var(--color-success);
+}
+
+.framedDialog .title {
+  font-weight: 600;
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.framedDialog .close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-dialog-close);
+  height: var(--size-dialog-close);
+  padding: 0;
+  border: 1px solid var(--color-surface-high);
+  background: var(--color-surface-raised);
+}
+
+.framedDialog .body {
+  padding: var(--space-8);
+}
+
+.framedDialog .footer {
+  padding: var(--space-5) var(--space-8);
+  border-top: 1px solid var(--color-border);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  background: var(--color-surface-raised);
+}
+
+/* Modais pequenos do catálogo no Figma (832-2217, 832-3295, 833-10832): borda clara, título de
+   20 px, texto de 13 px, sem o botão de fechar e sem desfocar o fundo. */
+.compactDialog {
+  width: min(var(--size-dialog-compact), 100%);
+  border: 1px solid var(--color-surface-high);
+  border-radius: var(--radius-md);
+}
+
+.compactDialog .header {
+  padding: var(--space-6) var(--space-6) 0;
+}
+
+.compactDialog .title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+}
+
+.compactDialog .subtitle {
+  color: var(--color-text);
+  font-size: var(--font-size-caption);
+}
+
+.compactDialog .body {
+  padding: var(--space-3) var(--space-6) var(--space-4);
+  font-size: var(--font-size-caption);
+}
+
+.compactDialog .footer {
+  padding: 0 var(--space-6) var(--space-6);
+}
+
+.sharpOverlay {
+  backdrop-filter: none;
+}
+
+.mediumDialog {
+  width: min(var(--size-dialog-medium), 100%);
+}
+
+@media (max-width: 48rem) {
+  .framedDialog .header,
+  .framedDialog .body,
+  .framedDialog .footer {
+    padding-right: var(--space-4);
+    padding-left: var(--space-4);
+  }
 }

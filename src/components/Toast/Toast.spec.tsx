@@ -15,6 +15,20 @@ describe('Toast', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Notificação enviada para 120 usuários');
   });
 
+  it('mostra o detalhe abaixo da mensagem', () => {
+    render(
+      <Toast
+        message="Carta cadastrada no catálogo"
+        detail="Charizard foi publicada e já aparece nas buscas."
+        onDismiss={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Carta cadastrada no catálogoCharizard foi publicada e já aparece nas buscas.',
+    );
+  });
+
   it('anuncia o erro como alerta', () => {
     render(<Toast tone="danger" message="Não foi possível enviar" onDismiss={vi.fn()} />);
 
@@ -52,5 +66,26 @@ describe('Toast', () => {
 
     rerender(<Toast message={null} onDismiss={onDismiss} />);
     expect(screen.getByRole('status')).toBeEmptyDOMElement();
+  });
+
+  it('no alto, o aviso com detalhe vira o cartão do Figma, com o ícone do tom', () => {
+    const { container } = render(
+      <Toast
+        message="Carta cadastrada no catálogo"
+        detail="Charizard foi publicada e já aparece nas buscas."
+        placement="top"
+        onDismiss={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('status')).toHaveTextContent('Carta cadastrada no catálogo');
+    expect(container.querySelector('svg')).toBeInTheDocument();
+  });
+
+  it('o aviso de uma linha só não ganha o ícone', () => {
+    const { container } = render(<Toast message="Salvo" tone="danger" onDismiss={vi.fn()} />);
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Salvo');
+    expect(container.querySelector('svg')).not.toBeInTheDocument();
   });
 });

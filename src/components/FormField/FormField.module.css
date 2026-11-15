@@ -18,7 +18,8 @@
 }
 
 .error {
-  font-size: var(--font-size-sm);
+  font-size: var(--field-error-size, var(--font-size-sm));
+  font-weight: var(--field-error-weight, 400);
   color: var(--color-danger);
 }
 
