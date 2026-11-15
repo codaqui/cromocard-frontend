@@ -16,8 +16,8 @@ export interface OverlayDialogProps {
   dismissible?: boolean;
   role?: 'dialog' | 'alertdialog';
   descriptionId?: string;
-  /** Um `IconName` entra no quadro padrão à esquerda do título; um `ReactNode` renderiza como veio, para ícones com estilo próprio (como o selo colorido por gravidade dos diálogos de moderação). */
-  icon?: IconName | ReactNode;
+  /** Um `IconName` entra no quadro padrão à esquerda do título; qualquer outro nó renderiza como veio, para ícones com estilo próprio (como o selo colorido por gravidade dos diálogos de moderação). */
+  icon?: IconName | Exclude<ReactNode, string>;
   /** Linha de apoio acima do título, como nos diálogos de moderação do Figma. */
   eyebrow?: ReactNode;
   /** Linha de apoio abaixo do título, como nos formulários do catálogo no Figma. */

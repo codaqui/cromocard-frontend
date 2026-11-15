@@ -43,26 +43,35 @@ interface ConfirmDialogActionsProps {
   onCancel: () => void;
 }
 
+function CancelButton({
+  cancelLabel,
+  actionsLayout,
+  isConfirming,
+  onCancel,
+}: Pick<ConfirmDialogActionsProps, 'cancelLabel' | 'actionsLayout' | 'isConfirming' | 'onCancel'>) {
+  return (
+    <Button
+      variant="secondary"
+      className={actionsLayout === 'spread' ? styles.cancelStart : undefined}
+      disabled={isConfirming}
+      onClick={onCancel}
+    >
+      {cancelLabel}
+    </Button>
+  );
+}
+
 function ConfirmDialogActions({
   formId,
   confirmLabel,
   tone,
-  cancelLabel,
-  actionsLayout,
-  isConfirming,
   disabled,
-  onCancel,
+  isConfirming,
+  ...cancel
 }: ConfirmDialogActionsProps) {
   return (
     <>
-      <Button
-        variant="secondary"
-        className={actionsLayout === 'spread' ? styles.cancelStart : undefined}
-        disabled={isConfirming}
-        onClick={onCancel}
-      >
-        {cancelLabel}
-      </Button>
+      <CancelButton isConfirming={isConfirming} {...cancel} />
       <Button type="submit" form={formId} variant={tone} disabled={disabled}>
         {isConfirming ? 'Aguarde…' : confirmLabel}
       </Button>
