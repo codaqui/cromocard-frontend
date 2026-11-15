@@ -26,30 +26,52 @@ interface ConfirmDialogProps {
   errorMessage?: string;
   onConfirm: (reason?: string) => void;
   onCancel: () => void;
+  icon?: ReactNode;
+  eyebrow?: ReactNode;
+  cancelLabel?: string;
+  actionsLayout?: 'end' | 'spread';
 }
 
 interface ConfirmDialogActionsProps {
   formId: string;
   confirmLabel: string;
+  cancelLabel: string;
+  actionsLayout: 'end' | 'spread';
   tone: ConfirmTone;
   isConfirming: boolean;
   disabled: boolean;
   onCancel: () => void;
 }
 
+function CancelButton({
+  cancelLabel,
+  actionsLayout,
+  isConfirming,
+  onCancel,
+}: Pick<ConfirmDialogActionsProps, 'cancelLabel' | 'actionsLayout' | 'isConfirming' | 'onCancel'>) {
+  return (
+    <Button
+      variant="secondary"
+      className={actionsLayout === 'spread' ? styles.cancelStart : undefined}
+      disabled={isConfirming}
+      onClick={onCancel}
+    >
+      {cancelLabel}
+    </Button>
+  );
+}
+
 function ConfirmDialogActions({
   formId,
   confirmLabel,
   tone,
-  isConfirming,
   disabled,
-  onCancel,
+  isConfirming,
+  ...cancel
 }: ConfirmDialogActionsProps) {
   return (
     <>
-      <Button variant="secondary" disabled={isConfirming} onClick={onCancel}>
-        Cancelar
-      </Button>
+      <CancelButton isConfirming={isConfirming} {...cancel} />
       <Button type="submit" form={formId} variant={tone} disabled={disabled}>
         {isConfirming ? 'Aguarde…' : confirmLabel}
       </Button>
@@ -152,6 +174,8 @@ const confirmDialogDefaults = {
   requireReason: false,
   reasonLabel: 'Motivo',
   canConfirm: true,
+  cancelLabel: 'Cancelar',
+  actionsLayout: 'end',
 } satisfies Partial<ConfirmDialogProps>;
 
 function useConfirmDialog(props: Omit<ConfirmDialogProps, 'open'>) {
@@ -162,12 +186,14 @@ function useConfirmDialog(props: Omit<ConfirmDialogProps, 'open'>) {
 }
 
 function ConfirmDialogContent(props: Omit<ConfirmDialogProps, 'open'>) {
-  const { title, messageId, isConfirming, onCancel, ...rest } = useConfirmDialog(props);
+  const { title, icon, eyebrow, messageId, isConfirming, onCancel, ...rest } =
+    useConfirmDialog(props);
+  const heading = { title, icon, eyebrow };
 
   return (
     <Modal
       open
-      title={title}
+      {...heading}
       role="alertdialog"
       descriptionId={messageId}
       dismissible={!isConfirming}
