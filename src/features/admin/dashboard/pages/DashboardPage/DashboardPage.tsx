@@ -125,7 +125,9 @@ function DashboardContent({
     return <LoadError message={query.error.message} onRetry={() => void query.refetch()} />;
   }
 
-  return <DashboardData summary={query.data} params={params} sellerVerifications={sellerVerifications} />;
+  return (
+    <DashboardData summary={query.data} params={params} sellerVerifications={sellerVerifications} />
+  );
 }
 
 export function DashboardPage() {

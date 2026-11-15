@@ -6,7 +6,10 @@ export {
 export { SellerVerificationPanel } from './components/SellerVerificationPanel/SellerVerificationPanel';
 export { useSellerVerificationDrawer } from './hooks/useSellerVerificationDrawer';
 export { sellerVerificationsApi } from './seller-verifications.api';
-export { useSellerVerificationsList, useSellerVerificationsSummary } from './seller-verifications.queries';
+export {
+  useSellerVerificationsList,
+  useSellerVerificationsSummary,
+} from './seller-verifications.queries';
 export type {
   ListSellerVerificationsParams,
   SellerVerificationListItem,

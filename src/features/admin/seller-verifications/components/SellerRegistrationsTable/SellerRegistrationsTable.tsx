@@ -153,7 +153,13 @@ interface ToolbarProps {
   onRefresh: () => void;
 }
 
-function Toolbar({ titleId, pendingCount, statusFilter, onStatusFilterChange, onRefresh }: ToolbarProps) {
+function Toolbar({
+  titleId,
+  pendingCount,
+  statusFilter,
+  onStatusFilterChange,
+  onRefresh,
+}: ToolbarProps) {
   return (
     <header className={styles.toolbar}>
       <ToolbarTitle titleId={titleId} pendingCount={pendingCount} />

@@ -31,7 +31,13 @@ function NotesList({ notes }: { notes: SellerVerificationNote[] }) {
     return <p className={styles.emptyHint}>Nenhuma anotação registrada.</p>;
   }
 
-  return <ul className={styles.noteList}>{notes.map((note) => <NoteItem key={note.id} note={note} />)}</ul>;
+  return (
+    <ul className={styles.noteList}>
+      {notes.map((note) => (
+        <NoteItem key={note.id} note={note} />
+      ))}
+    </ul>
+  );
 }
 
 function useNoteDraft(onAdd: (content: string) => void) {

@@ -8,7 +8,12 @@ import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { Toast } from '@/components/Toast/Toast';
 import { formatDate } from '@/utils/formatDate';
 
-import { canDecide, sellerVerificationMessages, statusLabels, statusTones } from '../../seller-verifications.labels';
+import {
+  canDecide,
+  sellerVerificationMessages,
+  statusLabels,
+  statusTones,
+} from '../../seller-verifications.labels';
 import {
   useAddSellerVerificationNote,
   useApproveSellerVerification,
@@ -86,7 +91,9 @@ function BankSection({ detail }: { detail: SellerVerificationDetail }) {
 function DecidedInfo({ detail }: { detail: SellerVerificationDetail }) {
   return (
     <p className={styles.decidedInfo}>
-      {detail.status === 'REJECTED' && detail.rejectionReason && `Motivo: ${detail.rejectionReason}`}
+      {detail.status === 'REJECTED' &&
+        detail.rejectionReason &&
+        `Motivo: ${detail.rejectionReason}`}
       {detail.reviewedAt && ` · Decidido em ${formatDate(detail.reviewedAt)}`}
     </p>
   );
@@ -248,7 +255,10 @@ function NotesSection({
   );
 }
 
-type PanelDecisionFooterProps = { detail: SellerVerificationDetail; actions: SellerVerificationActions };
+type PanelDecisionFooterProps = {
+  detail: SellerVerificationDetail;
+  actions: SellerVerificationActions;
+};
 
 function PanelDecisionFooter({ detail, actions }: PanelDecisionFooterProps) {
   return (

@@ -58,7 +58,8 @@ export interface ListSellerVerificationsParams extends PaginationParams {
   status?: SellerVerificationStatus;
 }
 
-export type SellerVerificationPeriodParams = { period: PeriodPreset } | { from: string; to: string };
+export type SellerVerificationPeriodParams =
+  { period: PeriodPreset } | { from: string; to: string };
 
 export interface SellerVerificationSummary {
   approved: number;

@@ -22,7 +22,10 @@ function callsOf(method: keyof typeof api) {
 describe('sellerVerificationsApi', () => {
   it('list busca a página de credenciamentos com os parâmetros', () => {
     void sellerVerificationsApi.list({ page: 1, pageSize: 20 });
-    expect(callsOf('getPage')[0]).toEqual(['/admin/seller-verifications', { page: 1, pageSize: 20 }]);
+    expect(callsOf('getPage')[0]).toEqual([
+      '/admin/seller-verifications',
+      { page: 1, pageSize: 20 },
+    ]);
   });
 
   it('getSummary busca o resumo do período', () => {
