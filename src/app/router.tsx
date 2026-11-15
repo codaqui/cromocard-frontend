@@ -4,10 +4,11 @@ import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { NotFoundPage } from '@/components/NotFoundPage/NotFoundPage';
 import { adminBackofficeRoutes } from '@/features/admin';
 import { authRoutes, tokenLinkRoutes } from '@/features/auth';
-import { catalogBackofficeRoutes } from '@/features/catalog';
-import { communityBackofficeRoutes } from '@/features/community';
-import { notificationsBackofficeRoutes } from '@/features/notifications';
-import { usersBackofficeRoutes, usersRoutes } from '@/features/users';
+import { catalogBackofficeRoutes, catalogRoutes } from '@/features/catalog';
+import { collectionRoutes } from '@/features/collection';
+import { communityBackofficeRoutes, communityRoutes } from '@/features/community';
+import { notificationsBackofficeRoutes, notificationsRoutes } from '@/features/notifications';
+import { usersBackofficeRoutes, usersPublicRoutes, usersRoutes } from '@/features/users';
 import { RedirectIfAuthenticated } from '@/routes/guards/RedirectIfAuthenticated';
 import { RequireAuth } from '@/routes/guards/RequireAuth';
 import { RequireRole } from '@/routes/guards/RequireRole';
@@ -28,12 +29,20 @@ export const router = createBrowserRouter([
         element: <PublicLayout />,
         children: [
           { index: true, element: <RoleHomeRedirect /> },
+          ...catalogRoutes,
+          ...communityRoutes,
+          ...usersPublicRoutes,
           { path: '*', element: <NotFoundPage /> },
         ],
       },
       {
         element: <RequireAuth />,
-        children: [{ element: <CustomerLayout />, children: usersRoutes }],
+        children: [
+          {
+            element: <CustomerLayout />,
+            children: [...usersRoutes, ...collectionRoutes, ...notificationsRoutes],
+          },
+        ],
       },
       {
         path: paths.backoffice.root,
