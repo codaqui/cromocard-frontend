@@ -2,7 +2,7 @@ import type { UseFormRegisterReturn } from 'react-hook-form';
 
 import { PasswordField } from '../PasswordField/PasswordField';
 import { PasswordStrength } from '../PasswordStrength/PasswordStrength';
-import { passwordStrength, passwordStrengthLabel } from '../PasswordStrength/passwordStrength';
+import { passwordStrength, passwordStrengthLabel } from '../PasswordStrength/passwordStrengthScore';
 import styles from './NewPasswordField.module.css';
 
 interface NewPasswordFieldProps extends UseFormRegisterReturn {

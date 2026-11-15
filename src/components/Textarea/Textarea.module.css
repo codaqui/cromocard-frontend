@@ -22,3 +22,9 @@
 .textarea[aria-invalid='true'] {
   border-color: var(--color-danger);
 }
+
+@media (max-width: 25rem) {
+  .textarea {
+    font-size: var(--font-size-md);
+  }
+}
