@@ -107,7 +107,7 @@ export function CatalogPagination({ meta, shown, onPageChange }: CatalogPaginati
   return (
     <nav className={styles.footer} aria-label="Paginação">
       <RangeLabel meta={meta} shown={shown} />
-      {meta.totalPages > 1 && <PageControls meta={meta} onPageChange={onPageChange} />}
+      {meta.total > 0 && <PageControls meta={meta} onPageChange={onPageChange} />}
     </nav>
   );
 }

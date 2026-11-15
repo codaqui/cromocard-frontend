@@ -21,6 +21,20 @@ export function imageMetaOf(file: File, { width, height }: ImageSize): string {
   return `${formatFileSize(file.size)} • ${width} × ${height} px`;
 }
 
+/** "0,9 MB • 800 × 1000 px (mínimo 1200×1600 px)", em vermelho no frame 832-7170. */
+export function belowMinMetaOf(file: File, size: ImageSize, min: ImageSize): string {
+  return `${imageMetaOf(file, size)} (mínimo ${formatImageSize(min)})`;
+}
+
+/** Endereço local para mostrar a imagem recusada sem enviá-la. */
+export function localPreviewUrl(file: File): string {
+  return URL.createObjectURL(file);
+}
+
+export function releasePreviewUrl(url: string): void {
+  URL.revokeObjectURL(url);
+}
+
 /** Nome do arquivo a partir da URL salva, para a imagem que já estava no item. */
 export function fileNameOfUrl(url: string): string {
   const path = url.replace(/[?#].*$/, '');

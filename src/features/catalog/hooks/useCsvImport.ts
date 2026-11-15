@@ -1,4 +1,4 @@
-import { type ChangeEvent, useState } from 'react';
+import { type ChangeEvent, type DragEvent, useState } from 'react';
 
 import { csvDataRowsOf, importedCardsNotice } from '../catalog.format';
 import { useDownloadImportTemplate, useImportCards } from '../catalog.queries';
@@ -16,13 +16,21 @@ function useCsvFile(onChoose: () => void) {
     if (next) void next.text().then((text) => setRows(csvDataRowsOf(text)));
   };
 
-  return { file, rows, choose };
+  const selectFile = (event: ChangeEvent<HTMLInputElement>) =>
+    choose(event.target.files?.[0] ?? null);
+
+  const dropFile = (event: DragEvent) => {
+    event.preventDefault();
+    choose(event.dataTransfer.files[0] ?? null);
+  };
+
+  return { file, rows, choose, selectFile, dropFile };
 }
 
 export function useCsvImport(onImported: (notice: CatalogNotice) => void) {
   const importing = useImportCards();
   const template = useDownloadImportTemplate();
-  const { file, rows, choose } = useCsvFile(importing.reset);
+  const { file, rows, choose, ...picker } = useCsvFile(importing.reset);
 
   const submit = () => {
     if (!file) return;
@@ -31,8 +39,13 @@ export function useCsvImport(onImported: (notice: CatalogNotice) => void) {
     importing.mutate(file, { onSuccess });
   };
 
-  const selectFile = (event: ChangeEvent<HTMLInputElement>) =>
-    choose(event.target.files?.[0] ?? null);
-
-  return { file, rows, selectFile, restart: () => choose(null), submit, importing, template };
+  return {
+    file,
+    rows,
+    ...picker,
+    restart: () => choose(null),
+    submit,
+    importing,
+    template,
+  };
 }

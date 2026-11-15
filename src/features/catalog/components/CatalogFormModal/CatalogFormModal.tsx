@@ -2,6 +2,7 @@ import { useIsMutating } from '@tanstack/react-query';
 import { type ReactNode, useEffect, useId, useRef, useState } from 'react';
 
 import { Button } from '@/components/Button/Button';
+import { Icon } from '@/components/Icon/Icon';
 import { Modal } from '@/components/Modal/Modal';
 
 import { catalogKeys } from '../../catalog.queries';
@@ -69,6 +70,7 @@ function EditStepActions({ ids, submitLabel, onClose }: CatalogFormActionsProps)
         Cancelar
       </Button>
       <Button id={ids.saveId} type="submit" form={ids.formId} disabled={isUploading}>
+        <Icon name="checkCircle" size={18} />
         {submitLabel}
       </Button>
     </>
@@ -124,7 +126,8 @@ function useInvalidNote(texts: CatalogFormModalTexts) {
 }
 
 function dialogPropsOf({ title, subtitle }: CatalogFormModalTexts, size: ModalSize) {
-  return { title, subtitle, size, icon: 'cards' as const };
+  if (size === 'default') return { title, subtitle, variant: 'compact' as const };
+  return { title, subtitle, size, variant: 'framed' as const, icon: 'cube' as const };
 }
 
 export function CatalogFormModal({

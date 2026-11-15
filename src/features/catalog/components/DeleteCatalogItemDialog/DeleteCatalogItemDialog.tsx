@@ -29,6 +29,7 @@ function BlockedDeletionDialog({ item, onClose }: Omit<DeleteCatalogItemDialogPr
     <Modal
       open
       role="alertdialog"
+      variant="compact"
       title={texts.blockedTitle}
       onClose={onClose}
       footer={<Button onClick={onClose}>Entendi</Button>}

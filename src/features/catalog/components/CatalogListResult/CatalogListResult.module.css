@@ -5,11 +5,18 @@
   gap: var(--space-3);
 }
 
+/* A tabela ocupa o painel de borda a borda, como nos frames 208-2895 e 832-8603. */
 .result {
   display: flex;
   flex-direction: column;
-  border-radius: var(--radius-md);
+  margin: 0 calc(-1 * var(--space-4)) calc(-1 * var(--space-4));
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
   overflow: hidden;
+}
+
+.result > div:first-child {
+  border: none;
+  border-radius: 0;
 }
 
 .result table td {

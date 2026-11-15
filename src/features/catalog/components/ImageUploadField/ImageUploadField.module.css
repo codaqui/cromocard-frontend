@@ -1,8 +1,8 @@
-.field,
-.compact {
+.field {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  min-width: 0;
 }
 
 .labelRow {
@@ -15,7 +15,7 @@
 
 .label {
   font-size: var(--font-size-xs);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-label);
   letter-spacing: var(--letter-spacing-caps);
   text-transform: uppercase;
@@ -31,30 +31,55 @@
 }
 
 .statusOk {
-  color: var(--color-info);
+  color: var(--color-success);
 }
 
 .statusBelow {
   color: var(--color-danger);
 }
 
-.preview {
+/* O quadro da prévia e da área de soltar, como a "Imagem da frente" do frame 278-3246. */
+.panel,
+.dropzone {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-3);
-  margin: 0;
+  gap: var(--space-2);
   padding: var(--space-4);
   border-radius: var(--radius-md);
-  background: var(--color-surface-high);
+  background: linear-gradient(160deg, var(--color-surface-high), var(--color-surface-raised));
 }
 
 .image {
-  width: auto;
+  width: calc(var(--size-card-preview) * 3 / 4);
   max-width: 100%;
-  max-height: var(--size-card-preview);
+  height: var(--size-card-preview);
+  margin-bottom: var(--space-2);
   border-radius: var(--radius-sm);
+  background: var(--color-surface-sunken);
+  box-shadow: var(--shadow-md);
   object-fit: contain;
+}
+
+.dropzone {
+  justify-content: center;
+  min-height: calc(var(--size-card-preview) + var(--space-8));
+  border: 1px dashed var(--color-text-muted);
+  color: var(--color-text-muted);
+  text-align: center;
+  cursor: pointer;
+}
+
+.dropzone:hover,
+.dropzone:focus-within {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.dropTitle {
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
 }
 
 .caption {
@@ -62,6 +87,7 @@
   flex-direction: column;
   align-items: center;
   gap: var(--space-1);
+  min-width: 0;
   max-width: 100%;
   text-align: center;
 }
@@ -70,31 +96,40 @@
   max-width: 100%;
   overflow: hidden;
   font-size: var(--font-size-sm);
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.meta {
+.meta,
+.metaBelow {
   color: var(--color-text-muted);
   font-size: var(--font-size-xs);
+  overflow-wrap: anywhere;
+}
+
+.metaBelow {
+  color: var(--color-danger);
 }
 
 .actions {
   display: flex;
   gap: var(--space-2);
+  margin-top: var(--space-1);
 }
 
 .replace,
-.remove {
+.remove,
+.upload {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-1);
-  min-width: var(--size-control);
-  min-height: var(--size-control);
+  min-width: var(--size-dialog-close);
+  min-height: var(--size-dialog-close);
   padding: 0 var(--space-3);
-  border: none;
+  border: 1px solid var(--color-surface-high);
   border-radius: var(--radius-sm);
   background: var(--color-surface-raised);
   color: var(--color-text);
@@ -105,11 +140,19 @@
 }
 
 .remove {
+  padding: 0;
   color: var(--color-danger);
 }
 
+.upload {
+  flex-shrink: 0;
+  padding: 0;
+  color: var(--color-text-muted);
+}
+
 .replace:focus-within,
-.remove:focus-visible {
+.remove:focus-visible,
+.upload:focus-within {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
@@ -117,27 +160,60 @@
 .hiddenInput {
   position: absolute;
   inset: 0;
+  width: 100%;
   opacity: 0;
   cursor: pointer;
 }
 
-.compact .preview {
-  flex-direction: row;
+/* A linha do verso, como no Figma: miniatura, texto e o botão de nuvem. */
+.row {
+  display: flex;
   align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-input-background);
 }
 
-.compact .image {
-  max-height: var(--size-control);
-}
-
-.compact .caption {
+.row .caption {
   flex: 1;
   align-items: flex-start;
-  min-width: 0;
   text-align: left;
+}
+
+.row .actions {
+  margin-top: 0;
+}
+
+.thumb,
+.thumbPlaceholder {
+  flex-shrink: 0;
+  width: var(--size-catalog-thumbnail-width);
+  height: var(--size-control);
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+}
+
+.thumbPlaceholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-high);
+  color: var(--color-text-muted);
 }
 
 .error {
   color: var(--color-danger);
-  font-size: var(--font-size-caption);
+  font-size: var(--field-error-size, var(--font-size-caption));
+  font-weight: var(--field-error-weight, 400);
+}
+
+/* No celular, os botões voltam ao alvo de toque de 40 px. */
+@media (max-width: 48rem) {
+  .replace,
+  .remove,
+  .upload {
+    min-width: var(--size-control);
+    min-height: var(--size-control);
+  }
 }

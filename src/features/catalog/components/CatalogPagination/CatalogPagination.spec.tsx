@@ -32,4 +32,15 @@ describe('CatalogPagination', () => {
     expect(screen.getByText('0 - 0')).toBeInTheDocument();
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
+
+  it('R3: com uma página só, mostra a paginação com os botões desabilitados, como no Figma', () => {
+    render(<CatalogPagination meta={meta(1, 1, 5)} shown={5} onPageChange={vi.fn()} />);
+
+    expect(screen.getByText('1 - 5')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Página 1' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    expect(screen.getByRole('button', { name: 'Próxima página' })).toBeDisabled();
+  });
 });

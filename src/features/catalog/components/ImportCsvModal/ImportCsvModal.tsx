@@ -1,5 +1,4 @@
 import { Button } from '@/components/Button/Button';
-import { FileUpload } from '@/components/FileUpload/FileUpload';
 import { FormError } from '@/components/FormError/FormError';
 import { Modal } from '@/components/Modal/Modal';
 
@@ -68,6 +67,31 @@ function TemplateDownload({ csv }: { csv: CsvImport }) {
   );
 }
 
+/** A área tracejada do frame 832-3295: o nome e o resumo do arquivo, ou o convite para escolher. */
+function CsvDropzone({ csv }: { csv: CsvImport }) {
+  return (
+    <label
+      className={styles.dropzone}
+      onDragOver={(event) => event.preventDefault()}
+      onDrop={csv.dropFile}
+    >
+      <strong className={styles.fileName}>
+        {csv.file?.name ?? 'Arraste o arquivo CSV ou clique para escolher'}
+      </strong>
+      <span className={styles.summary}>
+        {csv.file ? csvFileSummary(csv.file, csv.rows) : 'CSV até 4 MB'}
+      </span>
+      <input
+        type="file"
+        className={styles.hiddenInput}
+        accept=".csv,text/csv"
+        aria-label="Arquivo CSV"
+        onChange={csv.selectFile}
+      />
+    </label>
+  );
+}
+
 /** Escolha do arquivo, como no frame 832-3295. */
 function SelectStep({ csv }: { csv: CsvImport }) {
   return (
@@ -76,14 +100,7 @@ function SelectStep({ csv }: { csv: CsvImport }) {
         Envie um arquivo CSV com as colunas {CARD_IMPORT_COLUMNS}. Todas as linhas são validadas
         antes de gravar: se uma linha tiver erro, nenhuma carta é importada.
       </p>
-      <div className={styles.dropzone}>
-        <FileUpload
-          label="Arquivo CSV"
-          accept=".csv,text/csv"
-          hint={csv.file ? csvFileSummary(csv.file, csv.rows) : 'CSV até 4 MB'}
-          onChange={csv.selectFile}
-        />
-      </div>
+      <CsvDropzone csv={csv} />
       <TemplateDownload csv={csv} />
     </div>
   );
@@ -107,6 +124,8 @@ export function ImportCsvModal({ onClose, onImported }: ImportCsvModalProps) {
   return (
     <Modal
       open
+      variant="compact"
+      size="medium"
       title={error ? 'Nenhuma carta foi importada' : 'Importar cartas por CSV'}
       dismissible={!csv.importing.isPending}
       onClose={onClose}

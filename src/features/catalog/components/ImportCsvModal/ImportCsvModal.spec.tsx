@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { fireEvent, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -64,7 +64,7 @@ describe('ImportCsvModal', () => {
     await userEvent.upload(screen.getByLabelText('Arquivo CSV'), csvFile);
     expect(await screen.findByRole('button', { name: 'Importar 2 cartas' })).toBeEnabled();
     expect(
-      screen.getByText('2 linhas • 1 KB • escolha outro arquivo para substituir'),
+      screen.getByText('2 linhas • 1 KB • arraste outro arquivo para substituir'),
     ).toBeInTheDocument();
   });
 
@@ -105,8 +105,8 @@ describe('ImportCsvModal', () => {
       'listitem',
     );
     expect(lines.map((line) => line.textContent)).toEqual([
-      'Linha 3 · Nome: Informe o nome da carta',
-      'Linha 5 · Raridade: Raridade não encontrada',
+      'Linha 3: informe o nome da carta.',
+      'Linha 5: raridade não encontrada.',
     ]);
     expect(onImported).not.toHaveBeenCalled();
 
@@ -145,5 +145,16 @@ describe('ImportCsvModal', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Baixar modelo CSV' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Acesso restrito a administradores');
+  });
+
+  it('R13: o CSV arrastado para a área tracejada aparece com o nome e o resumo', async () => {
+    renderModal();
+    const dropzone = screen.getByText('Arraste o arquivo CSV ou clique para escolher');
+
+    fireEvent.dragOver(dropzone);
+    fireEvent.drop(dropzone, { dataTransfer: { files: [csvFile] } });
+
+    expect(await screen.findByText('cartas.csv')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Importar 2 cartas' })).toBeEnabled();
   });
 });

@@ -25,13 +25,20 @@ export interface OverlayDialogProps {
    * `large` para formulários com dois painéis (64rem), como o cadastro de carta.
    */
   size?: DialogSize;
+  /**
+   * `framed`: cabeçalho e rodapé em faixas separadas, como os formulários do catálogo no Figma;
+   * `compact`: modal pequeno, com borda e sem o botão de fechar, como os avisos do catálogo.
+   */
+  variant?: DialogVariant;
 }
 
 interface OverlayDialogWithPlacementProps extends OverlayDialogProps {
   placement: 'center' | 'right';
 }
 
-type DialogSize = 'default' | 'wide' | 'large';
+type DialogSize = 'default' | 'medium' | 'wide' | 'large';
+
+type DialogVariant = 'default' | 'framed' | 'compact';
 
 const keepOpen = () => undefined;
 
@@ -44,6 +51,8 @@ interface DialogHeaderProps {
   subtitle?: string;
   icon?: IconName;
   dismissible: boolean;
+  /** O modal compacto do Figma não tem o botão de fechar: fecha pelos botões ou pelo Esc. */
+  closable: boolean;
   onClose: () => void;
 }
 
@@ -62,7 +71,21 @@ function DialogTitles({
   );
 }
 
-function DialogHeader({ titleId, title, subtitle, icon, dismissible, onClose }: DialogHeaderProps) {
+function CloseButton({ dismissible, onClose }: Pick<DialogHeaderProps, 'dismissible' | 'onClose'>) {
+  return (
+    <button
+      type="button"
+      className={styles.close}
+      aria-label="Fechar"
+      disabled={!dismissible}
+      onClick={onClose}
+    >
+      ×
+    </button>
+  );
+}
+
+function DialogHeader({ titleId, title, subtitle, icon, closable, ...close }: DialogHeaderProps) {
   return (
     <header className={styles.header}>
       <div className={styles.heading}>
@@ -73,15 +96,7 @@ function DialogHeader({ titleId, title, subtitle, icon, dismissible, onClose }: 
         )}
         <DialogTitles titleId={titleId} title={title} subtitle={subtitle} />
       </div>
-      <button
-        type="button"
-        className={styles.close}
-        aria-label="Fechar"
-        disabled={!dismissible}
-        onClick={onClose}
-      >
-        ×
-      </button>
+      {closable && <CloseButton {...close} />}
     </header>
   );
 }
@@ -94,12 +109,30 @@ interface DialogPanelProps extends Omit<OverlayDialogWithPlacementProps, 'open'>
 
 const sizeClassName: Record<DialogSize, string | undefined> = {
   default: undefined,
+  medium: styles.mediumDialog,
   wide: styles.wideDialog,
   large: styles.largeDialog,
 };
 
-function dialogClassName(placement: 'center' | 'right', size: DialogSize) {
-  return cn(styles.dialog, styles[`${placement}Dialog`], sizeClassName[size]);
+const variantClassName: Record<DialogVariant, string | undefined> = {
+  default: undefined,
+  framed: styles.framedDialog,
+  compact: styles.compactDialog,
+};
+
+interface DialogLook {
+  placement: 'center' | 'right';
+  size: DialogSize;
+  variant: DialogVariant;
+}
+
+function dialogClassName({ placement, size, variant }: DialogLook) {
+  return cn(
+    styles.dialog,
+    styles[`${placement}Dialog`],
+    variantClassName[variant],
+    sizeClassName[size],
+  );
 }
 
 function DialogPanel({
@@ -108,10 +141,9 @@ function DialogPanel({
   placement,
   role = 'dialog',
   size = 'default',
+  variant = 'default',
   ...content
 }: DialogPanelProps) {
-  const { title, subtitle, icon, dismissible, onClose, children, footer } = content;
-
   return (
     <div
       ref={ref}
@@ -120,13 +152,21 @@ function DialogPanel({
       aria-labelledby={titleId}
       aria-describedby={content.descriptionId}
       tabIndex={-1}
-      className={dialogClassName(placement, size)}
+      className={dialogClassName({ placement, size, variant })}
     >
-      <DialogHeader {...{ titleId, title, subtitle, icon, dismissible, onClose }} />
-      <div className={styles.body}>{children}</div>
-      {footer && <footer className={styles.footer}>{footer}</footer>}
+      <DialogHeader {...content} titleId={titleId} closable={variant !== 'compact'} />
+      <div className={styles.body}>{content.children}</div>
+      {content.footer && <footer className={styles.footer}>{content.footer}</footer>}
     </div>
   );
+}
+
+/** O modal compacto do Figma escurece o fundo sem desfocar. */
+function overlayClassName({
+  placement,
+  variant,
+}: Pick<OverlayDialogWithPlacementProps, 'placement' | 'variant'>) {
+  return cn(styles.overlay, styles[placement], variant === 'compact' && styles.sharpOverlay);
 }
 
 export function OverlayDialog({
@@ -141,10 +181,7 @@ export function OverlayDialog({
   if (!open) return null;
 
   return (
-    <div
-      className={cn(styles.overlay, styles[panel.placement])}
-      onMouseDown={closeOnBackdropClick(close)}
-    >
+    <div className={overlayClassName(panel)} onMouseDown={closeOnBackdropClick(close)}>
       <DialogPanel
         {...panel}
         ref={dialogRef}

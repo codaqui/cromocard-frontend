@@ -1,5 +1,6 @@
 .control,
-.plainControl {
+.plainControl,
+.endControl {
   position: relative;
   display: flex;
   align-items: center;
@@ -26,8 +27,32 @@
   font-size: var(--font-size-sm);
 }
 
-.plainControl .input {
+.plainControl .input,
+.endControl .input {
   padding-left: var(--space-4);
+}
+
+.endControl .icon {
+  right: var(--space-4);
+  left: auto;
+}
+
+.endControl .input,
+.plainControl:has(.valid) .input {
+  padding-right: calc(var(--space-4) + var(--size-field-icon) + var(--space-3));
+}
+
+/* O check do Figma: só aparece com o campo preenchido e sem erro. */
+.valid {
+  position: absolute;
+  right: var(--space-4);
+  display: none;
+  color: var(--color-success);
+  pointer-events: none;
+}
+
+.input:not(:placeholder-shown):not([aria-invalid='true']) + .valid {
+  display: inline-flex;
 }
 
 .input::placeholder {

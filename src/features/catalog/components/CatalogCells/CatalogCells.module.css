@@ -13,8 +13,9 @@
   background: var(--color-surface-high);
 }
 
+/* A imagem inteira no quadro, como as capas dos álbuns no frame 832-8603. */
 .image {
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .placeholder {
@@ -26,10 +27,12 @@
 
 .rarity {
   position: absolute;
-  right: calc(-1 * var(--space-1));
-  bottom: var(--space-1);
-  padding: 0 var(--space-1);
-  border-radius: var(--radius-xs);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: var(--space-1) 0;
+  border-radius: 0 0 var(--radius-xs) var(--radius-xs);
+  text-align: center;
   background: var(--color-warning);
   color: var(--color-warning-soft);
   font-size: var(--font-size-xs);
@@ -47,7 +50,7 @@
 }
 
 .title {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-md);
   font-weight: 600;
   line-height: 1.25;
 }
@@ -96,7 +99,7 @@
 .albumNumber,
 .count {
   font-family: var(--font-family-mono);
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-caption);
   font-weight: 700;
 }
 
@@ -117,7 +120,7 @@
 }
 
 .active {
-  color: var(--color-success);
+  color: var(--color-positive);
 }
 
 .inactive {

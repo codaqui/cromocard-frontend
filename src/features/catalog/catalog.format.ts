@@ -1,6 +1,6 @@
 import { ApiError } from '@/lib/api-error';
 
-import { EMPTY_VALUE_LABEL, importColumnLabels } from './catalog.labels';
+import { EMPTY_VALUE_LABEL } from './catalog.labels';
 import type { CatalogNotice } from './catalog.types';
 
 const countFormatter = new Intl.NumberFormat('pt-BR');
@@ -22,12 +22,6 @@ interface Edition {
 export function formatEdition({ publisher, year }: Edition): string | null {
   if (publisher && year) return `${publisher} (${year})`;
   return publisher ?? (year ? String(year) : null);
-}
-
-export function importErrorLocation(field: string): string {
-  const [line, column] = field.split('.');
-  if (!column) return 'Arquivo';
-  return `Linha ${line} · ${importColumnLabels[column] ?? column}`;
 }
 
 const pluralOf = (count: number, one: string, many: string) =>
@@ -59,15 +53,26 @@ export function formatFileSize(bytes: number): string {
   return `${sizeFormatter.format(kb / BYTES_PER_KB)} MB`;
 }
 
-/** "50 linhas • 12 KB • escolha outro arquivo para substituir", como no frame 832-3295. */
+/** "50 linhas • 12 KB • arraste outro arquivo para substituir", como no frame 832-3295. */
 export function csvFileSummary(file: File, rows?: number): string {
   const rowsPart = rows === undefined ? [] : [pluralOf(rows, 'linha', 'linhas')];
-  return [...rowsPart, formatFileSize(file.size), 'escolha outro arquivo para substituir'].join(
+  return [...rowsPart, formatFileSize(file.size), 'arraste outro arquivo para substituir'].join(
     ' • ',
   );
 }
 
 const LINE_FIELD = /^(\d+)\./;
+
+const sentenceOf = (message: string) => {
+  const text = message.charAt(0).toLowerCase() + message.slice(1);
+  return /[.!?]$/.test(text) ? text : `${text}.`;
+};
+
+/** Uma linha recusada do CSV, como no frame 832-3837: "Linha 12: a raridade não existe.". */
+export function importErrorLine({ field, message }: { field: string; message: string }): string {
+  const line = LINE_FIELD.exec(field)?.[1];
+  return `${line ? `Linha ${line}` : 'Arquivo'}: ${sentenceOf(message)}`;
+}
 
 function failedLinesOf(error: Error): number {
   const details = error instanceof ApiError ? (error.details ?? []) : [];

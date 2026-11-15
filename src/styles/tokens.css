@@ -32,6 +32,8 @@
   --color-info-soft: #dbeafe;
   --color-neutral: #475569;
   --color-neutral-soft: #f1f5f9;
+  --color-positive: #15803d;
+  --color-positive-soft: #dcfce7;
 
   --font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-family-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
@@ -76,6 +78,10 @@
   --size-dialog: 32rem;
   --size-dialog-wide: 48rem;
   --size-dialog-large: 64rem;
+  --size-dialog-compact: 35rem;
+  --size-dialog-medium: 38.75rem;
+  --size-dialog-icon: 3rem;
+  --size-dialog-close: 2rem;
   --size-drawer: 28rem;
   --size-toast: 24rem;
   --size-field-icon: 1.25rem;
@@ -131,6 +137,8 @@
   --color-info-soft: #153454;
   --color-neutral: #c0c6d6;
   --color-neutral-soft: #283643;
+  --color-positive: #4ade80;
+  --color-positive-soft: rgb(74 222 128 / 0.12);
   --color-info-contrast: #003061;
   --color-warning-text: #ffddb7;
   --color-surface-glass: rgb(18 33 45 / 0.75);

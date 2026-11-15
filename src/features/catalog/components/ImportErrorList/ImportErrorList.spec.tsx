@@ -6,7 +6,7 @@ import { ApiError } from '@/lib/api-error';
 import { ImportErrorList } from './ImportErrorList';
 
 describe('ImportErrorList', () => {
-  it('R13: lista cada linha recusada com a coluna', () => {
+  it('R13: lista cada linha recusada numa frase, como no frame 832-3837', () => {
     const error = new ApiError({
       status: 422,
       code: 'CSV_INVALID',
@@ -16,7 +16,7 @@ describe('ImportErrorList', () => {
     render(<ImportErrorList error={error} />);
 
     expect(screen.getByRole('list', { name: 'Linhas com erro' })).toHaveTextContent(
-      'Linha 12 · Raridade: "Ultra" não existe em raridades',
+      'Linha 12: "Ultra" não existe em raridades.',
     );
   });
 

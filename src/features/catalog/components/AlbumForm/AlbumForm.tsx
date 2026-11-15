@@ -1,7 +1,6 @@
 import type { FieldErrors, UseFormRegister } from 'react-hook-form';
 
 import { FormError } from '@/components/FormError/FormError';
-import { Textarea } from '@/components/Textarea/Textarea';
 import type { ApiError } from '@/lib/api-error';
 
 import { albumStatusLabels } from '../../catalog.labels';
@@ -9,7 +8,7 @@ import type { AlbumFormValues, AlbumInput } from '../../catalog.schemas';
 import { ALBUM_STATUSES, type Album } from '../../catalog.types';
 import { useAlbumForm } from '../../hooks/useAlbumForm';
 import { optionOfReference, useCategoryOptions } from '../../hooks/useCatalogFilterOptions';
-import { IconInput, IconSelect, WideRow } from '../CatalogFields/CatalogFields';
+import { DescriptionField, IconInput, IconSelect, WideRow } from '../CatalogFields/CatalogFields';
 import type { ReportInvalid } from '../CatalogFormModal/CatalogFormModal';
 import { CatalogFormPanel } from '../CatalogFormPanel/CatalogFormPanel';
 import { ImageUploadController } from '../ImageUploadController/ImageUploadController';
@@ -46,6 +45,7 @@ function EditionFields({ register, errors, album }: AlbumFieldsProps & { album?:
       <IconInput
         label="Ano"
         icon="calendar"
+        iconEnd
         inputMode="numeric"
         error={errors.year?.message}
         {...register('year')}
@@ -75,17 +75,17 @@ function AlbumDataPanel({ register, errors, album }: AlbumFieldsProps & { album?
     <CatalogFormPanel icon="shield" title="Dados do álbum">
       <div className={styles.fields}>
         <WideRow>
-          <IconInput label="Título" required error={errors.title?.message} {...register('title')} />
+          <IconInput
+            label="Título"
+            required
+            showValid
+            error={errors.title?.message}
+            {...register('title')}
+          />
         </WideRow>
         <EditionFields register={register} errors={errors} album={album} />
         <PublisherFields register={register} errors={errors} />
-        <WideRow>
-          <Textarea
-            label="Descrição"
-            error={errors.description?.message}
-            {...register('description')}
-          />
-        </WideRow>
+        <DescriptionField error={errors.description?.message} {...register('description')} />
       </div>
     </CatalogFormPanel>
   );

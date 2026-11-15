@@ -11,7 +11,7 @@ import {
   formatEdition,
   formatFileSize,
   importedCardsNotice,
-  importErrorLocation,
+  importErrorLine,
 } from './catalog.format';
 
 const KB = 1024;
@@ -46,17 +46,19 @@ describe('catalog.format', () => {
 });
 
 describe('catalog.format: importação de CSV', () => {
-  it('R13: mostra a linha e a coluna do erro do CSV pelo nome da coluna', () => {
-    expect(importErrorLocation('3.rarity')).toBe('Linha 3 · Raridade');
-    expect(importErrorLocation('7.album_title')).toBe('Linha 7 · Álbum');
+  it('R13: mostra a linha do erro do CSV numa frase, como no frame 832-3837', () => {
+    expect(
+      importErrorLine({ field: '12.rarity', message: '"Ultra" não existe em raridades' }),
+    ).toBe('Linha 12: "Ultra" não existe em raridades.');
+    expect(importErrorLine({ field: '41.name', message: 'Informe o nome da carta.' })).toBe(
+      'Linha 41: informe o nome da carta.',
+    );
   });
 
   it('R13: erro do arquivo inteiro, como o cabeçalho errado, não mostra linha', () => {
-    expect(importErrorLocation('file')).toBe('Arquivo');
-  });
-
-  it('R13: coluna desconhecida aparece com o nome que a API mandou', () => {
-    expect(importErrorLocation('2.preco')).toBe('Linha 2 · preco');
+    expect(importErrorLine({ field: 'file', message: 'O arquivo não tem nenhuma carta' })).toBe(
+      'Arquivo: o arquivo não tem nenhuma carta.',
+    );
   });
 
   it('R13: o aviso de sucesso usa singular e plural e cita o arquivo', () => {
@@ -83,9 +85,9 @@ describe('catalog.format: importação de CSV', () => {
     const file = new File(['x'.repeat(12 * KB)], 'base.csv');
 
     expect(csvFileSummary(file, 50)).toBe(
-      '50 linhas • 12 KB • escolha outro arquivo para substituir',
+      '50 linhas • 12 KB • arraste outro arquivo para substituir',
     );
-    expect(csvFileSummary(file)).toBe('12 KB • escolha outro arquivo para substituir');
+    expect(csvFileSummary(file)).toBe('12 KB • arraste outro arquivo para substituir');
   });
 
   it('R13: resume a importação recusada pelo número de linhas com erro', () => {

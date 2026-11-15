@@ -27,6 +27,8 @@ vi.mock('../../catalog.api', () => ({
 vi.mock('../../catalog.image', async (importOriginal) => ({
   ...(await importOriginal<typeof CatalogImage>()),
   readImageSize: vi.fn(),
+  localPreviewUrl: vi.fn(() => 'blob:previa-local'),
+  releasePreviewUrl: vi.fn(),
 }));
 
 const FRONT_IMAGE_URL = 'https://hml-api.cromocard.com.br/uploads/cards/nova.webp';

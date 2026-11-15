@@ -38,6 +38,7 @@ export function CatalogCreateDialogs({ state }: { state: CatalogCreateState }) {
       <Toast
         message={state.message?.title ?? null}
         detail={state.message?.detail}
+        placement="top"
         onDismiss={state.clearMessage}
       />
     </>

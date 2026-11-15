@@ -85,4 +85,38 @@ describe('Modal', () => {
     await userEvent.tab();
     expect(closeButton).toHaveFocus();
   });
+
+  it('o modal compacto do Figma não tem o botão de fechar e fecha pelo Esc', async () => {
+    const onClose = vi.fn();
+    render(
+      <Modal open variant="compact" size="medium" title="Importar cartas por CSV" onClose={onClose}>
+        <p>Envie o arquivo.</p>
+      </Modal>,
+    );
+
+    expect(screen.queryByRole('button', { name: 'Fechar' })).not.toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it('o modal em faixas mostra o ícone, o subtítulo e o botão de fechar', () => {
+    render(
+      <Modal
+        open
+        variant="framed"
+        size="large"
+        icon="cube"
+        title="Cadastrar nova carta"
+        subtitle="Preencha os dados e envie as imagens da carta."
+        onClose={vi.fn()}
+      >
+        <p>Formulário</p>
+      </Modal>,
+    );
+
+    expect(screen.getByRole('dialog', { name: 'Cadastrar nova carta' })).toHaveTextContent(
+      'Preencha os dados e envie as imagens da carta.',
+    );
+    expect(screen.getByRole('button', { name: 'Fechar' })).toBeInTheDocument();
+  });
 });

@@ -6,18 +6,45 @@
 
 .help {
   margin: 0;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   line-height: 1.5;
   /* A lista de colunas do CSV é uma palavra só: precisa quebrar no celular. */
   overflow-wrap: anywhere;
 }
 
 .dropzone {
+  position: relative;
+  display: grid;
+  gap: var(--space-2);
   min-width: 0;
   overflow-wrap: anywhere;
-  padding: var(--space-4);
-  border: 1px dashed var(--color-input-border);
+  padding: var(--space-4) var(--space-5);
+  border: 1px dashed var(--color-text-muted);
   border-radius: var(--radius-md);
+  background: var(--color-surface-sunken);
+  cursor: pointer;
+}
+
+.dropzone:hover,
+.dropzone:focus-within {
+  border-color: var(--color-primary);
+}
+
+.fileName {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+}
+
+.summary {
+  font-size: var(--font-size-caption);
+}
+
+.hiddenInput {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
 }
 
 .template {
@@ -33,7 +60,7 @@
   background: transparent;
   color: var(--color-primary);
   font: inherit;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   cursor: pointer;
 }
 

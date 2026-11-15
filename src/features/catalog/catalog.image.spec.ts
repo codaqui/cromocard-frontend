@@ -1,12 +1,15 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  belowMinMetaOf,
   CARD_IMAGE_MIN_SIZE,
   fileNameOfUrl,
   formatImageSize,
   imageMetaOf,
+  localPreviewUrl,
   meetsMinSize,
   readImageSize,
+  releasePreviewUrl,
 } from './catalog.image';
 
 /** Imagem falsa: o jsdom não carrega imagens, então o teste decide se ela carrega ou falha. */
@@ -74,6 +77,23 @@ describe('catalog.image', () => {
     await expect(readImageSize(new File(['x'], 'carta.webp'))).rejects.toThrow(
       'Não foi possível ler a imagem.',
     );
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:imagem');
+  });
+
+  it('R12: abaixo do mínimo, o texto mostra o tamanho exigido entre parênteses', () => {
+    const file = new File(['x'.repeat(2048)], 'pequena.png');
+
+    expect(belowMinMetaOf(file, { width: 800, height: 1000 }, CARD_IMAGE_MIN_SIZE)).toBe(
+      '2 KB • 800 × 1000 px (mínimo 1200×1600 px)',
+    );
+  });
+
+  it('R12: cria e libera o endereço local da prévia', () => {
+    const revokeObjectURL = stubImage('load');
+    const file = new File(['x'], 'carta.png');
+
+    expect(localPreviewUrl(file)).toBe('blob:imagem');
+    releasePreviewUrl('blob:imagem');
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:imagem');
   });
 });

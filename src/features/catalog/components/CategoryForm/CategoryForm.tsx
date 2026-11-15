@@ -1,7 +1,6 @@
 import type { UseFormRegisterReturn } from 'react-hook-form';
 
 import { FormError } from '@/components/FormError/FormError';
-import { Textarea } from '@/components/Textarea/Textarea';
 import type { ApiError } from '@/lib/api-error';
 
 import { categoryTypeLabels } from '../../catalog.labels';
@@ -9,7 +8,7 @@ import type { CategoryInput } from '../../catalog.schemas';
 import { CATEGORY_TYPES, type Category, type CategoryType } from '../../catalog.types';
 import { useParentCategoryOptions } from '../../hooks/useCatalogFilterOptions';
 import { useCategoryForm } from '../../hooks/useCategoryForm';
-import { IconInput, IconSelect, WideRow } from '../CatalogFields/CatalogFields';
+import { DescriptionField, IconInput, IconSelect, WideRow } from '../CatalogFields/CatalogFields';
 import type { ReportInvalid } from '../CatalogFormModal/CatalogFormModal';
 import styles from './CategoryForm.module.css';
 
@@ -79,15 +78,17 @@ export function CategoryForm({ formId, category, ...options }: CategoryFormProps
   return (
     <form id={formId} className={styles.form} noValidate onSubmit={form.submit}>
       <WideRow>
-        <IconInput label="Nome" required error={errors.name?.message} {...register('name')} />
+        <IconInput
+          label="Nome"
+          required
+          showValid
+          error={errors.name?.message}
+          {...register('name')}
+        />
       </WideRow>
       <HierarchyFields form={form} category={category} />
+      <DescriptionField error={errors.description?.message} {...register('description')} />
       <WideRow>
-        <Textarea
-          label="Descrição"
-          error={errors.description?.message}
-          {...register('description')}
-        />
         <FormError message={form.formError} />
       </WideRow>
     </form>

@@ -15,6 +15,8 @@ interface FieldFrame {
   error?: string;
   /** Mostra o asterisco do Figma no rótulo e avisa o leitor de tela. */
   required?: boolean;
+  /** Ícone à direita do campo, como o calendário do "Ano" no frame 833-9661. */
+  iconEnd?: boolean;
 }
 
 interface IconFrameProps extends FieldFrame {
@@ -22,10 +24,15 @@ interface IconFrameProps extends FieldFrame {
   children: ReactNode;
 }
 
-function IconFrame({ label, icon, error, required, inputId, children }: IconFrameProps) {
+function controlClassOf({ icon, iconEnd }: Pick<FieldFrame, 'icon' | 'iconEnd'>) {
+  if (!icon) return styles.plainControl;
+  return iconEnd ? styles.endControl : styles.control;
+}
+
+function IconFrame({ label, icon, error, required, inputId, children, ...look }: IconFrameProps) {
   return (
     <FormField inputId={inputId} label={required ? `${label} *` : label} error={error}>
-      <div className={icon ? styles.control : styles.plainControl}>
+      <div className={controlClassOf({ icon, ...look })}>
         {icon && (
           <span className={styles.icon}>
             <CatalogIcon name={icon} size={20} />
@@ -62,20 +69,51 @@ export function WideRow({ children }: { children: ReactNode }) {
   return <div className={styles.wide}>{children}</div>;
 }
 
-type IconInputProps = FieldFrame & ComponentProps<'input'>;
+interface IconInputProps extends FieldFrame, ComponentProps<'input'> {
+  /** O check do Figma quando o campo está preenchido e sem erro (frames 278-3246 e 833-9661). */
+  showValid?: boolean;
+}
 
-export function IconInput({ label, icon, error, required, ...inputProps }: IconInputProps) {
+function ValidMark() {
+  return (
+    <span className={styles.valid} aria-hidden="true">
+      <CatalogIcon name="checkCircle" size={20} />
+    </span>
+  );
+}
+
+export function IconInput({
+  label,
+  icon,
+  iconEnd,
+  error,
+  required,
+  showValid,
+  placeholder = ' ',
+  ...inputProps
+}: IconInputProps) {
   const inputId = useId();
 
   return (
-    <IconFrame {...{ label, icon, error, required, inputId }}>
+    <IconFrame {...{ label, icon, iconEnd, error, required, inputId }}>
       <input
         id={inputId}
         className={styles.input}
+        placeholder={placeholder}
         {...fieldAria(inputId, { error, required })}
         {...inputProps}
       />
+      {showValid && <ValidMark />}
     </IconFrame>
+  );
+}
+
+/** "Descrição" numa linha só e em toda a largura, como nos formulários do catálogo no Figma. */
+export function DescriptionField(props: Omit<IconInputProps, 'label'>) {
+  return (
+    <WideRow>
+      <IconInput label="Descrição" {...props} />
+    </WideRow>
   );
 }
 

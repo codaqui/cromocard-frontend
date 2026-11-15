@@ -4,7 +4,6 @@ import type { Control, FieldErrors, UseFormRegister } from 'react-hook-form';
 import { describedByOf } from '@/components/FormField/field-ids';
 import { FormError } from '@/components/FormError/FormError';
 import { FormField } from '@/components/FormField/FormField';
-import { Textarea } from '@/components/Textarea/Textarea';
 import type { ApiError } from '@/lib/api-error';
 
 import { formatAlbumNumber } from '../../catalog.format';
@@ -22,7 +21,7 @@ import {
   useLanguageOptions,
   useRarityOptions,
 } from '../../hooks/useCatalogFilterOptions';
-import { IconInput, IconSelect, WideRow } from '../CatalogFields/CatalogFields';
+import { DescriptionField, IconInput, IconSelect, WideRow } from '../CatalogFields/CatalogFields';
 import type { ReportInvalid } from '../CatalogFormModal/CatalogFormModal';
 import { CatalogFormPanel } from '../CatalogFormPanel/CatalogFormPanel';
 import { ImageUploadController } from '../ImageUploadController/ImageUploadController';
@@ -96,18 +95,25 @@ function ClassificationFields({ register, errors, card }: CardFieldsProps & { ca
   );
 }
 
+function NameField({ register, errors }: CardFieldsProps) {
+  return (
+    <WideRow>
+      <IconInput
+        label="Nome da carta"
+        required
+        showValid
+        placeholder="Ex.: Charizard"
+        error={errors.name?.message}
+        {...register('name')}
+      />
+    </WideRow>
+  );
+}
+
 function IdentityFields({ register, errors, card }: CardFieldsProps & { card?: Card }) {
   return (
     <>
-      <WideRow>
-        <IconInput
-          label="Nome da carta"
-          required
-          placeholder="Ex.: Charizard"
-          error={errors.name?.message}
-          {...register('name')}
-        />
-      </WideRow>
+      <NameField register={register} errors={errors} />
       <WideRow>
         <IconSelect
           label="Franquia"
@@ -150,13 +156,7 @@ function CardDataPanel({ form, card }: { form: CardFormState; card?: Card }) {
         <AlbumField register={register} errors={errors} card={card} />
         <NumberingField register={register} errors={errors} total={total} />
         <ClassificationFields register={register} errors={errors} card={card} />
-        <WideRow>
-          <Textarea
-            label="Descrição"
-            error={errors.description?.message}
-            {...register('description')}
-          />
-        </WideRow>
+        <DescriptionField error={errors.description?.message} {...register('description')} />
       </div>
     </CatalogFormPanel>
   );

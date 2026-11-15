@@ -141,13 +141,3 @@ export function formModalTextsOf(kind: CatalogItemKind, editingName?: string) {
     confirmMessage,
   };
 }
-
-export const importColumnLabels: Record<string, string> = {
-  album_title: 'Álbum',
-  number: 'Número',
-  name: 'Nome',
-  rarity: 'Raridade',
-  language: 'Idioma',
-  category: 'Categoria',
-  columns: 'Colunas',
-};
