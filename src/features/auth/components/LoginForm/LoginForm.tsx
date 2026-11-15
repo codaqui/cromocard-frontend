@@ -16,16 +16,16 @@ import styles from './LoginForm.module.css';
 
 type LoginFields = ReturnType<typeof useLoginForm>;
 
-function EmailField({ register, errors }: Pick<LoginFields, 'register' | 'errors'>) {
+function LoginField({ register, errors }: Pick<LoginFields, 'register' | 'errors'>) {
   return (
     <TextField
-      label="E-mail"
+      label="E-mail ou nome de usuário"
       icon="mail"
-      type="email"
-      autoComplete="email"
-      placeholder="seu.email@exemplo.com"
-      error={errors.email?.message}
-      {...register('email')}
+      type="text"
+      autoComplete="username"
+      placeholder="seu.email@exemplo.com ou @usuario"
+      error={errors.login?.message}
+      {...register('login')}
     />
   );
 }
@@ -67,7 +67,7 @@ export function LoginForm({
 
   return (
     <form className={styles.form} noValidate onSubmit={submit}>
-      <EmailField register={register} errors={errors} />
+      <LoginField register={register} errors={errors} />
       <LoginPasswordField register={register} errors={errors} />
       <div className={styles.remember}>
         <Checkbox label="Lembrar de mim por 30 dias" {...rememberMe} />

@@ -7,12 +7,12 @@ import type { ApiError } from '@/lib/api-error';
 
 import { type LoginInput, loginSchema } from '../auth.schemas';
 
-const loginFields = ['email', 'password', 'rememberMe'] as const;
+const loginFields = ['login', 'password', 'rememberMe'] as const;
 
 export function useLoginForm(onSubmit: (input: LoginInput) => void, apiError: ApiError | null) {
   const { register, handleSubmit, setError, formState } = useForm({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: '', password: '', rememberMe: false },
+    defaultValues: { login: '', password: '', rememberMe: false },
   });
   const formError = useApiFieldErrors(apiError, loginFields, setError);
 

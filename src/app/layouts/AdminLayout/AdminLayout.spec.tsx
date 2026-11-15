@@ -1,12 +1,13 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { adminBackofficeRoutes } from '@/features/admin';
 import { catalogBackofficeRoutes } from '@/features/catalog';
 import { communityBackofficeRoutes } from '@/features/community';
 import { notificationsBackofficeRoutes } from '@/features/notifications';
 import { paths } from '@/routes/paths';
+import { preloadLazyRoutes } from '@/test/preloadLazyRoutes';
 import { renderWithProviders } from '@/test/renderWithProviders';
 
 import { AdminLayout } from './AdminLayout';
@@ -39,6 +40,8 @@ function renderBackoffice(initialPath: string = paths.backoffice.dashboard) {
 }
 
 describe('AdminLayout', () => {
+  beforeAll(() => preloadLazyRoutes(routes), 30_000);
+
   it('mostra os 9 módulos oficiais na ordem do menu', async () => {
     renderBackoffice();
 

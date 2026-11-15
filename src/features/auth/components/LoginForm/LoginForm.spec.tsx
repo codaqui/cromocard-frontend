@@ -19,13 +19,26 @@ describe('LoginForm', () => {
   it('envia e-mail normalizado, senha e "lembrar de mim"', async () => {
     const onSubmit = renderForm();
 
-    await userEvent.type(screen.getByLabelText('E-mail'), ' Ana@CromoCard.dev ');
+    await userEvent.type(screen.getByLabelText('E-mail ou nome de usuário'), ' Ana@CromoCard.dev ');
     await userEvent.type(screen.getByLabelText('Senha'), 'Senha@Forte1');
     await userEvent.click(screen.getByLabelText('Lembrar de mim por 30 dias'));
     await userEvent.click(screen.getByRole('button', { name: 'Entrar na Plataforma' }));
 
     expect(onSubmit).toHaveBeenCalledWith(
-      { email: 'ana@cromocard.dev', password: 'Senha@Forte1', rememberMe: true },
+      { login: 'ana@cromocard.dev', password: 'Senha@Forte1', rememberMe: true },
+      expect.anything(),
+    );
+  });
+
+  it('R10: envia o @ digitado sem exigir formato de e-mail', async () => {
+    const onSubmit = renderForm();
+
+    await userEvent.type(screen.getByLabelText('E-mail ou nome de usuário'), '@Ana.Vendas');
+    await userEvent.type(screen.getByLabelText('Senha'), 'Senha@Forte1');
+    await userEvent.click(screen.getByRole('button', { name: 'Entrar na Plataforma' }));
+
+    expect(onSubmit).toHaveBeenCalledWith(
+      { login: '@ana.vendas', password: 'Senha@Forte1', rememberMe: false },
       expect.anything(),
     );
   });
@@ -35,11 +48,11 @@ describe('LoginForm', () => {
       status: 400,
       code: 'VALIDATION_ERROR',
       message: 'Dados inválidos',
-      details: [{ field: 'email', message: 'Informe um e-mail válido' }],
+      details: [{ field: 'login', message: 'Informe o e-mail ou o nome de usuário' }],
     });
     renderForm({ apiError });
 
-    expect(await screen.findByText('Informe um e-mail válido')).toBeInTheDocument();
+    expect(await screen.findByText('Informe o e-mail ou o nome de usuário')).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 

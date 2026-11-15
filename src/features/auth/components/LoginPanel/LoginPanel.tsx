@@ -12,29 +12,29 @@ import { LoginForm } from '../LoginForm/LoginForm';
 import { LoginNotice } from './LoginNotice';
 
 function useLoginActions() {
-  const login = useLogin();
+  const loginMutation = useLogin();
   const googleLogin = useGoogleLogin();
   const redirectAfterLogin = useLoginRedirect();
   const onSuccess = ({ user }: AuthSession) => redirectAfterLogin(user);
 
   return {
-    isPending: login.isPending || googleLogin.isPending,
-    email: login.variables?.email ?? '',
-    error: login.error ?? googleLogin.error,
-    submit: (input: LoginInput) => login.mutate(input, { onSuccess }),
+    isPending: loginMutation.isPending || googleLogin.isPending,
+    loginIdentifier: loginMutation.variables?.login ?? '',
+    error: loginMutation.error ?? googleLogin.error,
+    submit: (input: LoginInput) => loginMutation.mutate(input, { onSuccess }),
     submitGoogle: (idToken: string, rememberMe: boolean) =>
       googleLogin.mutate({ idToken, rememberMe }, { onSuccess }),
   };
 }
 
 export function LoginPanel() {
-  const { isPending, error, email, submit, submitGoogle } = useLoginActions();
+  const { isPending, error, loginIdentifier, submit, submitGoogle } = useLoginActions();
   const formError = error?.code === authErrorCodes.emailNotVerified ? null : error;
   const [rememberMe, setRememberMe] = useState(false);
 
   return (
     <>
-      <LoginNotice error={error} email={email} />
+      <LoginNotice error={error} loginIdentifier={loginIdentifier} />
       <LoginForm
         isSubmitting={isPending}
         apiError={formError}
