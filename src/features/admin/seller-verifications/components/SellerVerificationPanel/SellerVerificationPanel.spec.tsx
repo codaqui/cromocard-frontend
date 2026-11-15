@@ -84,7 +84,9 @@ describe('SellerVerificationPanel', () => {
     vi.mocked(sellerVerificationsApi.getById).mockResolvedValue(detail);
     vi.mocked(sellerVerificationsApi.validateDocument).mockResolvedValue({
       ...detail,
-      documents: [{ ...detail.documents[0]!, status: 'VALIDATED', validatedAt: '2026-11-13T12:00:00Z' }],
+      documents: [
+        { ...detail.documents[0]!, status: 'VALIDATED', validatedAt: '2026-11-13T12:00:00Z' },
+      ],
     });
     renderPanel();
     await screen.findByText('Cards Kanto LTDA');
@@ -93,6 +95,28 @@ describe('SellerVerificationPanel', () => {
 
     expect(sellerVerificationsApi.validateDocument).toHaveBeenCalledWith('ver-1', 'doc-1');
     expect(await screen.findByText('Documento validado com sucesso.')).toBeInTheDocument();
+  });
+
+  it('tipo de documento sem rótulo mostra o tipo como veio da API', async () => {
+    vi.mocked(sellerVerificationsApi.getById).mockResolvedValue(
+      buildDetail({
+        documents: [
+          {
+            id: 'doc-2',
+            type: 'OUTRO_DOCUMENTO',
+            fileUrl: 'https://files.cromocard.dev/doc.pdf',
+            fileSize: 240000,
+            status: 'SUBMITTED',
+            validatedAt: null,
+            validatedById: null,
+            createdAt: '2026-10-20T15:00:00Z',
+          },
+        ],
+      }),
+    );
+    renderPanel();
+
+    expect(await screen.findByText('OUTRO_DOCUMENTO')).toBeInTheDocument();
   });
 
   it('documento validado sem a data mostra só "Validado"', async () => {
@@ -142,7 +166,9 @@ describe('SellerVerificationPanel', () => {
     await userEvent.type(within(dialog).getByLabelText('Motivo da rejeição'), 'Documento ilegível');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Rejeitar' }));
 
-    expect(sellerVerificationsApi.reject).toHaveBeenCalledWith('ver-1', { reason: 'Documento ilegível' });
+    expect(sellerVerificationsApi.reject).toHaveBeenCalledWith('ver-1', {
+      reason: 'Documento ilegível',
+    });
     expect(await screen.findByText('Credenciamento reprovado com sucesso.')).toBeInTheDocument();
   });
 
@@ -152,7 +178,12 @@ describe('SellerVerificationPanel', () => {
     vi.mocked(sellerVerificationsApi.addNote).mockResolvedValue({
       ...detail,
       notes: [
-        { id: 'note-1', content: 'Lojista já atua há 2 anos', createdAt: '2026-11-13T12:00:00Z', author: { id: 'admin-1', name: 'Admin' } },
+        {
+          id: 'note-1',
+          content: 'Lojista já atua há 2 anos',
+          createdAt: '2026-11-13T12:00:00Z',
+          author: { id: 'admin-1', name: 'Admin' },
+        },
       ],
     });
     renderPanel();
@@ -196,6 +227,37 @@ describe('SellerVerificationPanel', () => {
     expect(sellerVerificationsApi.reject).not.toHaveBeenCalled();
   });
 
+  it('CA6: cancelar o diálogo de rejeição fecha sem chamar a API', async () => {
+    vi.mocked(sellerVerificationsApi.getById).mockResolvedValue(buildDetail());
+    renderPanel();
+    await screen.findByText('Cards Kanto LTDA');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Rejeitar' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(sellerVerificationsApi.reject).not.toHaveBeenCalled();
+  });
+
+  it('CA3: fecha o aviso de sucesso ao clicar em "Fechar aviso"', async () => {
+    const detail = buildDetail();
+    vi.mocked(sellerVerificationsApi.getById).mockResolvedValue(detail);
+    vi.mocked(sellerVerificationsApi.validateDocument).mockResolvedValue({
+      ...detail,
+      documents: [
+        { ...detail.documents[0]!, status: 'VALIDATED', validatedAt: '2026-11-13T12:00:00Z' },
+      ],
+    });
+    renderPanel();
+    await screen.findByText('Cards Kanto LTDA');
+    await userEvent.click(screen.getByRole('button', { name: 'Validar' }));
+    await screen.findByText('Documento validado com sucesso.');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Fechar aviso' }));
+
+    expect(screen.queryByText('Documento validado com sucesso.')).not.toBeInTheDocument();
+  });
+
   it('R10: fechar o dossiê sem decidir não chama nenhuma API de decisão', async () => {
     vi.mocked(sellerVerificationsApi.getById).mockResolvedValue(buildDetail());
     const onClose = vi.fn();
@@ -218,5 +280,43 @@ describe('SellerVerificationPanel', () => {
     await screen.findByText('Cards Kanto LTDA');
     expect(screen.queryByRole('button', { name: 'Validar Lojista' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Rejeitar' })).not.toBeInTheDocument();
+  });
+
+  it('credenciamento reprovado mostra o motivo da rejeição', async () => {
+    vi.mocked(sellerVerificationsApi.getById).mockResolvedValue(
+      buildDetail({
+        status: 'REJECTED',
+        rejectionReason: 'Documento ilegível',
+        reviewedAt: '2026-11-10T10:00:00Z',
+      }),
+    );
+    renderPanel();
+
+    expect(await screen.findByText(/Motivo: Documento ilegível/)).toBeInTheDocument();
+  });
+
+  it('CA4: mostra "Aguarde…" enquanto a aprovação está em andamento', async () => {
+    const detail = buildDetail();
+    vi.mocked(sellerVerificationsApi.getById).mockResolvedValue(detail);
+    let resolveApprove!: (value: SellerVerificationDetail) => void;
+    vi.mocked(sellerVerificationsApi.approve).mockReturnValue(
+      new Promise((resolve) => {
+        resolveApprove = resolve;
+      }),
+    );
+    renderPanel();
+    await screen.findByText('Cards Kanto LTDA');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Validar Lojista' }));
+
+    expect(await screen.findByRole('button', { name: 'Aguarde…' })).toBeDisabled();
+    resolveApprove({ ...detail, status: 'APPROVED' });
+  });
+
+  it('mostra o erro quando o dossiê não carrega', async () => {
+    vi.mocked(sellerVerificationsApi.getById).mockRejectedValue(new Error('Falha de rede'));
+    renderPanel();
+
+    expect(await screen.findByText('Falha de rede')).toBeInTheDocument();
   });
 });

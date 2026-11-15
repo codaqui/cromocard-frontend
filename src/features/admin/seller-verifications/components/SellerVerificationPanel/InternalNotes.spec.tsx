@@ -29,4 +29,10 @@ describe('InternalNotes', () => {
 
     expect(screen.getByText('Nenhuma anotação registrada.')).toBeInTheDocument();
   });
+
+  it('mostra "Salvando…" e desabilita o botão enquanto grava', () => {
+    render(<InternalNotes notes={[]} isSaving={true} onAdd={vi.fn()} />);
+
+    expect(screen.getByRole('button', { name: 'Salvando…' })).toBeDisabled();
+  });
 });
