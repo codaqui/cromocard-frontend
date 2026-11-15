@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useForm } from 'react-hook-form';
 import { describe, expect, it, vi } from 'vitest';
@@ -57,5 +57,23 @@ describe('FileUpload', () => {
     expect(screen.getByLabelText('Imagem da carta')).toHaveAccessibleDescription(
       'PNG, JPG ou WEBP até 4 MB Escolha uma imagem',
     );
+  });
+
+  it('esconde o rótulo na tela quando o campo já tem um título visível', () => {
+    render(<FileUpload label="Escolher imagem da frente" hideLabel />);
+
+    expect(screen.getByLabelText('Escolher imagem da frente')).toBeInTheDocument();
+    expect(screen.getByText('Escolher imagem da frente')).toHaveClass(/visuallyHidden/);
+  });
+
+  it('volta a mostrar que não há arquivo quando a escolha é cancelada', async () => {
+    render(<FileUpload label="Arquivo CSV" />);
+    const input = screen.getByLabelText('Arquivo CSV');
+    await userEvent.upload(input, new File(['csv'], 'cartas.csv', { type: 'text/csv' }));
+    expect(screen.getByText('cartas.csv')).toBeInTheDocument();
+
+    fireEvent.change(input, { target: { files: [] } });
+
+    expect(screen.getByText('Nenhum arquivo escolhido')).toBeInTheDocument();
   });
 });

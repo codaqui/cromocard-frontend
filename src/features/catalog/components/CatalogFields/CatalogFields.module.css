@@ -1,0 +1,82 @@
+.control,
+.plainControl,
+.endControl {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.icon {
+  position: absolute;
+  left: var(--space-4);
+  display: inline-flex;
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.input {
+  width: 100%;
+  min-height: var(--size-control);
+  padding: var(--space-2) var(--space-3);
+  padding-left: calc(var(--space-4) + var(--size-field-icon) + var(--space-3));
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-input-background);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-sm);
+}
+
+.plainControl .input,
+.endControl .input {
+  padding-left: var(--space-4);
+}
+
+.endControl .icon {
+  right: var(--space-4);
+  left: auto;
+}
+
+.endControl .input,
+.plainControl:has(.valid) .input {
+  padding-right: calc(var(--space-4) + var(--size-field-icon) + var(--space-3));
+}
+
+/* O check do Figma: só aparece com o campo preenchido e sem erro. */
+.valid {
+  position: absolute;
+  right: var(--space-4);
+  display: none;
+  color: var(--color-success);
+  pointer-events: none;
+}
+
+.input:not(:placeholder-shown):not([aria-invalid='true']) + .valid {
+  display: inline-flex;
+}
+
+.input::placeholder {
+  color: var(--color-placeholder);
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 0;
+}
+
+.input[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.wide {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: var(--space-4);
+}
+
+/* Fonte de 16 px no celular: com menos, o iOS dá zoom ao focar o campo. */
+@media (max-width: 48rem) {
+  .input {
+    font-size: var(--font-size-md);
+  }
+}

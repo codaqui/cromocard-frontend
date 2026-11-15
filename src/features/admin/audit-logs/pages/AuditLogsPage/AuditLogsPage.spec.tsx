@@ -185,4 +185,122 @@ describe('AuditLogsPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }));
     expect(await screen.findByRole('row', { name: /Carla Mendes/ })).toBeInTheDocument();
   });
+
+  it('CA2: volta a todas as ações e entidades ao escolher a opção vazia', async () => {
+    renderPage();
+    await screen.findByRole('row', { name: /Carla Mendes/ });
+    const action = screen.getByLabelText('Tipo de ação executada');
+    const entity = screen.getByLabelText('Tipo de entidade');
+
+    await userEvent.selectOptions(action, 'GROUP_DELETED');
+    await userEvent.selectOptions(entity, 'GROUP');
+    await userEvent.selectOptions(action, '');
+    await userEvent.selectOptions(entity, '');
+
+    expect(lastListCall()?.action).toBeUndefined();
+    expect(lastListCall()?.entityType).toBeUndefined();
+  });
+
+  it('CA2: filtra pelo ID do alvo e pelo intervalo personalizado, avisando a data invertida', async () => {
+    renderPage();
+    await screen.findByRole('row', { name: /Carla Mendes/ });
+
+    await userEvent.type(screen.getByLabelText('Pesquisa por ID do alvo'), GROUP_ID);
+    await userEvent.selectOptions(screen.getByLabelText('Período temporal / Data'), 'CUSTOM');
+    const from = screen.getByLabelText('Data inicial');
+    const to = screen.getByLabelText('Data final');
+    await userEvent.clear(from);
+    await userEvent.type(from, '2026-11-08');
+    await userEvent.clear(to);
+    await userEvent.type(to, '2026-11-01');
+
+    expect(
+      screen.getByText('A data final precisa ser igual ou depois da inicial'),
+    ).toBeInTheDocument();
+
+    await userEvent.clear(to);
+    await userEvent.type(to, '2026-11-09');
+
+    expect(lastListCall()).toMatchObject({
+      entityId: GROUP_ID,
+      from: '2026-11-08',
+      to: '2026-11-09',
+    });
+
+    await userEvent.clear(from);
+    await userEvent.clear(to);
+
+    expect(lastListCall()?.from).toBeUndefined();
+    expect(lastListCall()?.to).toBeUndefined();
+  });
+
+  it('CA2: limpar os filtros volta ao estado inicial', async () => {
+    renderPage();
+    await screen.findByRole('row', { name: /Carla Mendes/ });
+    await userEvent.selectOptions(screen.getByLabelText('Tipo de ação executada'), 'GROUP_DELETED');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Limpar filtros' }));
+
+    expect(screen.getByLabelText('Tipo de ação executada')).toHaveValue('');
+    expect(lastListCall()?.action).toBeUndefined();
+  });
+
+  it('mostra o total no singular com um evento só', async () => {
+    vi.mocked(auditLogsApi.list).mockResolvedValue({
+      ...page,
+      data: page.data.slice(0, 1),
+      meta: { ...page.meta, total: 1 },
+    });
+
+    renderPage();
+    await screen.findByRole('row', { name: /Carla Mendes/ });
+
+    expect(screen.getByText(/nesta página/)).toHaveTextContent('Mostrando 1 evento nesta página');
+  });
+
+  it('troca de página pela paginação', async () => {
+    vi.mocked(auditLogsApi.list).mockResolvedValue({
+      ...page,
+      meta: { ...page.meta, total: 30, totalPages: 3 },
+    });
+
+    renderPage();
+    await userEvent.click(await screen.findByRole('button', { name: 'Página 2' }));
+
+    expect(lastListCall()?.page).toBe(2);
+  });
+
+  it('CA3: mostra o erro do detalhe e fecha a gaveta', async () => {
+    vi.mocked(auditLogsApi.getById).mockRejectedValue(new Error('Registro não encontrado'));
+    renderPage();
+    const row = await screen.findByRole('row', { name: /Carla Mendes/ });
+
+    await userEvent.click(within(row).getByRole('button', { name: 'Ver detalhes completos' }));
+
+    const drawer = await screen.findByRole('dialog', { name: 'Detalhes do registro de auditoria' });
+    expect(await within(drawer).findByText('Registro não encontrado')).toBeInTheDocument();
+
+    await userEvent.keyboard('{Escape}');
+
+    expect(
+      screen.queryByRole('dialog', { name: 'Detalhes do registro de auditoria' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('CA3: mostra o registro sem alvo, sem motivo e sem detalhes', async () => {
+    vi.mocked(auditLogsApi.getById).mockResolvedValue({
+      ...detail,
+      entityId: null,
+      details: null,
+    });
+    renderPage();
+    const row = await screen.findByRole('row', { name: /Carla Mendes/ });
+
+    await userEvent.click(within(row).getByRole('button', { name: 'Ver detalhes completos' }));
+
+    const drawer = await screen.findByRole('dialog', { name: 'Detalhes do registro de auditoria' });
+    expect(await within(drawer).findByText('Sem ID de entidade')).toBeInTheDocument();
+    expect(within(drawer).getByText('Sem motivo registrado')).toBeInTheDocument();
+    expect(within(drawer).getByText('{}')).toBeInTheDocument();
+  });
 });

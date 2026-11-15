@@ -27,7 +27,7 @@ function buildSchema({ requireReason, confirmationText }: ConfirmDialogFormOptio
 }
 
 export function useConfirmDialogForm(options: ConfirmDialogFormOptions) {
-  const { register, handleSubmit, formState } = useForm({
+  const { register, handleSubmit, formState, watch } = useForm({
     resolver: zodResolver(buildSchema(options)),
     defaultValues: { reason: '', confirmation: '' },
   });
@@ -35,6 +35,8 @@ export function useConfirmDialogForm(options: ConfirmDialogFormOptions) {
   const confirm = ({ reason }: { reason?: string }) =>
     options.onConfirm(options.requireReason ? reason : undefined);
   const submit = (event: FormEvent) => void handleSubmit(confirm)(event);
+  const confirmationTyped = (watch('confirmation') ?? '').trim().length > 0;
+  const confirmationPending = Boolean(options.confirmationText) && !confirmationTyped;
 
-  return { register, errors: formState.errors, submit };
+  return { register, errors: formState.errors, submit, confirmationPending };
 }

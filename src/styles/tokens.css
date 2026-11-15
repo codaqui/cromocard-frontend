@@ -32,6 +32,8 @@
   --color-info-soft: #dbeafe;
   --color-neutral: #475569;
   --color-neutral-soft: #f1f5f9;
+  --color-positive: #15803d;
+  --color-positive-soft: #dcfce7;
 
   --font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-family-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
@@ -69,18 +71,39 @@
 
   --size-control: 2.5rem;
   --size-topbar: 4rem;
+  --size-brand-logo: 2.25rem;
+  --size-user-menu: 12rem;
+  --size-avatar: 2.5rem;
   --size-sidebar: 14rem;
   --size-dialog: 32rem;
+  --size-dialog-wide: 48rem;
+  --size-dialog-large: 64rem;
+  --size-dialog-compact: 35rem;
+  --size-dialog-medium: 38.75rem;
+  --size-dialog-icon: 3rem;
+  --size-dialog-close: 2rem;
   --size-drawer: 28rem;
   --size-toast: 24rem;
   --size-field-icon: 1.25rem;
   --size-card-min: 12rem;
+  --size-image-preview: 6rem;
+  --size-card-preview: 16rem;
+  --size-scroll-list: 16rem;
+  --size-catalog-subtitle: 29rem;
+  --size-catalog-thumbnail-width: 3.5rem;
+  --size-catalog-thumbnail-height: 4.75rem;
+  --size-status-dot: 0.5rem;
+  --size-avatar-sm: 2rem;
+  --size-avatar-md: 2.5rem;
+  --size-avatar-lg: 3.5rem;
+  --size-avatar-xl: 5.25rem;
 
   --z-overlay: 100;
   --z-toast: 200;
 }
 
-[data-theme='backoffice'] {
+[data-theme='backoffice'],
+[data-theme='site'] {
   --color-primary: #3291ff;
   --color-primary-hover: #2577d5;
   --color-primary-contrast: #002a55;
@@ -114,10 +137,13 @@
   --color-info-soft: #153454;
   --color-neutral: #c0c6d6;
   --color-neutral-soft: #283643;
+  --color-positive: #4ade80;
+  --color-positive-soft: rgb(74 222 128 / 0.12);
   --color-info-contrast: #003061;
   --color-warning-text: #ffddb7;
   --color-surface-glass: rgb(18 33 45 / 0.75);
   --color-surface-shade: rgb(2 15 27 / 0.5);
+  --color-surface-glow: #0e2c3a;
   --color-chart-primary: #3291ff;
   --color-chart-secondary: #47d6ff;
   --color-chart-primary-fill: rgb(50 145 255 / 0.35);
@@ -127,6 +153,9 @@
   --color-glow-accent: rgb(0 210 255 / 0.14);
   --color-glow-warning: rgb(201 129 0 / 0.12);
   --color-danger-strong: #d32f2f;
+  --color-alert: #93000a;
+  --color-alert-text: #ffdad6;
+  --color-glow-overview: rgb(0 210 255 / 0.1);
 
   --font-family: 'Plus Jakarta Sans Variable', 'Inter', system-ui, sans-serif;
   --font-size-caption: 0.8125rem;
@@ -158,11 +187,22 @@
   --size-side-card: 19rem;
   --size-seller-row: 5.5rem;
   --size-kpi-segment: 0.25rem;
+  --size-overview-tile: 12.25rem;
+  --size-overview-tile-height: 10rem;
+  --size-group-icon: 2.25rem;
+  --size-report-card-action: 2.25rem;
 
   color-scheme: dark;
   color: var(--color-text);
   background: var(--color-background);
   font-family: var(--font-family);
+}
+
+[data-theme='site'] {
+  --size-sidebar: 10rem;
+  --size-search: 34rem;
+  --size-brand-logo: 1.5rem;
+  --size-profile-avatar: 1.375rem;
 }
 
 [data-theme='auth'] {

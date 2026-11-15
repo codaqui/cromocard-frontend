@@ -17,10 +17,9 @@ export function useAuditLogs(params: ListAuditLogsParams) {
   });
 }
 
-export function useAuditLogDetail(id: string | null) {
+export function useAuditLogDetail(id: string) {
   return useQuery({
-    queryKey: auditLogsKeys.detail(id ?? ''),
-    queryFn: () => auditLogsApi.getById(id ?? ''),
-    enabled: id !== null,
+    queryKey: auditLogsKeys.detail(id),
+    queryFn: () => auditLogsApi.getById(id),
   });
 }

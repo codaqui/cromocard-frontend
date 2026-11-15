@@ -1,9 +1,10 @@
-import { type ComponentProps, useId } from 'react';
+import { type ComponentProps } from 'react';
 
 import { describedByOf } from '@/components/FormField/field-ids';
-import { FormField } from '@/components/FormField/FormField';
+import { type FieldLabelOptions, FormField } from '@/components/FormField/FormField';
 import { Icon } from '@/components/Icon/Icon';
 import type { IconName } from '@/components/Icon/icon-paths';
+import { useFieldId } from '@/hooks/useFieldId';
 import { cn } from '@/utils/cn';
 
 import styles from './Select.module.css';
@@ -13,16 +14,13 @@ export interface SelectOption {
   label: string;
 }
 
-interface SelectControlProps extends ComponentProps<'select'> {
+interface SelectProps extends ComponentProps<'select'>, FieldLabelOptions {
+  label: string;
   options: SelectOption[];
   placeholder?: string;
-  icon?: IconName;
-}
-
-interface SelectProps extends SelectControlProps {
-  label: string;
   hint?: string;
   error?: string;
+  icon?: IconName;
 }
 
 function SelectOptions({ options, placeholder }: Pick<SelectProps, 'options' | 'placeholder'>) {
@@ -38,7 +36,19 @@ function SelectOptions({ options, placeholder }: Pick<SelectProps, 'options' | '
   );
 }
 
-function SelectControl({ options, placeholder, icon, ...selectProps }: SelectControlProps) {
+interface SelectControlProps extends ComponentProps<'select'> {
+  icon?: IconName;
+  options: SelectOption[];
+  placeholder?: string;
+}
+
+function SelectControl({
+  icon,
+  options,
+  placeholder,
+  className,
+  ...selectProps
+}: SelectControlProps) {
   return (
     <div className={styles.control}>
       {icon && (
@@ -46,19 +56,26 @@ function SelectControl({ options, placeholder, icon, ...selectProps }: SelectCon
           <Icon name={icon} size={20} />
         </span>
       )}
-      <select className={cn(styles.select, icon && styles.withIcon)} {...selectProps}>
+      <select className={cn(styles.select, icon && styles.withIcon, className)} {...selectProps}>
         <SelectOptions options={options} placeholder={placeholder} />
       </select>
     </div>
   );
 }
 
-export function Select({ label, hint, error, id, ...controlProps }: SelectProps) {
-  const generatedId = useId();
-  const selectId = id ?? generatedId;
+export function Select({
+  label,
+  hint,
+  error,
+  id,
+  hideLabel,
+  labelAside,
+  ...controlProps
+}: SelectProps) {
+  const selectId = useFieldId(id);
 
   return (
-    <FormField inputId={selectId} label={label} hint={hint} error={error}>
+    <FormField inputId={selectId} {...{ label, hint, error, hideLabel, labelAside }}>
       <SelectControl
         id={selectId}
         aria-invalid={Boolean(error)}

@@ -17,12 +17,13 @@ interface RetriableRequestConfig extends InternalAxiosRequestConfig {
 const noSession: SessionRefresher = () => Promise.resolve(false);
 let refreshSession: SessionRefresher = noSession;
 let refreshInFlight: Promise<boolean> | null = null;
-let notifyUnauthorized: () => void = () => undefined;
+const ignoreUnauthorized = () => undefined;
+let notifyUnauthorized: () => void = ignoreUnauthorized;
 
 export function onUnauthorized(listener: () => void): () => void {
   notifyUnauthorized = listener;
   return () => {
-    notifyUnauthorized = () => undefined;
+    notifyUnauthorized = ignoreUnauthorized;
   };
 }
 
@@ -74,11 +75,26 @@ async function retryAfterRefresh(config: RetriableRequestConfig, error: unknown)
   return Promise.reject(toApiError(error));
 }
 
-http.interceptors.response.use(undefined, (error: unknown) => {
+async function parsedBlobBody(body: Blob): Promise<unknown> {
+  try {
+    return JSON.parse(await body.text()) as unknown;
+  } catch {
+    return body;
+  }
+}
+
+async function withJsonErrorBody(error: unknown): Promise<unknown> {
+  if (!axios.isAxiosError(error) || !(error.response?.data instanceof Blob)) return error;
+
+  error.response.data = await parsedBlobBody(error.response.data);
+  return error;
+}
+
+http.interceptors.response.use(undefined, async (error: unknown) => {
   const config = retriableAfterRefresh(error);
   if (config) return retryAfterRefresh(config, error);
 
-  return Promise.reject(toApiError(error));
+  return Promise.reject(toApiError(await withJsonErrorBody(error)));
 });
 
 export const api = {
@@ -95,9 +111,18 @@ export const api = {
     return response.data;
   },
 
+  async getBlob(url: string): Promise<Blob> {
+    const response = await http.get<Blob>(url, { responseType: 'blob' });
+    return response.data;
+  },
+
   async post<T>(url: string, body?: unknown): Promise<T> {
     const response = await http.post<ApiResponse<T>>(url, body);
     return response.data.data;
+  },
+
+  async postEmpty(url: string, body?: unknown): Promise<void> {
+    await http.post(url, body);
   },
 
   async patch<T>(url: string, body: unknown): Promise<T> {
@@ -105,7 +130,7 @@ export const api = {
     return response.data.data;
   },
 
-  async delete(url: string): Promise<void> {
-    await http.delete(url);
+  async delete(url: string, body?: unknown): Promise<void> {
+    await http.delete(url, { data: body });
   },
 };
