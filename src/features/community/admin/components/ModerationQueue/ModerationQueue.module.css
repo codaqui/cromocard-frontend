@@ -163,6 +163,20 @@
   content: '•';
 }
 
+@media (max-width: 26rem) {
+  .origin {
+    flex-direction: column;
+  }
+
+  .origin div {
+    flex-wrap: wrap;
+  }
+
+  .origin div + div::before {
+    content: none;
+  }
+}
+
 .strong {
   font-weight: 600;
   color: var(--color-text);
