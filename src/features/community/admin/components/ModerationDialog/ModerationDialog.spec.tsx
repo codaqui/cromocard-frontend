@@ -42,8 +42,12 @@ const report: GroupMessageReport = {
     id: 'message-1',
     content: 'Compre agora!',
     createdAt: '2026-11-07T18:01:44Z',
+    authorId: 'author-1',
     authorName: 'Diego',
     groupName: 'Leilões Noturnos Pokémon SP',
+    authorAccountAgeDays: 10,
+    authorWarnings: 0,
+    reportersCount: 1,
   },
 };
 

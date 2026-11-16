@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { Toast } from '@/components/Toast/Toast';
+import { SanctionDialog, type SanctionTarget } from '@/features/users';
 
 import type { CommunityAction } from '../../community-admin.types';
 import { CommunityOverview } from '../../components/CommunityOverview/CommunityOverview';
@@ -26,15 +27,36 @@ function useModerationFlow() {
   };
 }
 
+function useAuthorSanctionDialog() {
+  const [target, setTarget] = useState<SanctionTarget | null>(null);
+
+  return {
+    target,
+    open: setTarget,
+    close: () => setTarget(null),
+  };
+}
+
 export function CommunityAdminPage() {
   const flow = useModerationFlow();
+  const sanctionDialog = useAuthorSanctionDialog();
+
+  const sanctioned = () => {
+    sanctionDialog.close();
+    flow.done('Sanção aplicada ao autor da mensagem.');
+  };
 
   return (
     <section className={styles.page}>
       <CommunityOverview />
       <GroupsSection onAction={flow.open} />
-      <ModerationQueue onAction={flow.open} />
+      <ModerationQueue onAction={flow.open} onSanctionAuthor={sanctionDialog.open} />
       <ModerationDialog action={flow.pendingAction} onClose={flow.close} onDone={flow.done} />
+      <SanctionDialog
+        target={sanctionDialog.target}
+        onClose={sanctionDialog.close}
+        onSaved={sanctioned}
+      />
       <Toast message={flow.doneMessage} onDismiss={flow.dismissMessage} />
     </section>
   );

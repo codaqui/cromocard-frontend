@@ -43,3 +43,28 @@ export function formatReportedAt(isoDate: string, now: Date = new Date()): strin
   const label = day === dayFormatter.format(now) ? 'Hoje' : day;
   return `${label} às ${timeFormatter.format(date)}`;
 }
+
+const DAYS_PER_MONTH = 30;
+const DAYS_PER_YEAR = 365;
+
+export function formatAccountAge(days: number): string {
+  if (days < 1) return 'Conta criada hoje';
+  if (days < DAYS_PER_MONTH) return `Conta criada há ${days} ${days === 1 ? 'dia' : 'dias'}`;
+  if (days < DAYS_PER_YEAR) {
+    const months = Math.floor(days / DAYS_PER_MONTH);
+    return `Conta criada há ${months} ${months === 1 ? 'mês' : 'meses'}`;
+  }
+  const years = Math.floor(days / DAYS_PER_YEAR);
+  return `Conta criada há ${years} ${years === 1 ? 'ano' : 'anos'}`;
+}
+
+export function formatPriorWarnings(count: number): string {
+  return `${formatCount(count)} ${count === 1 ? 'advertência prévia' : 'advertências prévias'}`;
+}
+
+export function formatReportedBy(reporterName: string, reportersCount: number): string {
+  const others = reportersCount - 1;
+  return others > 0
+    ? `${reporterName} e outros ${formatCount(others)} ${others === 1 ? 'membro' : 'membros'}`
+    : reporterName;
+}

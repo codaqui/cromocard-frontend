@@ -53,6 +53,10 @@ export function useGroupMessageReports(params: ListGroupMessageReportsParams) {
   });
 }
 
+export function useWarnGroup() {
+  return useModeration(communityAdminApi.warnGroup, communityAdminKeys.groups);
+}
+
 export function useSuspendGroup() {
   return useModeration(communityAdminApi.suspendGroup, communityAdminKeys.groups);
 }
@@ -67,6 +71,10 @@ export function useDeleteGroup() {
 
 export function useRemoveReportedMessage() {
   return useModeration(communityAdminApi.removeReportedMessage, communityAdminKeys.reports);
+}
+
+export function useRemoveAndWarn() {
+  return useModeration(communityAdminApi.removeAndWarn, communityAdminKeys.reports);
 }
 
 export function useDismissReport() {

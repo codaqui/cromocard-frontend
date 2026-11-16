@@ -1,33 +1,52 @@
 import type { IconName } from '@/components/Icon/icon-paths';
 
-import type { GroupStatus, GroupToggleAction, ModerationKind } from './community-admin.types';
+import type {
+  GroupAction,
+  GroupStatus,
+  ModerationKind,
+  ReportSeverity,
+} from './community-admin.types';
 
 interface GroupStatusLook {
   label: string;
   icon: IconName;
   dimmed: boolean;
-  toggle: { action: GroupToggleAction; label: string; icon: IconName };
 }
 
 export const groupStatusLooks: Record<GroupStatus, GroupStatusLook> = {
-  ACTIVE: {
-    label: 'Ativo',
-    icon: 'users',
-    dimmed: false,
-    toggle: { action: 'suspend', label: 'Suspender', icon: 'pauseCircle' },
-  },
-  SUSPENDED: {
-    label: 'Suspenso',
-    icon: 'block',
-    dimmed: true,
-    toggle: { action: 'reactivate', label: 'Reativar', icon: 'refresh' },
-  },
+  ACTIVE: { label: 'Ativo', icon: 'users', dimmed: false },
+  WARNED: { label: 'Advertido', icon: 'reports', dimmed: false },
+  SUSPENDED: { label: 'Suspenso', icon: 'block', dimmed: true },
+};
+
+interface GroupStatusAction {
+  action: GroupAction;
+  label: string;
+  icon: IconName;
+}
+
+export const groupStatusActions: Record<GroupStatus, GroupStatusAction[]> = {
+  ACTIVE: [
+    { action: 'warn', label: 'Advertir', icon: 'reports' },
+    { action: 'suspend', label: 'Suspender', icon: 'pauseCircle' },
+  ],
+  WARNED: [
+    { action: 'reactivate', label: 'Reativar', icon: 'refresh' },
+    { action: 'suspend', label: 'Suspender', icon: 'pauseCircle' },
+  ],
+  SUSPENDED: [{ action: 'reactivate', label: 'Reativar', icon: 'refresh' }],
 };
 
 export const groupStatusFilterOptions: { value: GroupStatus | ''; label: string }[] = [
   { value: '', label: 'Status: Todos' },
   { value: 'ACTIVE', label: 'Status: Ativo' },
+  { value: 'WARNED', label: 'Status: Advertido' },
   { value: 'SUSPENDED', label: 'Status: Suspenso' },
+];
+
+export const severityFilterOptions: { value: ReportSeverity; label: string }[] = [
+  { value: 'CRITICAL', label: 'Críticos' },
+  { value: 'SPAM', label: 'Spam' },
 ];
 
 export type ModerationTone = 'warning' | 'info' | 'danger';
@@ -45,6 +64,17 @@ export interface ModerationText {
 }
 
 export const moderationTexts: Record<ModerationKind, ModerationText> = {
+  warn: {
+    eyebrow: 'Sanção de grupo',
+    title: 'Advertir o grupo?',
+    impact: 'O grupo recebe o selo "Advertido" e continua funcionando. Reativar tira o selo.',
+    confirmLabel: 'Sim, Advertir Grupo',
+    cancelLabel: 'Cancelar e Manter Grupo',
+    done: 'Grupo advertido com sucesso.',
+    tone: 'warning',
+    confirmTone: 'danger',
+    icon: 'reports',
+  },
   suspend: {
     eyebrow: 'Sanção de grupo',
     title: 'Suspender o grupo?',
@@ -88,6 +118,17 @@ export const moderationTexts: Record<ModerationKind, ModerationText> = {
     tone: 'warning',
     confirmTone: 'danger',
     icon: 'warning',
+  },
+  removeAndWarn: {
+    eyebrow: 'Moderação de mensagem',
+    title: 'Remover a mensagem e advertir o autor?',
+    impact: 'A mensagem some do grupo, o autor recebe uma advertência e a denúncia fica resolvida.',
+    confirmLabel: 'Sim, Remover e Advertir',
+    cancelLabel: 'Cancelar e Manter Mensagem',
+    done: 'Mensagem removida e autor advertido.',
+    tone: 'warning',
+    confirmTone: 'danger',
+    icon: 'reports',
   },
   dismiss: {
     eyebrow: 'Triagem de denúncia',

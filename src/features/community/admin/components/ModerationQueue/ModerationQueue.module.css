@@ -6,8 +6,46 @@
 
 .heading {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
+  justify-content: space-between;
   gap: var(--space-3);
+}
+
+.headingMain {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: var(--size-card-min);
+}
+
+.severityFilter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.severityLabel {
+  font-size: var(--font-size-caption);
+  color: var(--color-label);
+}
+
+.severityChip {
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-high);
+  font: inherit;
+  font-size: var(--font-size-caption);
+  color: var(--color-label);
+  cursor: pointer;
+}
+
+.severityChipSelected {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
 }
 
 .headingIcon {
@@ -90,6 +128,20 @@
   font-size: var(--font-size-md);
   font-weight: 700;
   color: var(--color-text);
+}
+
+.authorStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.statPill {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-sunken);
+  font-size: var(--font-size-xs);
+  color: var(--color-warning);
 }
 
 .origin {
@@ -186,9 +238,16 @@
   color: var(--color-label);
 }
 
-.removeMessage {
+.removeMessage,
+.removeAndWarn {
   background: var(--color-warning-soft);
   color: var(--color-warning);
+}
+
+.sanctionAuthor {
+  background: var(--color-danger);
+  color: var(--color-danger-contrast);
+  font-weight: 600;
 }
 
 .cardActions button:hover {
