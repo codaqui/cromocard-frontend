@@ -86,6 +86,20 @@ describe('SuspendUserDialog', () => {
     await vi.waitFor(() => expect(onSaved).toHaveBeenCalled());
   });
 
+  it('CA7: reativa um usuário bloqueado sem pedir motivo', async () => {
+    const user = buildUser({ status: 'BLOCKED' });
+    vi.mocked(usersApi.reactivate).mockResolvedValue({ ...user, status: 'ACTIVE' });
+    const { onSaved } = renderDialog(user);
+
+    expect(screen.getByRole('alertdialog', { name: 'Reativar usuário?' })).toBeInTheDocument();
+    expect(screen.getByText(/está Bloqueado/)).toBeInTheDocument();
+    expect(screen.queryByLabelText('Motivo')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Reativar usuário' }));
+
+    await vi.waitFor(() => expect(usersApi.reactivate).toHaveBeenCalledWith(user.id));
+    await vi.waitFor(() => expect(onSaved).toHaveBeenCalled());
+  });
+
   it('cancelar fecha sem chamar a API', async () => {
     const { onClose } = renderDialog(buildUser());
 

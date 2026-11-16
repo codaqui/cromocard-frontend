@@ -17,11 +17,15 @@ interface SuspendCopy {
   tone: 'primary' | 'danger';
 }
 
+function statusLabelFor(user: UserSummary): string {
+  return user.status === 'BLOCKED' ? 'Bloqueado' : 'Suspenso';
+}
+
 function copyFor(user: UserSummary): SuspendCopy {
-  if (user.status === 'SUSPENDED') {
+  if (user.status !== 'ACTIVE') {
     return {
       title: 'Reativar usuário?',
-      message: `${user.name}${user.username ? ` (@${user.username})` : ''} está Suspenso. Ao reativar, o status volta para Ativo e a ação fica registrada no log de auditoria.`,
+      message: `${user.name}${user.username ? ` (@${user.username})` : ''} está ${statusLabelFor(user)}. Ao reativar, o status volta para Ativo e a ação fica registrada no log de auditoria.`,
       confirmLabel: 'Reativar usuário',
       tone: 'primary',
     };
@@ -42,7 +46,7 @@ interface SuspendUserDialogContentProps {
 }
 
 function useSuspendOrReactivate(user: UserSummary, onSaved: () => void) {
-  const isReactivating = user.status === 'SUSPENDED';
+  const isReactivating = user.status !== 'ACTIVE';
   const suspendUser = useSuspendUser();
   const reactivateUser = useReactivateUser();
   const mutation = isReactivating ? reactivateUser : suspendUser;
