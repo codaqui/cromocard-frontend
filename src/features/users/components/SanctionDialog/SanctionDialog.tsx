@@ -147,7 +147,7 @@ function SanctionDialogActions({
 
 function subtitleFor(target: SanctionTarget): string {
   const handle = target.username ? ` (@${target.username})` : '';
-  return `${target.name}${handle} · ${warningsLabel(target.warningsCount)}`;
+  return `${target.name}${handle} • ${warningsLabel(target.warningsCount)}`;
 }
 
 type SanctionFormApi = ReturnType<typeof useSanctionForm>;

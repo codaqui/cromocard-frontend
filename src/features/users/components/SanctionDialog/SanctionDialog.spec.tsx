@@ -56,7 +56,7 @@ describe('SanctionDialog', () => {
     renderDialog(buildTarget({ warningsCount: 2 }));
 
     expect(
-      screen.getByText('Ana Colecionadora (@ana.cards) · 2 advertências anteriores'),
+      screen.getByText('Ana Colecionadora (@ana.cards) • 2 advertências anteriores'),
     ).toBeInTheDocument();
   });
 
