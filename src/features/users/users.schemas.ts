@@ -4,6 +4,8 @@ import { reasonSchema } from '@/lib/reason';
 import { z } from '@/lib/zod';
 import { USER_ROLES } from '@/types/authenticated-user';
 
+import { SUSPENSION_DAY_OPTIONS } from './users.types';
+
 const nameSchema = z
   .string()
   .trim()
@@ -74,11 +76,26 @@ export const reasonBodySchema = z.object({
   reason: reasonSchema,
 });
 
+const suspensionDaysSchema = z.union(SUSPENSION_DAY_OPTIONS.map((days) => z.literal(days)));
+
+export const warnUserSchema = reasonBodySchema.extend({
+  reportId: z.uuid().optional(),
+});
+
+export const suspendUserSchema = reasonBodySchema.extend({
+  days: suspensionDaysSchema.optional(),
+});
+
+export const blockUserSchema = reasonBodySchema;
+
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type CreateUserFormValues = z.input<typeof createUserSchema>;
 export type AdminUpdateUserInput = z.infer<typeof adminUpdateUserSchema>;
 export type ReasonInput = z.infer<typeof reasonBodySchema>;
+export type WarnUserInput = z.infer<typeof warnUserSchema>;
+export type SuspendUserInput = z.infer<typeof suspendUserSchema>;
+export type BlockUserInput = z.infer<typeof blockUserSchema>;
 
 /** O ConfirmDialog entrega o motivo como opcional; nas ações de usuário ele é obrigatório e já validado. */
 export function toReasonInput(reason: string | undefined): ReasonInput {

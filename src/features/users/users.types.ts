@@ -1,9 +1,13 @@
 import type { PaginationParams } from '@/types/api';
 import type { UserRole } from '@/types/authenticated-user';
 
-export const USER_STATUSES = ['ACTIVE', 'SUSPENDED'] as const;
+export const USER_STATUSES = ['ACTIVE', 'SUSPENDED', 'BLOCKED'] as const;
 
 export type UserStatus = (typeof USER_STATUSES)[number];
+
+export const SUSPENSION_DAY_OPTIONS = [3, 7, 15, 30] as const;
+
+export type SuspensionDays = (typeof SUSPENSION_DAY_OPTIONS)[number];
 
 export interface UserSummary {
   id: string;
@@ -11,6 +15,7 @@ export interface UserSummary {
   email: string;
   role: UserRole;
   status: UserStatus;
+  suspendedUntil: string | null;
   emailVerified: boolean;
   createdAt: string;
   username: string | null;
@@ -41,7 +46,9 @@ export interface UserAddress {
 export const ADMIN_ACTIONS = [
   'USER_CREATED',
   'USER_UPDATED',
+  'USER_WARNED',
   'USER_SUSPENDED',
+  'USER_BLOCKED',
   'USER_REACTIVATED',
   'USER_DELETED',
   'USER_ACTIVATION_RESENT',
@@ -65,6 +72,7 @@ export interface UserDetail extends UserSummary {
   activationPending: boolean;
   addresses: UserAddress[];
   adminActions: AdminActionEntry[];
+  warningsCount: number;
 }
 
 /** O modal de edição abre pela lista (resumo) ou pelo detalhe (com CPF e situação da ativação). */
