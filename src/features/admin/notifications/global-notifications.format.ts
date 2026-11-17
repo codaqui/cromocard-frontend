@@ -28,7 +28,7 @@ export function formatDispatchDate(iso: string): string {
     minute: '2-digit',
     hourCycle: 'h23',
   });
-  return `${day} ${capitalize((month ?? '').replace('.', ''))} ${year} • ${hour}:${minute}`;
+  return `${day} ${capitalize(`${month}`.replace('.', ''))} ${year} • ${hour}:${minute}`;
 }
 
 /** "13/11/2026, 20:30" no resumo do agendamento. */

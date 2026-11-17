@@ -106,6 +106,13 @@ describe('GlobalNotificationPage', () => {
     expect(screen.getByRole('status')).toHaveTextContent(
       'vai para a central de notificações e o e-mail de 42.800 usuários',
     );
+
+    await userEvent.click(screen.getByRole('checkbox', { name: /Plataforma/ }));
+    expect(screen.getByRole('status')).toHaveTextContent('vai para o e-mail de 42.800 usuários');
+    await userEvent.click(screen.getByRole('checkbox', { name: /E-mail/ }));
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'vai para a central de notificações de 42.800 usuários',
+    );
   });
 
   it('CA7: a pré-visualização mostra o título e o texto como na central', async () => {
@@ -265,6 +272,9 @@ describe('GlobalNotificationPage', () => {
     ).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Próximo mês' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Mês anterior' }));
+    expect(screen.getByRole('button', { name: 'Mês anterior' })).toBeDisabled();
+    await userEvent.click(screen.getByRole('button', { name: 'Próximo mês' }));
     const day = screen
       .getAllByRole('button', { name: /de .* de 20\d\d$/ })
       .find((cell) => !cell.hasAttribute('disabled'));
@@ -296,10 +306,10 @@ describe('GlobalNotificationPage', () => {
     expect(
       await screen.findByText('Escolha um horário com pelo menos 5 minutos de antecedência.'),
     ).toBeInTheDocument();
+    await userEvent.clear(hours);
     await userEvent.type(hours, '99');
-    expect(
-      await screen.findByText('Escolha um horário com pelo menos 5 minutos de antecedência.'),
-    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /Agendar notificação/ }));
+    expect(await screen.findByText('Informe um horário válido.')).toBeInTheDocument();
     expect(api.dispatch).not.toHaveBeenCalled();
   }, 20_000);
 
