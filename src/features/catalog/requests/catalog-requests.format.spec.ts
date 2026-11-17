@@ -117,4 +117,17 @@ describe('catalog-requests.format', () => {
       'Sem conexão. A solicitação continua pendente.',
     );
   });
+
+  it('casos de borda: @ já presente, nome de uma letra, número e álbum ausentes, sem detalhes', () => {
+    expect(alreadyReviewedMessage(request, reviewed('APPROVED', '@ana'))).toContain('por @ana ');
+    expect(initialsOf({ name: 'A', username: null })).toBe('A');
+    const taken = new ApiError({ status: 409, code: 'CARD_NUMBER_TAKEN', message: 'x' });
+    expect(approvalFailureMessage({ ...request, data: {}, references: {} }, taken)).toMatch(
+      /^O número {2}já existe no álbum \./,
+    );
+    const incomplete = new ApiError({ status: 422, code: 'REQUEST_DATA_INCOMPLETE', message: 'x' });
+    expect(approvalFailureMessage(request, incomplete)).toBe(
+      'Faltam dados obrigatórios para publicar. A solicitação continua pendente.',
+    );
+  });
 });

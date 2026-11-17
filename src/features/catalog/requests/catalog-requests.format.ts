@@ -65,7 +65,8 @@ export function approvalFailureMessage(request: CatalogRequest, error: Error): s
   }
   if (error.code === 'REQUEST_DATA_INCOMPLETE') {
     const fields = (error.details ?? []).map(({ field }) => FIELD_LABELS[field] ?? field);
-    return `Faltam dados obrigatórios para publicar: ${fields.join(', ')}. ${STILL_PENDING}`;
+    const which = fields.length > 0 ? `: ${fields.join(', ')}` : '';
+    return `Faltam dados obrigatórios para publicar${which}. ${STILL_PENDING}`;
   }
   return `${error.message} ${STILL_PENDING}`;
 }
