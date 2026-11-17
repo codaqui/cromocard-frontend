@@ -24,6 +24,8 @@ const request: CatalogRequest = {
   reviewedBy: null,
   reviewedAt: null,
   createdAt: '2026-11-10T12:00:00Z',
+  votes: null,
+  checklistSummary: null,
 };
 
 const reviewed = (status: string, reviewedBy: string) =>

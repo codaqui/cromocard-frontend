@@ -19,6 +19,20 @@ export interface SuggestedReferences {
   language?: string;
 }
 
+export interface SuggestionSource {
+  label: string;
+  url?: string;
+}
+
+export interface ChecklistItem {
+  number?: string;
+  code?: string;
+  name?: string;
+  /** Nome da raridade do seed, resolvido pela API. */
+  rarity?: string;
+  variants?: string;
+}
+
 /** Dados sugeridos pelo cliente (`catalog_requests.data`); cada tipo usa os seus. */
 export interface SuggestedData {
   name?: string;
@@ -29,6 +43,34 @@ export interface SuggestedData {
   type?: 'ALBUM' | 'CARD';
   frontImageUrl?: string;
   backImageUrl?: string;
+  /** Carta (CCD103, R10). */
+  illustrator?: string;
+  estimatedPopulation?: number;
+  justification?: string;
+  sources?: SuggestionSource[];
+  /** Álbum (CCD103, R11, R13). */
+  coverImageUrl?: string;
+  checklist?: ChecklistItem[];
+  /** Categoria (CCD103, R12, R13). */
+  description?: string;
+  logoUrl?: string;
+  subcategories?: string[];
+}
+
+/** Quórum da sugestão de categoria (CCD103, R5); percentuais com uma casa decimal. */
+export interface QuorumVotes {
+  for: number;
+  neutral: number;
+  against: number;
+  total: number;
+  goal: number;
+  forPercent: number;
+  goalPercent: number;
+}
+
+export interface ChecklistSummary {
+  total: number;
+  rarities: { name: string; count: number }[];
 }
 
 export interface CatalogRequest {
@@ -42,6 +84,8 @@ export interface CatalogRequest {
   reviewedBy: RequestPerson | null;
   reviewedAt: string | null;
   createdAt: string;
+  votes: QuorumVotes | null;
+  checklistSummary: ChecklistSummary | null;
 }
 
 export interface CatalogRequestsMeta extends PaginationMeta {

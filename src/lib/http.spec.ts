@@ -207,6 +207,21 @@ describe('http', () => {
     expect(JSON.parse(sent?.data as string)).toEqual({ name: 'Ana Silva' });
   });
 
+  it('put envia o corpo com o método PUT e devolve data.data', async () => {
+    let sent: InternalAxiosRequestConfig | undefined;
+    useFakeApi((config) => {
+      sent = config;
+      return { status: 200, data: { data: { id: 'sugestao-1', myVote: 'FOR' } } };
+    });
+
+    await expect(api.put('/catalog-requests/sugestao-1/vote', { vote: 'FOR' })).resolves.toEqual({
+      id: 'sugestao-1',
+      myVote: 'FOR',
+    });
+    expect(sent?.method).toBe('put');
+    expect(JSON.parse(sent?.data as string)).toEqual({ vote: 'FOR' });
+  });
+
   it('postEmpty não quebra numa resposta 202 sem corpo', async () => {
     useFakeApi(() => ({ status: 202, data: undefined }));
 
