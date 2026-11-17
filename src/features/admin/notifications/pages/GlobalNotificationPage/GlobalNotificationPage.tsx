@@ -56,21 +56,25 @@ function useDispatchFlow(counts: RecipientsCount | undefined) {
   return { form, result, closeResult: () => setResult(null), isSending: dispatch.isPending };
 }
 
-/** Notificação Global em /backoffice/notifications (CCD060, com a CCD100 e a CCD101). */
-export function GlobalNotificationPage() {
-  const counts = useRecipientsCount().data;
-  const { form, result, closeResult, isSending } = useDispatchFlow(counts);
-  const cancellation = useScheduleCancellation();
+/** Fecha o modal e leva ao histórico, depois que o modal devolve o foco ao botão de envio. */
+function useSeeHistory(closeResult: () => void) {
   const historyRef = useRef<HTMLElement>(null);
-
   const seeHistory = () => {
     closeResult();
-    // Depois de o modal devolver o foco ao botão de envio, ele vai para o histórico.
     requestAnimationFrame(() => {
       historyRef.current?.scrollIntoView({ behavior: 'smooth' });
       historyRef.current?.focus({ preventScroll: true });
     });
   };
+  return { historyRef, seeHistory };
+}
+
+/** Notificação Global em /backoffice/notifications (CCD060, com a CCD100 e a CCD101). */
+export function GlobalNotificationPage() {
+  const counts = useRecipientsCount().data;
+  const { form, result, closeResult, isSending } = useDispatchFlow(counts);
+  const cancellation = useScheduleCancellation();
+  const { historyRef, seeHistory } = useSeeHistory(closeResult);
 
   return (
     <div className={styles.page}>
