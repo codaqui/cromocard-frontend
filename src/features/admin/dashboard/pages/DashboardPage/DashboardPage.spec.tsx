@@ -14,7 +14,17 @@ vi.mock('../../dashboard.api', () => ({
 
 const summary: DashboardSummary = {
   period: { from: '2026-09-30T03:00:00Z', to: '2026-10-29T13:00:00Z' },
-  kpis: { totalUsers: 1250, totalCards: null, newUsers: 4, newSellers: 2 },
+  kpis: {
+    totalUsers: 1250,
+    totalCards: null,
+    newUsers: 4,
+    newSellers: 2,
+    collectors: 1200,
+    sellers: 50,
+    newCardsThisWeek: 0,
+    usersVariation: null,
+  },
+  goal: null,
   signupsByMonth: [
     { month: '2026-09', customers: 1, sellers: 0 },
     { month: '2026-10', customers: 1, sellers: 2 },
