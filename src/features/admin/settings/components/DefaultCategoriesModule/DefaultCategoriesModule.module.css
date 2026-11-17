@@ -1,0 +1,73 @@
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.empty {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-6);
+  padding-left: var(--space-8);
+}
+
+.add,
+.catalogLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-success);
+}
+
+.add {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.catalogLink {
+  text-decoration: none;
+}
+
+.catalogLink:hover,
+.add:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 40rem) {
+  .links {
+    padding-left: 0;
+  }
+}
+
+.add:disabled {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+/* Área de toque de 40 px no celular e no tablet (revisão do PR #21, B1). */
+@media (max-width: 64rem) {
+  .add,
+  .catalogLink {
+    min-height: var(--size-control);
+  }
+}
+
+.add:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}

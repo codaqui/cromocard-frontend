@@ -1,0 +1,77 @@
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-8) var(--space-6);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-glass);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(var(--blur-glass));
+}
+
+.icon {
+  position: absolute;
+  top: var(--space-8);
+  right: var(--space-6);
+  display: inline-flex;
+  color: var(--color-primary);
+}
+
+.label {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-caps);
+  text-transform: uppercase;
+  color: var(--color-label);
+}
+
+.value {
+  margin-top: var(--space-2);
+  font-size: var(--font-size-hero);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--color-text);
+}
+
+.hint {
+  max-width: 14rem;
+  margin-top: var(--space-2);
+  font-size: var(--font-size-caption);
+  line-height: 1.5;
+  color: var(--color-label);
+}
+
+.segments {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--space-1);
+  margin-top: var(--space-5);
+}
+
+.segment {
+  height: var(--size-kpi-segment);
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+}
+
+.segment:nth-child(1) {
+  opacity: 0.4;
+}
+
+.segment:nth-child(2) {
+  opacity: 0.55;
+}
+
+.segment:nth-child(3) {
+  opacity: 0.7;
+}
+
+.segment:nth-child(4) {
+  opacity: 0.85;
+}
+
+.segment:nth-child(6) {
+  background: var(--color-success);
+  box-shadow: var(--shadow-lg);
+}

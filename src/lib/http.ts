@@ -3,7 +3,7 @@ import axios, { type InternalAxiosRequestConfig } from 'axios';
 import { env } from '@/config/env';
 import { accessTokenStore } from '@/lib/access-token';
 import { toApiError } from '@/lib/api-error';
-import type { ApiResponse, PaginatedResponse } from '@/types/api';
+import type { ApiResponse, PaginatedResponse, PaginationMeta } from '@/types/api';
 
 const HTTP_UNAUTHORIZED = 401;
 const AUTH_ROUTES_PREFIX = '/auth/';
@@ -103,13 +103,21 @@ export const api = {
     return response.data.data;
   },
 
-  async getPage<T>(url: string, params?: object): Promise<PaginatedResponse<T>> {
-    const response = await http.get<PaginatedResponse<T>>(url, { params });
+  async getPage<T, M extends PaginationMeta = PaginationMeta>(
+    url: string,
+    params?: object,
+  ): Promise<PaginatedResponse<T, M>> {
+    const response = await http.get<PaginatedResponse<T, M>>(url, { params });
     return response.data;
   },
 
-  async getBlob(url: string): Promise<Blob> {
-    const response = await http.get<Blob>(url, { responseType: 'blob' });
+  async getWithMeta<T, M>(url: string, params?: object): Promise<{ data: T; meta: M }> {
+    const response = await http.get<{ data: T; meta: M }>(url, { params });
+    return response.data;
+  },
+
+  async getBlob(url: string, params?: object): Promise<Blob> {
+    const response = await http.get<Blob>(url, { params, responseType: 'blob' });
     return response.data;
   },
 

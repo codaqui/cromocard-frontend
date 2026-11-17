@@ -1,8 +1,12 @@
 import type { RouteObject } from 'react-router';
 
 import { paths } from '@/routes/paths';
-import { underConstructionRoute } from '@/components/UnderConstructionPage/underConstructionRoute';
 
 export const auditLogsRoutes: RouteObject[] = [
-  underConstructionRoute({ path: paths.backoffice.auditLogs, title: 'Logs', story: 'CCD065' }),
+  {
+    path: paths.backoffice.auditLogs,
+    lazy: async () => ({
+      Component: (await import('./pages/AuditLogsPage/AuditLogsPage')).AuditLogsPage,
+    }),
+  },
 ];

@@ -57,4 +57,13 @@ describe('Select', () => {
     expect(select).toHaveAttribute('aria-invalid', 'true');
     expect(select).toHaveAccessibleDescription('Escolha o tipo');
   });
+
+  it('mostra o ícone escondido do leitor de tela, sem mudar o nome do campo', () => {
+    const { container } = render(
+      <Select label="Período" icon="calendarMonth" options={roleOptions} />,
+    );
+
+    expect(screen.getByRole('combobox', { name: 'Período' })).toBeInTheDocument();
+    expect(container.querySelector('svg[aria-hidden="true"]')).toBeInTheDocument();
+  });
 });
