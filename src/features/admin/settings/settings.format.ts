@@ -2,6 +2,7 @@ import { ApiError } from '@/lib/api-error';
 
 import { settingValueSchemas, type TemplateInput } from './settings.schemas';
 import {
+  type DefaultCategory,
   type Goals,
   type GlobalSettings,
   type NotificationTemplate,
@@ -53,6 +54,25 @@ export function withFormFields(error: ApiError | null): ApiError | null {
     field: detail.field.replace(FIELD_PREFIX, ''),
   }));
   return new ApiError({ status: error.status, code: error.code, message: error.message, details });
+}
+
+export function savedSetKeyOf(categories: DefaultCategory[]): string {
+  return categories.map(({ id, backImageUrl }) => `${id}:${backImageUrl ?? ''}`).join('|');
+}
+
+export interface TemplateRef {
+  id?: string;
+  index: number;
+}
+
+export function templateRefOf(templates: NotificationTemplate[], index: number): TemplateRef {
+  return { id: templates[index]?.id, index };
+}
+
+export function positionOf(templates: NotificationTemplate[], ref: TemplateRef): number | null {
+  if (!ref.id) return ref.index;
+  const position = templates.findIndex(({ id }) => id === ref.id);
+  return position === -1 ? null : position;
 }
 
 export function withTemplate(

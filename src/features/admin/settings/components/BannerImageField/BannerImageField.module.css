@@ -1,0 +1,74 @@
+.imageField {
+  display: flex;
+  flex-direction: column;
+  grid-column: 2;
+  gap: var(--space-1);
+}
+
+.imageRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+  color: var(--color-label);
+  cursor: pointer;
+}
+
+.imageRow[data-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.imageRow:has(+ .fileInput:focus-visible) {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.imageText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.imageLabel {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.imageHint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.imageButton {
+  padding: var(--space-1) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-high);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.fileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.imageError {
+  font-size: var(--font-size-xs);
+  color: var(--color-danger);
+}
+
+@media (max-width: 48rem) {
+  .imageField {
+    grid-column: auto;
+  }
+}

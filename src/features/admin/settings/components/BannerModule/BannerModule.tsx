@@ -9,7 +9,7 @@ import type { Notify } from '../../hooks/useSettingsNotice';
 import type { HomeBanner } from '../../settings.types';
 import { ModuleActions } from '../ModuleActions/ModuleActions';
 import { SettingsModule } from '../SettingsModule/SettingsModule';
-import { BannerImageField } from './BannerImageField';
+import { BannerImageField } from '../BannerImageField/BannerImageField';
 import styles from './BannerModule.module.css';
 
 type BannerForm = ReturnType<typeof useBannerForm>['form'];

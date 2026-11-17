@@ -92,7 +92,7 @@ export function TemplateDialog({
   };
 
   return (
-    <Modal open variant="compact" {...dialog}>
+    <Modal open variant="compact" size="medium" {...dialog}>
       <p className={styles.subtitle}>{SUBTITLE}</p>
       <form id={formId} className={styles.form} noValidate onSubmit={submit}>
         <TemplateFields {...fields} />

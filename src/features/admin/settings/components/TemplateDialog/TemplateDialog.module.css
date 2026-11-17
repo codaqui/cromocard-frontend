@@ -5,7 +5,11 @@
   color: var(--color-label);
 }
 
+/* No modal 859-1479 os campos são escuros, com borda clara de 1 px. */
 .form {
+  --color-input-background: var(--color-surface-sunken);
+  --color-input-border: var(--color-neutral-soft);
+
   display: flex;
   flex-direction: column;
   gap: var(--space-4);

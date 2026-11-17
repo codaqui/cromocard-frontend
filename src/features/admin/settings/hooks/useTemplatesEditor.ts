@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { notifyFailure, type Notify } from './useSettingsNotice';
 import { type SettingsNotice, settingsNotices } from '../settings.labels';
-import { withTemplate } from '../settings.format';
+import { positionOf, type TemplateRef, templateRefOf, withTemplate } from '../settings.format';
 import { useUpdateTemplates } from '../settings.queries';
 import type { TemplateInput } from '../settings.schemas';
 import type { NotificationTemplate } from '../settings.types';
@@ -31,37 +31,40 @@ function useTemplateEditing(
   persist: Persist,
   reset: () => void,
 ) {
-  const [editing, setEditing] = useState<{ index: number | null } | null>(null);
+  const [target, setTarget] = useState<{ ref: TemplateRef | null } | null>(null);
+  const editing = target && { index: target.ref ? positionOf(templates, target.ref) : null };
   const open = (index: number | null) => {
     reset();
-    setEditing({ index });
+    setTarget({ ref: index === null ? null : templateRefOf(templates, index) });
   };
   const save = (input: TemplateInput) =>
     persist(
       withTemplate(templates, editing?.index ?? null, input),
       settingsNotices.templateSaved,
-      () => setEditing(null),
+      () => setTarget(null),
     );
 
   return {
     editing,
     openNew: () => open(null),
     openEdit: open,
-    close: () => setEditing(null),
+    close: () => setTarget(null),
     saveTemplate: save,
   };
 }
 
 function useTemplateDeletion(templates: NotificationTemplate[], persist: Persist) {
-  const [deleting, setDeleting] = useState<number | null>(null);
+  const [ref, setRef] = useState<TemplateRef | null>(null);
+  const deleting = ref && positionOf(templates, ref);
   const confirmDelete = () =>
     persist(
       templates.filter((_, position) => position !== deleting),
       settingsNotices.templateDeleted,
-      () => setDeleting(null),
+      () => setRef(null),
     );
+  const askDelete = (index: number) => setRef(templateRefOf(templates, index));
 
-  return { deleting, askDelete: setDeleting, cancelDelete: () => setDeleting(null), confirmDelete };
+  return { deleting, askDelete, cancelDelete: () => setRef(null), confirmDelete };
 }
 
 export function useTemplatesEditor(templates: NotificationTemplate[], notify: Notify) {

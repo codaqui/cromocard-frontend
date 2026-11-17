@@ -3,7 +3,7 @@ import { type ChangeEvent, useId } from 'react';
 import { Icon } from '@/components/Icon/Icon';
 
 import type { DefaultCategory } from '../../settings.types';
-import styles from './DefaultCategoriesModule.module.css';
+import styles from './DefaultCategoryRow.module.css';
 
 interface BackImagePickerProps {
   category: DefaultCategory;

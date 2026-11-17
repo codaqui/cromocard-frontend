@@ -42,7 +42,7 @@ function renderCategories() {
 const saveButton = () => screen.getByRole('button', { name: /Salvar categorias/ });
 
 beforeEach(() => {
-  vi.mocked(settingsApi.listDefaultCategories).mockResolvedValue([POKEMON, MAGIC]);
+  vi.mocked(settingsApi.listDefaultCategories).mockReset().mockResolvedValue([POKEMON, MAGIC]);
   vi.mocked(settingsApi.updateDefaultCategories).mockReset();
   vi.mocked(settingsApi.uploadImage).mockReset();
   vi.mocked(settingsApi.listCategoryOptions).mockResolvedValue({
@@ -313,5 +313,26 @@ describe('DefaultCategoriesModule', () => {
     await user.click(await within(picker).findByRole('button', { name: 'Carregar mais' }));
 
     expect(await within(picker).findByRole('button', { name: 'Carregando…' })).toBeDisabled();
+  });
+
+  it('CA5: o rascunho continua quando a lista é buscada de novo com o mesmo conjunto', async () => {
+    vi.mocked(settingsApi.updateDefaultCategories).mockResolvedValue([POKEMON]);
+    const queryClient = renderSettings(<DefaultCategoriesModule notify={vi.fn()} />);
+    const user = userEvent.setup();
+    await screen.findByText('Magic: The Gathering');
+
+    await user.click(
+      screen.getByRole('button', { name: 'Remover Magic: The Gathering das categorias padrão' }),
+    );
+    await queryClient.refetchQueries();
+    await waitFor(() => expect(settingsApi.listDefaultCategories).toHaveBeenCalledTimes(2));
+
+    expect(screen.queryByText('Magic: The Gathering')).not.toBeInTheDocument();
+    await user.click(saveButton());
+    await waitFor(() =>
+      expect(vi.mocked(settingsApi.updateDefaultCategories).mock.calls[0]?.[0]).toEqual([
+        { id: 'c-pokemon', backImageUrl: BACK_URL },
+      ]),
+    );
   });
 });

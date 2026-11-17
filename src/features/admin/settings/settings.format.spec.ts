@@ -4,6 +4,9 @@ import { ApiError } from '@/lib/api-error';
 
 import {
   formatGoal,
+  positionOf,
+  savedSetKeyOf,
+  templateRefOf,
   templateSummary,
   toGlobalSettings,
   withFormFields,
@@ -128,5 +131,36 @@ describe('withTemplate', () => {
 
   it('R11: editar troca só o template da posição e mantém o id', () => {
     expect(withTemplate([TEMPLATE], 0, input)).toEqual([{ ...input, id: TEMPLATE.id }]);
+  });
+});
+
+describe('positionOf e templateRefOf', () => {
+  const OTHER = { id: 't-2', name: 'Regras', title: 'Regras', content: 'Leia.' };
+  const LEGACY = { name: 'Sem id', title: 'Antigo', content: 'Criado antes do id.' };
+
+  it('R11: acha o template pelo id, mesmo que a posição mude', () => {
+    const ref = templateRefOf([TEMPLATE, OTHER], 1);
+
+    expect(ref).toEqual({ id: 't-2', index: 1 });
+    expect(positionOf([OTHER, TEMPLATE], ref)).toBe(0);
+  });
+
+  it('R11: template que sumiu da lista não tem posição', () => {
+    expect(positionOf([TEMPLATE], { id: 't-2', index: 1 })).toBeNull();
+  });
+
+  it('R11: template antigo, sem id, continua pela posição', () => {
+    expect(positionOf([TEMPLATE, LEGACY], templateRefOf([TEMPLATE, LEGACY], 1))).toBe(1);
+  });
+});
+
+describe('savedSetKeyOf', () => {
+  it('CA5: muda quando o conjunto ou um verso muda, e não muda numa nova busca igual', () => {
+    const pokemon = { id: 'c-1', name: 'Pokémon', type: 'CARD' as const, backImageUrl: null };
+    const key = savedSetKeyOf([pokemon]);
+
+    expect(savedSetKeyOf([{ ...pokemon }])).toBe(key);
+    expect(savedSetKeyOf([{ ...pokemon, backImageUrl: 'https://cdn/v.png' }])).not.toBe(key);
+    expect(savedSetKeyOf([])).not.toBe(key);
   });
 });

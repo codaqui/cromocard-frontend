@@ -2,7 +2,7 @@ import { type ChangeEvent, useId } from 'react';
 
 import { Icon } from '@/components/Icon/Icon';
 
-import styles from './BannerModule.module.css';
+import styles from './BannerImageField.module.css';
 
 interface BannerImageFieldProps {
   error?: string;

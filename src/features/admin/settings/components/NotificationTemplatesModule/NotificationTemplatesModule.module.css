@@ -84,3 +84,12 @@
     white-space: normal;
   }
 }
+
+/* Área de toque de 40 px no celular e no tablet (revisão do PR #21, B1). */
+@media (max-width: 64rem) {
+  .edit,
+  .delete {
+    min-height: var(--size-control);
+    padding-inline: var(--space-3);
+  }
+}

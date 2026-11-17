@@ -1,5 +1,6 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { settingsApi } from '../../settings.api';
@@ -28,6 +29,25 @@ function renderTemplates(templates = TEMPLATES) {
   const notify = vi.fn();
   renderSettings(<NotificationTemplatesModule templates={templates} notify={notify} />);
   return { notify, user: userEvent.setup() };
+}
+
+const RULES = {
+  id: '0190a000-0000-700c-83af-98fb1ceda6d1',
+  name: 'Novas regras',
+  title: 'Novas regras para {público}',
+  content: 'Atualizamos as regras da comunidade.',
+};
+
+function TemplatesWithReload({ next }: { next: (typeof TEMPLATES)[number][] }) {
+  const [templates, setTemplates] = useState<(typeof TEMPLATES)[number][]>([NEW_ALBUM, RULES]);
+  return (
+    <>
+      <button type="button" onClick={() => setTemplates(next)}>
+        Recarregar lista
+      </button>
+      <NotificationTemplatesModule templates={templates} notify={vi.fn()} />
+    </>
+  );
 }
 
 const dialog = () => screen.getByRole('dialog');
@@ -165,5 +185,33 @@ describe('NotificationTemplatesModule', () => {
 
     expect(newButton).toBeDisabled();
     expect(newButton).toHaveAttribute('title', expect.stringContaining('Limite de 50 templates'));
+  });
+
+  it('R11: a edição vai para o template certo mesmo se a lista mudar de ordem com o modal aberto', async () => {
+    vi.mocked(settingsApi.updateTemplates).mockResolvedValue({} as never);
+    renderSettings(<TemplatesWithReload next={[RULES, NEW_ALBUM]} />);
+    const user = userEvent.setup();
+
+    await user.click(screen.getAllByRole('button', { name: /Editar/ })[1] as HTMLElement);
+    fireEvent.click(screen.getByRole('button', { name: 'Recarregar lista' }));
+    const name = within(dialog()).getByRole('textbox', { name: 'Nome do template' });
+    await user.clear(name);
+    await user.type(name, 'Regras novas');
+    await user.click(within(dialog()).getByRole('button', { name: 'Salvar template' }));
+
+    await waitFor(() =>
+      expect(savedList()).toEqual([{ ...RULES, name: 'Regras novas' }, NEW_ALBUM]),
+    );
+  });
+
+  it('R11: se o template sumir da lista com a exclusão aberta, nada é excluído', async () => {
+    renderSettings(<TemplatesWithReload next={[NEW_ALBUM]} />);
+    const user = userEvent.setup();
+
+    await user.click(screen.getAllByRole('button', { name: /Excluir/ })[1] as HTMLElement);
+    fireEvent.click(screen.getByRole('button', { name: 'Recarregar lista' }));
+
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(settingsApi.updateTemplates).not.toHaveBeenCalled();
   });
 });

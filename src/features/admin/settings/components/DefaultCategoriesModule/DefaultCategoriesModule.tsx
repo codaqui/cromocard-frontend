@@ -12,6 +12,7 @@ import {
   useSaveDefaultCategories,
 } from '../../hooks/useDefaultCategoriesEditor';
 import type { Notify } from '../../hooks/useSettingsNotice';
+import { savedSetKeyOf } from '../../settings.format';
 import { useDefaultCategories } from '../../settings.queries';
 import { DEFAULT_CATEGORIES_MAX } from '../../settings.schemas';
 import type { CategoryOption, DefaultCategory } from '../../settings.types';
@@ -19,7 +20,7 @@ import { AddDefaultCategoryDialog } from '../AddDefaultCategoryDialog/AddDefault
 import { ModuleActions } from '../ModuleActions/ModuleActions';
 import { SettingsModule } from '../SettingsModule/SettingsModule';
 import styles from './DefaultCategoriesModule.module.css';
-import { DefaultCategoryRow } from './DefaultCategoryRow';
+import { DefaultCategoryRow } from '../DefaultCategoryRow/DefaultCategoryRow';
 
 function DefaultCategoriesShell({
   actions,
@@ -153,7 +154,6 @@ export function DefaultCategoriesModule({ notify }: { notify: Notify }) {
     );
   }
 
-  return (
-    <DefaultCategoriesEditor key={query.dataUpdatedAt} categories={query.data} notify={notify} />
-  );
+  const editor = { categories: query.data, notify };
+  return <DefaultCategoriesEditor key={savedSetKeyOf(query.data)} {...editor} />;
 }

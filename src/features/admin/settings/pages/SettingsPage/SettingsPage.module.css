@@ -1,4 +1,7 @@
+/* Campos como no frame 228-3048: mais claros que o cartão (decisão do Gabriel, revisão do PR #21). */
 .page {
+  --color-input-background: var(--color-neutral-soft);
+
   display: flex;
   flex-direction: column;
   gap: var(--space-8);
