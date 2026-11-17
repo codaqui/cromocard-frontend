@@ -38,6 +38,7 @@ describe('SiteShell', () => {
       'Categorias',
       'Álbuns',
       'Comunidades',
+      'Sugestões',
       'Perfil',
       'Configurações',
       'Suporte',

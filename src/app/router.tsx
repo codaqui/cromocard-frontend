@@ -4,7 +4,7 @@ import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { NotFoundPage } from '@/components/NotFoundPage/NotFoundPage';
 import { adminBackofficeRoutes } from '@/features/admin';
 import { authRoutes, tokenLinkRoutes } from '@/features/auth';
-import { catalogBackofficeRoutes, catalogRoutes } from '@/features/catalog';
+import { catalogBackofficeRoutes, catalogCustomerRoutes, catalogRoutes } from '@/features/catalog';
 import { collectionRoutes } from '@/features/collection';
 import { communityBackofficeRoutes, communityRoutes } from '@/features/community';
 import { notificationsBackofficeRoutes, notificationsRoutes } from '@/features/notifications';
@@ -40,7 +40,12 @@ export const router = createBrowserRouter([
         children: [
           {
             element: <CustomerLayout />,
-            children: [...usersRoutes, ...collectionRoutes, ...notificationsRoutes],
+            children: [
+              ...usersRoutes,
+              ...collectionRoutes,
+              ...notificationsRoutes,
+              ...catalogCustomerRoutes,
+            ],
           },
         ],
       },
