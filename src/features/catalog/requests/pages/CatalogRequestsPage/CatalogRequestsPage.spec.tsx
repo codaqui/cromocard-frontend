@@ -91,7 +91,7 @@ describe('CatalogRequestsPage', () => {
 
     renderPage();
 
-    expect(screen.getByRole('status')).toHaveTextContent('Carregando as solicitações…');
+    expect(screen.getByText('Carregando as solicitações…')).toBeInTheDocument();
   });
 
   it('CA1: mostra as abas com as pendentes e cada solicitação aberta com os dados sugeridos', async () => {
@@ -155,10 +155,13 @@ describe('CatalogRequestsPage', () => {
     await userEvent.click(within(confirm).getByRole('button', { name: 'Aprovar' }));
 
     expect(vi.mocked(catalogRequestsApi.approve).mock.calls[0]?.[0]).toBe(card.id);
-    const done = await screen.findByRole('dialog', { name: 'Solicitação aprovada' });
-    expect(done).toHaveTextContent('Pikachu Promo Illustrator entrou no catálogo.');
-    await userEvent.click(within(done).getByRole('button', { name: 'Fechar' }));
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(await screen.findByText('Solicitação aprovada')).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Pikachu Promo Illustrator entrou no catálogo. O solicitante foi avisado.',
+    );
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Fechar aviso' }));
+    expect(screen.queryByText('Solicitação aprovada')).not.toBeInTheDocument();
   });
 
   it('R12: cancelar a aprovação volta para a fila sem aprovar', async () => {

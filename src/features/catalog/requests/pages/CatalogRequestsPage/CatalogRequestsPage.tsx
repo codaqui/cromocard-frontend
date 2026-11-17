@@ -6,6 +6,7 @@ import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { Pagination } from '@/components/Pagination/Pagination';
 import { Tabs } from '@/components/Tabs/Tabs';
+import { Toast } from '@/components/Toast/Toast';
 
 import { REQUESTS_PAGE_SIZE, requestTabs } from '../../catalog-requests.labels';
 import { useCatalogRequests } from '../../catalog-requests.queries';
@@ -72,6 +73,19 @@ function RequestsQueue({ query, ...props }: QueueProps) {
   return <RequestsList page={query.data} {...props} />;
 }
 
+/** Aviso de aprovada no alto, à direita (frame 847-2864), com a fila já atualizada. */
+function ApprovedToast({ review }: { review: RequestReview }) {
+  return (
+    <Toast
+      message={review.approvedNotice && 'Solicitação aprovada'}
+      detail={review.approvedNotice ?? undefined}
+      placement="top"
+      tinted
+      onDismiss={review.dismissApproved}
+    />
+  );
+}
+
 /** A aba e a página da fila; trocar de aba volta para a primeira página. */
 function useRequestsQueue() {
   const [tab, setTab] = useState<RequestTab>('ALL');
@@ -108,6 +122,7 @@ export function CatalogRequestsPage() {
         </Tabs>
       </RequestsHeader>
       <RequestReviewDialogs review={review} />
+      <ApprovedToast review={review} />
     </section>
   );
 }

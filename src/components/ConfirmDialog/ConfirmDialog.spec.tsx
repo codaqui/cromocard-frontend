@@ -70,6 +70,17 @@ describe('ConfirmDialog', () => {
     expect(onConfirm).toHaveBeenCalledWith('Spam repetido');
   });
 
+  it('na variante compacta não mostra o X de fechar e cancela pelo botão', async () => {
+    const onCancel = vi.fn();
+    render(
+      <ConfirmDialog {...baseProps} variant="compact" onConfirm={vi.fn()} onCancel={onCancel} />,
+    );
+
+    expect(screen.queryByRole('button', { name: /fechar/i })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+    expect(onCancel).toHaveBeenCalledOnce();
+  });
+
   it('cancela pelo botão e pelo Esc', async () => {
     const onCancel = vi.fn();
     render(<ConfirmDialog {...baseProps} onConfirm={vi.fn()} onCancel={onCancel} />);

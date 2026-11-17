@@ -106,3 +106,7 @@
   line-height: 1;
   cursor: pointer;
 }
+
+.card.tinted {
+  background: color-mix(in srgb, currentcolor 10%, var(--color-surface));
+}

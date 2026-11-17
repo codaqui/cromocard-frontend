@@ -14,7 +14,6 @@ export type ReviewStep =
   | { kind: 'idle' }
   | { kind: 'approving'; request: CatalogRequest }
   | { kind: 'rejecting'; request: CatalogRequest }
-  | { kind: 'approved'; message: string }
   | { kind: 'reviewed'; message: string }
   | { kind: 'failed'; message: string };
 
@@ -27,12 +26,13 @@ function failureStep(request: CatalogRequest, error: Error): ReviewStep {
   return { kind: 'failed', message: approvalFailureMessage(request, error) };
 }
 
-const approvedStep = (request: CatalogRequest): ReviewStep => ({
-  kind: 'approved',
-  message: `${itemNameOf(request)} entrou no catálogo. O solicitante foi avisado.`,
-});
+const approvedDetail = (request: CatalogRequest) =>
+  `${itemNameOf(request)} entrou no catálogo. O solicitante foi avisado.`;
 
-function useReviewMutations(setStep: (step: ReviewStep) => void) {
+function useReviewMutations(
+  setStep: (step: ReviewStep) => void,
+  showApproved: (detail: string | null) => void,
+) {
   const approval = useApproveRequest();
   const rejection = useRejectRequest();
   const failWith = (request: CatalogRequest) => (error: Error) =>
@@ -43,7 +43,7 @@ function useReviewMutations(setStep: (step: ReviewStep) => void) {
     isRejecting: rejection.isPending,
     approve: (request: CatalogRequest) =>
       approval.mutate(request.id, {
-        onSuccess: () => setStep(approvedStep(request)),
+        onSuccess: () => showApproved(approvedDetail(request)),
         onError: failWith(request),
       }),
     reject: (request: CatalogRequest, reason: string) =>
@@ -56,10 +56,16 @@ function useReviewMutations(setStep: (step: ReviewStep) => void) {
 
 export function useRequestReview() {
   const [step, setStep] = useState<ReviewStep>(IDLE);
+  const [approvedNotice, setApprovedNotice] = useState<string | null>(null);
 
   return {
     step,
-    ...useReviewMutations(setStep),
+    approvedNotice,
+    dismissApproved: () => setApprovedNotice(null),
+    ...useReviewMutations(setStep, (detail) => {
+      setStep(IDLE);
+      setApprovedNotice(detail);
+    }),
     askApproval: (request: CatalogRequest) => setStep({ kind: 'approving', request }),
     askRejection: (request: CatalogRequest) => setStep({ kind: 'rejecting', request }),
     close: () => setStep(IDLE),

@@ -19,6 +19,7 @@ function ApproveDialog({ review, request }: DialogProps & { request: CatalogRequ
       open
       title={`Aprovar a sugestão ${itemNameOf(request)}?`}
       message={`${entersAsSuggested}, ${handleOf(request.requester)} recebe uma notificação e a ação fica no log de auditoria. Ajustes depois, na Gestão de Catálogo.`}
+      variant="compact"
       confirmLabel="Aprovar"
       isConfirming={review.isApproving}
       onConfirm={() => review.approve(request)}
@@ -33,6 +34,7 @@ function RejectDialog({ review, request }: DialogProps & { request: CatalogReque
     <ConfirmDialog
       open
       tone="danger"
+      variant="compact"
       title={`Recusar a sugestão ${itemNameOf(request)}?`}
       message={`${handleOf(request.requester)} recebe uma notificação com o motivo, e a ação fica no log de auditoria.`}
       requireReason
@@ -72,7 +74,6 @@ function Notice({ title, message, closeLabel, onClose }: NoticeProps) {
 type NoticeStep = Exclude<ReviewStep, { kind: 'idle' | 'approving' | 'rejecting' }>;
 
 const NOTICE_TEXTS: Record<NoticeStep['kind'], Pick<NoticeProps, 'title' | 'closeLabel'>> = {
-  approved: { title: 'Solicitação aprovada', closeLabel: 'Fechar' },
   reviewed: { title: 'Esta solicitação já foi processada', closeLabel: 'Voltar para a lista' },
   failed: { title: 'Não foi possível aprovar', closeLabel: 'Entendi' },
 };
