@@ -1,0 +1,147 @@
+import { type ReactNode, useState } from 'react';
+import { Link } from 'react-router';
+
+import { ErrorState } from '@/components/ErrorState/ErrorState';
+import { Icon } from '@/components/Icon/Icon';
+import { LoadingState } from '@/components/LoadingState/LoadingState';
+import { paths } from '@/routes/paths';
+
+import {
+  useBackImageUpload,
+  useDefaultCategoriesDraft,
+  useSaveDefaultCategories,
+} from '../../hooks/useDefaultCategoriesEditor';
+import type { Notify } from '../../hooks/useSettingsNotice';
+import { useDefaultCategories } from '../../settings.queries';
+import type { CategoryOption, DefaultCategory } from '../../settings.types';
+import { AddDefaultCategoryDialog } from '../AddDefaultCategoryDialog/AddDefaultCategoryDialog';
+import { ModuleActions } from '../ModuleActions/ModuleActions';
+import { SettingsModule } from '../SettingsModule/SettingsModule';
+import styles from './DefaultCategoriesModule.module.css';
+import { DefaultCategoryRow } from './DefaultCategoryRow';
+
+function DefaultCategoriesShell({
+  actions,
+  children,
+}: {
+  actions?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <SettingsModule
+      icon="sort"
+      title="Módulo 2: Categorias padrão"
+      subtitle="Ordem das franquias no menu, nos filtros e na vitrine, e o verso padrão de cada uma."
+      actions={actions}
+    >
+      {children}
+    </SettingsModule>
+  );
+}
+
+type Draft = ReturnType<typeof useDefaultCategoriesDraft>;
+
+function CategoryList({ draft, notify }: { draft: Draft; notify: Notify }) {
+  const back = useBackImageUpload(draft.setBack, notify);
+  if (draft.draft.length === 0) {
+    return (
+      <p className={styles.empty}>
+        Nenhuma categoria padrão. Adicione as franquias que aparecem primeiro na plataforma.
+      </p>
+    );
+  }
+
+  return (
+    <ul className={styles.list}>
+      {draft.draft.map((category) => (
+        <DefaultCategoryRow
+          key={category.id}
+          category={category}
+          isUploading={back.uploadingId === category.id}
+          onChoose={(file) => back.choose(category.id, file)}
+          onRemove={() => draft.remove(category.id)}
+        />
+      ))}
+    </ul>
+  );
+}
+
+function ModuleLinks({ onAdd }: { onAdd: () => void }) {
+  return (
+    <div className={styles.links}>
+      <button type="button" className={styles.add} onClick={onAdd}>
+        <Icon name="add" size={16} />
+        Adicionar categoria padrão
+      </button>
+      <Link to={paths.backoffice.catalog} className={styles.catalogLink}>
+        Gerenciar categorias no Catálogo
+      </Link>
+    </div>
+  );
+}
+
+function CategoryAdder({ draft }: { draft: Draft }) {
+  const [isAdding, setAdding] = useState(false);
+  const add = (category: CategoryOption) => {
+    draft.add(category);
+    setAdding(false);
+  };
+
+  return (
+    <>
+      <ModuleLinks onAdd={() => setAdding(true)} />
+      {isAdding && (
+        <AddDefaultCategoryDialog
+          excludedIds={draft.draft.map(({ id }) => id)}
+          onAdd={add}
+          onClose={() => setAdding(false)}
+        />
+      )}
+    </>
+  );
+}
+
+interface DefaultCategoriesEditorProps {
+  categories: DefaultCategory[];
+  notify: Notify;
+}
+
+function DefaultCategoriesEditor({ categories, notify }: DefaultCategoriesEditorProps) {
+  const draft = useDefaultCategoriesDraft(categories);
+  const { save, isSaving } = useSaveDefaultCategories(notify);
+  const actions = { saveLabel: 'Salvar categorias', isSaving, onCancel: draft.reset };
+
+  return (
+    <DefaultCategoriesShell
+      actions={<ModuleActions {...actions} onSave={() => save(draft.draft)} />}
+    >
+      <CategoryList draft={draft} notify={notify} />
+      <CategoryAdder draft={draft} />
+    </DefaultCategoriesShell>
+  );
+}
+
+export function DefaultCategoriesModule({ notify }: { notify: Notify }) {
+  const query = useDefaultCategories();
+  if (query.isPending) {
+    return (
+      <DefaultCategoriesShell>
+        <LoadingState message="Carregando as categorias padrão…" />
+      </DefaultCategoriesShell>
+    );
+  }
+  if (query.isError) {
+    return (
+      <DefaultCategoriesShell>
+        <ErrorState
+          title="Não foi possível carregar as categorias padrão"
+          message={query.error.message}
+        />
+      </DefaultCategoriesShell>
+    );
+  }
+
+  return (
+    <DefaultCategoriesEditor key={query.dataUpdatedAt} categories={query.data} notify={notify} />
+  );
+}

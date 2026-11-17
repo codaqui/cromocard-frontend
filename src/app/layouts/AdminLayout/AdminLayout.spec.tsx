@@ -30,7 +30,6 @@ const underConstructionModules = [
   { label: 'Notificação', story: 'CCD060' },
   { label: 'Relatórios', story: 'CCD063' },
   { label: 'Solicitações', story: 'CCD064' },
-  { label: 'Configurações', story: 'CCD066' },
 ];
 
 function renderBackoffice(initialPath: string = paths.backoffice.dashboard) {
@@ -79,6 +78,21 @@ describe('AdminLayout', () => {
       await screen.findByRole('heading', { level: 1, name: 'Logs do sistema' }),
     ).toBeInTheDocument();
     expect(within(menu).getByRole('link', { name: 'Logs' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+  });
+
+  it('navega para as Configurações Globais', async () => {
+    renderBackoffice();
+    const menu = await screen.findByRole('navigation', { name: 'Módulos oficiais' });
+
+    await userEvent.click(within(menu).getByRole('link', { name: 'Configurações' }));
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Configurações Globais' }),
+    ).toBeInTheDocument();
+    expect(within(menu).getByRole('link', { name: 'Configurações' })).toHaveAttribute(
       'aria-current',
       'page',
     );

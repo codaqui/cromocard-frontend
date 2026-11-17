@@ -85,6 +85,15 @@ export const backImageSchema = z
   .mime(['image/png', 'image/jpeg', 'image/webp'], { error: 'Envie uma imagem PNG, JPG ou WEBP' })
   .max(IMAGE_MAX_BYTES, { error: IMAGE_SIZE_ERROR });
 
+export function imageErrorOf(schema: typeof bannerImageSchema, file: File): string | null {
+  return (
+    schema
+      .safeParse(file)
+      .error?.issues.map(({ message }) => message)
+      .join(' ') ?? null
+  );
+}
+
 const bannerValueSchema = z.object({
   enabled: z.boolean(),
   title: z.string(),
