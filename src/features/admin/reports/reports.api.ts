@@ -13,7 +13,7 @@ export const PREVIEW_SIZE = 4;
 const reportPath = (type: ReportType) => `/admin/reports/${type}`;
 
 export const reportsApi = {
-  async preview(type: ReportType, params: ReportPeriodParams): Promise<ReportPreview> {
+  preview: async (type: ReportType, params: ReportPeriodParams): Promise<ReportPreview> => {
     const { data, meta } = await api.getWithMeta<ReportPreviewData, { total: number }>(
       reportPath(type),
       { ...params, pageSize: PREVIEW_SIZE },
