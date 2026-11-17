@@ -24,8 +24,8 @@ export interface RequestTypeText {
   section: string;
   /** Rodapé do card: o que entra no catálogo ao aprovar (L9). */
   approvalNote: string;
-  /** Sujeito da frase do diálogo de aprovar: "A carta entra no catálogo…". */
-  subject: string;
+  /** Início da frase do diálogo de aprovar, com a concordância do tipo. */
+  entersAsSuggested: string;
 }
 
 export const requestTypeTexts: Record<CatalogRequestType, RequestTypeText> = {
@@ -34,20 +34,20 @@ export const requestTypeTexts: Record<CatalogRequestType, RequestTypeText> = {
     section: 'Registro sugerido',
     approvalNote:
       'Ao aprovar, a carta entra no catálogo como foi sugerida. Ajustes depois, na Gestão de Catálogo.',
-    subject: 'A carta',
+    entersAsSuggested: 'A carta entra no catálogo como foi sugerida',
   },
   ALBUM: {
     badge: 'Novo álbum sugerido',
     section: 'Álbum sugerido',
     approvalNote:
       'Ao aprovar, o álbum entra no catálogo. As cartas são cadastradas depois, na Gestão de Catálogo.',
-    subject: 'O álbum',
+    entersAsSuggested: 'O álbum entra no catálogo como foi sugerido',
   },
   CATEGORY: {
     badge: 'Nova categoria sugerida',
     section: 'Categoria sugerida',
     approvalNote: 'Ao aprovar, a categoria entra no catálogo como foi sugerida.',
-    subject: 'A categoria',
+    entersAsSuggested: 'A categoria entra no catálogo como foi sugerida',
   },
 };
 

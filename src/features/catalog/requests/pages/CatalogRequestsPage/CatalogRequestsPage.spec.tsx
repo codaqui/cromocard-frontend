@@ -167,7 +167,7 @@ describe('CatalogRequestsPage', () => {
 
     await userEvent.click(within(albumItem).getByRole('button', { name: 'Aprovar' }));
     const confirm = screen.getByRole('alertdialog');
-    expect(confirm).toHaveTextContent('O álbum entra no catálogo');
+    expect(confirm).toHaveTextContent('O álbum entra no catálogo como foi sugerido,');
     await userEvent.click(within(confirm).getByRole('button', { name: 'Cancelar' }));
 
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();

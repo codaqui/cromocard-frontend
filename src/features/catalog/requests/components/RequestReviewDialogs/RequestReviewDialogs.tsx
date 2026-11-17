@@ -13,12 +13,12 @@ interface DialogProps {
 
 /** Frame 847-390: confirma a aprovação dizendo o que entra no catálogo. */
 function ApproveDialog({ review, request }: DialogProps & { request: CatalogRequest }) {
-  const { subject } = requestTypeTexts[request.type];
+  const { entersAsSuggested } = requestTypeTexts[request.type];
   return (
     <ConfirmDialog
       open
       title={`Aprovar a sugestão ${itemNameOf(request)}?`}
-      message={`${subject} entra no catálogo como foi sugerida, ${handleOf(request.requester)} recebe uma notificação e a ação fica no log de auditoria. Ajustes depois, na Gestão de Catálogo.`}
+      message={`${entersAsSuggested}, ${handleOf(request.requester)} recebe uma notificação e a ação fica no log de auditoria. Ajustes depois, na Gestão de Catálogo.`}
       confirmLabel="Aprovar"
       isConfirming={review.isApproving}
       onConfirm={() => review.approve(request)}
