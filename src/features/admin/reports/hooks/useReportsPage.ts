@@ -27,9 +27,7 @@ function useExportFlow(type: ReportType, params: ReportPeriodParams) {
   const { toast, showExported, dismissToast } = useExportToast();
   const exportReport = useExportReport();
 
-  const confirm = ({ title, period }: ExportTarget) => {
-    if (!pendingFormat) return;
-    const format = pendingFormat;
+  const confirm = (format: ExportFormat, { title, period }: ExportTarget) => {
     const onSuccess = () => {
       setPendingFormat(null);
       showExported(title, format);

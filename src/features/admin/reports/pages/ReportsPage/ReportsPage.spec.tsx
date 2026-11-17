@@ -158,6 +158,31 @@ describe('ReportsPage', () => {
     expect(await screen.findByText('Relatório exportado')).toBeInTheDocument();
     expect(screen.getByText('Novos cadastros (CSV) foi baixado.')).toBeInTheDocument();
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Fechar aviso' }));
+    expect(screen.queryByText('Relatório exportado')).not.toBeInTheDocument();
+  });
+
+  it('R5: com intervalo de datas, a prévia e a confirmação mostram as datas', async () => {
+    const custom = { from: '2026-10-01T03:00:00.000Z', to: '2026-11-01T02:59:59.999Z' };
+    vi.mocked(reportsApi.preview).mockResolvedValue({ ...signupsPreview, period: custom });
+    renderPage();
+    await screen.findByRole('cell', { name: 'Ana Lima' });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Personalizado' }));
+    await userEvent.type(screen.getByLabelText('De'), '2026-10-01');
+    await userEvent.type(screen.getByLabelText('Até'), '2026-10-31');
+    await userEvent.click(screen.getByRole('button', { name: 'Aplicar' }));
+
+    expect(reportsApi.preview).toHaveBeenLastCalledWith('signups', {
+      from: '2026-10-01T03:00:00.000Z',
+      to: '2026-11-01T02:59:59.999Z',
+    });
+    expect(within(previewPanel()).getByText('01/10/2026 a 31/10/2026')).toBeInTheDocument();
+    const dialog = await openExport('PDF');
+    expect(
+      within(dialog).getByText('Novos cadastros • 01 Out - 31 Out, 2026 • 4.218 registros.'),
+    ).toBeInTheDocument();
   });
 
   it('CA5: cancelar a confirmação não gera o arquivo', async () => {

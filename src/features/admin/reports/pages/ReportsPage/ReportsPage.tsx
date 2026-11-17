@@ -36,7 +36,7 @@ function ExportFeedback({ flow, preview, period }: ExportFeedbackProps) {
         period={period}
         isExporting={flow.exportReport.isPending}
         errorMessage={flow.exportReport.error?.message}
-        onConfirm={() => preview && flow.confirm(preview)}
+        onConfirm={flow.confirm}
         onCancel={flow.cancel}
       />
       <Toast

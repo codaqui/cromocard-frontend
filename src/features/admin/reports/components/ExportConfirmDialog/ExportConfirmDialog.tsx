@@ -11,7 +11,7 @@ interface ExportConfirmDialogProps {
   period: Period;
   isExporting: boolean;
   errorMessage?: string;
-  onConfirm: () => void;
+  onConfirm: (format: ExportFormat, preview: ReportPreview) => void;
   onCancel: () => void;
 }
 
@@ -41,7 +41,7 @@ export function ExportConfirmDialog({
       confirmLabel={`Exportar ${formatLabel}`}
       isConfirming={isExporting}
       errorMessage={errorMessage}
-      onConfirm={onConfirm}
+      onConfirm={() => onConfirm(format, preview)}
       onCancel={onCancel}
     />
   );
