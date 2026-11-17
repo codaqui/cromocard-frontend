@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Button } from '@/components/Button/Button';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
+import { Icon } from '@/components/Icon/Icon';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { Pagination } from '@/components/Pagination/Pagination';
 import { Toast } from '@/components/Toast/Toast';
@@ -58,6 +59,18 @@ function SuggestionsList({ page: { data, meta }, voting, onPageChange }: ListPro
   );
 }
 
+function EmptySuggestions() {
+  return (
+    <div className={styles.emptyCard}>
+      <Icon name="howToVote" size={40} />
+      <EmptyState
+        title="Nenhuma sugestão em votação"
+        message="Quando um colecionador sugerir uma nova categoria, ela aparece aqui para a comunidade votar."
+      />
+    </div>
+  );
+}
+
 function SuggestionsContent({
   query,
   ...props
@@ -74,12 +87,7 @@ function SuggestionsContent({
     );
   }
   if (query.data.data.length === 0) {
-    return (
-      <EmptyState
-        title="Nenhuma sugestão em votação"
-        message="Quando um colecionador sugerir uma nova categoria, ela aparece aqui para a comunidade votar."
-      />
-    );
+    return <EmptySuggestions />;
   }
   return <SuggestionsList page={query.data} {...props} />;
 }

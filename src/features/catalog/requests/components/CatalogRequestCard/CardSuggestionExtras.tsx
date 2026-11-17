@@ -19,8 +19,9 @@ function Source({ label, url }: SuggestionSource) {
   if (!url) return <span className={extras.source}>{label}</span>;
   return (
     <a href={url} target="_blank" rel="noreferrer" className={extras.source}>
+      <Icon name="link" size={14} />
       {label}
-      <Icon name="arrowForward" size={14} />
+      <Icon name="openInNew" size={14} />
     </a>
   );
 }

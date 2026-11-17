@@ -151,6 +151,11 @@
   font-weight: 600;
 }
 
+.rarest {
+  background: var(--color-warning);
+  color: var(--color-surface-sunken);
+}
+
 .variant {
   color: var(--color-warning);
 }
