@@ -5,11 +5,11 @@ import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { dashboardApi } from '../../dashboard.api';
-import type { DashboardSummary } from '../../dashboard.types';
+import type { DashboardSummary, SignupsEvolution } from '../../dashboard.types';
 import { DashboardPage } from './DashboardPage';
 
 vi.mock('../../dashboard.api', () => ({
-  dashboardApi: { getSummary: vi.fn(), listRecentSellers: vi.fn() },
+  dashboardApi: { getSummary: vi.fn(), getSignupsEvolution: vi.fn(), listRecentSellers: vi.fn() },
 }));
 
 const summary: DashboardSummary = {
@@ -30,6 +30,22 @@ const summary: DashboardSummary = {
     { month: '2026-10', customers: 1, sellers: 2 },
   ],
   isEmpty: false,
+};
+
+const evolution: SignupsEvolution = {
+  period: summary.period,
+  bucket: 'day',
+  points: [
+    { at: '2026-10-28T03:00:00.000Z', collectors: 1, sellers: 0 },
+    { at: '2026-10-29T03:00:00.000Z', collectors: 1, sellers: 1 },
+  ],
+  totals: { collectors: 2, sellers: 1 },
+};
+
+const emptyEvolution: SignupsEvolution = {
+  ...evolution,
+  points: evolution.points.map((point) => ({ ...point, collectors: 0, sellers: 0 })),
+  totals: { collectors: 0, sellers: 0 },
 };
 
 const sellersPage = {
@@ -58,6 +74,7 @@ function renderPage() {
 describe('DashboardPage', () => {
   beforeEach(() => {
     vi.mocked(dashboardApi.getSummary).mockReset().mockResolvedValue(summary);
+    vi.mocked(dashboardApi.getSignupsEvolution).mockReset().mockResolvedValue(evolution);
     vi.mocked(dashboardApi.listRecentSellers).mockReset().mockResolvedValue(sellersPage);
   });
 
@@ -77,7 +94,12 @@ describe('DashboardPage', () => {
     );
     expect(screen.getByRole('region', { name: 'Cartas cadastradas' })).toHaveTextContent('—');
     expect(screen.getByRole('region', { name: 'Novos cadastros' })).toHaveTextContent('4');
-    expect(screen.getByRole('img', { name: /Novos cadastros por mês/ })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('region', {
+        name: 'Evolução: Novos Cadastros vs Lojistas Certificados',
+      }),
+    ).toHaveTextContent('Colecionadores (+2)');
+    expect(dashboardApi.getSignupsEvolution).toHaveBeenCalledWith({ period: '30d' });
     expect(await screen.findByRole('row', { name: /Fábio TCG Store/ })).toBeInTheDocument();
     expect(dashboardApi.getSummary).toHaveBeenCalledWith({ period: '30d' });
   });
@@ -89,6 +111,7 @@ describe('DashboardPage', () => {
     await userEvent.click(screen.getByRole('button', { name: '7 dias' }));
 
     expect(dashboardApi.getSummary).toHaveBeenLastCalledWith({ period: '7d' });
+    expect(dashboardApi.getSignupsEvolution).toHaveBeenLastCalledWith({ period: '7d' });
     expect(dashboardApi.listRecentSellers).toHaveBeenLastCalledWith({
       period: '7d',
       page: 1,
@@ -104,12 +127,13 @@ describe('DashboardPage', () => {
     expect(await screen.findByText('Não existem dados para apresentação')).toBeInTheDocument();
   });
 
-  it('CA6: avisa quando o período não tem cadastros', async () => {
+  it('CA5 (CCD096): avisa no gráfico quando o período não tem cadastros', async () => {
     vi.mocked(dashboardApi.getSummary).mockResolvedValue({
       ...summary,
       kpis: { ...summary.kpis, newUsers: 0, newSellers: 0 },
       signupsByMonth: [{ month: '2026-10', customers: 0, sellers: 0 }],
     });
+    vi.mocked(dashboardApi.getSignupsEvolution).mockResolvedValue(emptyEvolution);
     vi.mocked(dashboardApi.listRecentSellers).mockResolvedValue({
       data: [],
       meta: { page: 1, pageSize: 5, total: 0, totalPages: 0 },
@@ -119,8 +143,9 @@ describe('DashboardPage', () => {
 
     await screen.findByRole('table', { name: 'Cadastros dos Vendedores Recentes' });
     expect(
-      screen.getAllByText('Não foram encontrados dados para os filtros selecionados'),
-    ).toHaveLength(2);
+      screen.getByText('Não foram encontrados dados para os filtros selecionados'),
+    ).toBeInTheDocument();
+    expect(await screen.findByText('Não há cadastros no período.')).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Total de usuários' })).toBeInTheDocument();
   });
 
@@ -140,6 +165,18 @@ describe('DashboardPage', () => {
       page: 1,
       pageSize: 5,
     });
+  });
+
+  it('mostra o erro da evolução e tenta de novo só o gráfico', async () => {
+    vi.mocked(dashboardApi.getSignupsEvolution).mockRejectedValueOnce(
+      new Error('Falhou a evolução'),
+    );
+
+    renderPage();
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Falhou a evolução');
+    await userEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }));
+    expect(await screen.findByText('Colecionadores (+2)')).toBeInTheDocument();
   });
 
   it('CA8: mostra o erro e tenta de novo', async () => {

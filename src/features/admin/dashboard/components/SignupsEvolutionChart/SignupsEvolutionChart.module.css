@@ -13,6 +13,7 @@
 
 .header {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-4);
@@ -40,8 +41,7 @@
   list-style: none;
 }
 
-.legendItem,
-.legendSellers {
+.legendItem {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
@@ -51,14 +51,14 @@
   color: var(--color-chart-secondary);
 }
 
-.customersSwatch,
+.collectorsSwatch,
 .sellersSwatch {
   width: var(--space-2);
   height: var(--space-3);
   border-radius: var(--radius-xs);
 }
 
-.customersSwatch {
+.collectorsSwatch {
   background: var(--color-chart-primary);
   box-shadow: 0 0 var(--space-2) var(--color-chart-primary);
 }
@@ -66,6 +66,10 @@
 .sellersSwatch {
   background: var(--color-chart-secondary);
   box-shadow: 0 0 var(--space-2) var(--color-chart-secondary);
+}
+
+.plot {
+  position: relative;
 }
 
 .svg {
@@ -80,12 +84,7 @@
   stroke-dasharray: 4 6;
 }
 
-.baseline {
-  stroke: var(--color-chart-grid);
-  stroke-width: 2;
-}
-
-.customersHalo {
+.collectorsHalo {
   fill: var(--color-chart-primary-fill);
 }
 
@@ -93,14 +92,14 @@
   fill: var(--color-chart-secondary-fill);
 }
 
-.customersLine,
+.collectorsLine,
 .sellersLine {
   fill: none;
   stroke-width: 3;
   stroke-linecap: round;
 }
 
-.customersLine {
+.collectorsLine {
   stroke: var(--color-chart-primary);
 }
 
@@ -109,7 +108,7 @@
   stroke-dasharray: 8 6;
 }
 
-.customersDot {
+.collectorsDot {
   fill: var(--color-text);
   stroke: var(--color-chart-primary);
   stroke-width: 3;
@@ -121,12 +120,8 @@
   stroke-width: 2;
 }
 
-.customersFillStart {
+.fillStart {
   stop-color: var(--color-chart-primary-fill);
-}
-
-.sellersFillStart {
-  stop-color: var(--color-chart-secondary-fill);
 }
 
 .fillEnd {
@@ -134,18 +129,84 @@
   stop-opacity: 0;
 }
 
-.months {
-  display: flex;
-  justify-content: space-between;
-  padding: var(--space-2) var(--space-2) 0;
+.band {
+  fill: transparent;
+  cursor: crosshair;
+  outline: none;
+}
+
+.band:focus-visible {
+  fill: var(--color-chart-grid);
+  fill-opacity: 0.4;
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 1;
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-md);
   font-size: var(--font-size-xs);
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - var(--space-3)));
+}
+
+.tooltipTitle {
   font-weight: 700;
   letter-spacing: var(--letter-spacing-caps);
   text-transform: uppercase;
   color: var(--color-label);
+}
+
+.tooltipCollectors {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.tooltipSellers {
+  color: var(--color-chart-secondary);
+}
+
+.axis {
+  position: relative;
+  height: var(--space-6);
+  margin-top: var(--space-3);
   list-style: none;
 }
 
-.currentMonth {
+.axisLabel {
+  position: absolute;
+  top: 0;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-caps);
+  color: var(--color-label);
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.axisLabel:first-child {
+  transform: none;
+}
+
+.axisLabel:last-child {
+  transform: translateX(-100%);
+}
+
+.currentLabel {
   color: var(--color-chart-secondary);
+}
+
+.empty {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  min-height: var(--size-side-card);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
 }

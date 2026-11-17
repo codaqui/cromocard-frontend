@@ -9,15 +9,18 @@ import type { Period } from '@/components/PeriodFilter/PeriodFilter';
 import { DashboardHeader } from '../../components/DashboardHeader/DashboardHeader';
 import { DashboardKpis } from '../../components/DashboardKpis/DashboardKpis';
 import { RecentSellersTable } from '../../components/RecentSellersTable/RecentSellersTable';
-import { SignupsChart } from '../../components/SignupsChart/SignupsChart';
+import { SignupsEvolutionChart } from '../../components/SignupsEvolutionChart/SignupsEvolutionChart';
 import { SignupsMix } from '../../components/SignupsMix/SignupsMix';
 import { DEFAULT_DASHBOARD_PERIOD, toPeriodParams } from '../../dashboard.period';
-import { useDashboardSummary, useRecentSellers } from '../../dashboard.queries';
+import {
+  useDashboardSummary,
+  useRecentSellers,
+  useSignupsEvolution,
+} from '../../dashboard.queries';
 import type { DashboardPeriodParams, DashboardSummary } from '../../dashboard.types';
 import styles from './DashboardPage.module.css';
 
 const RECENT_SELLERS_PAGE_SIZE = 5;
-const NO_DATA_FOR_FILTERS = 'Não foram encontrados dados para os filtros selecionados';
 
 interface LoadErrorProps {
   message: string;
@@ -33,6 +36,22 @@ function LoadError({ message, onRetry }: LoadErrorProps) {
       </Button>
     </div>
   );
+}
+
+interface PeriodSelection {
+  params: DashboardPeriodParams;
+  period: Period;
+}
+
+function SignupsEvolution({ params, period }: PeriodSelection) {
+  const query = useSignupsEvolution(params);
+
+  if (query.isPending) return <LoadingState message="Carregando a evolução dos cadastros…" />;
+  if (query.isError) {
+    return <LoadError message={query.error.message} onRetry={() => void query.refetch()} />;
+  }
+
+  return <SignupsEvolutionChart evolution={query.data} period={period} />;
 }
 
 interface SellersPaging {
@@ -62,28 +81,25 @@ function RecentSellers({ params, page, onPageChange }: SellersPaging) {
 interface DashboardDataProps {
   summary: DashboardSummary;
   sellers: SellersPaging;
+  period: Period;
 }
 
-function DashboardData({ summary, sellers }: DashboardDataProps) {
+function DashboardData({ summary, sellers, period }: DashboardDataProps) {
   if (summary.isEmpty) return <EmptyState title="Não existem dados para apresentação" />;
 
   return (
     <>
       <DashboardKpis kpis={summary.kpis} signups={summary.signupsByMonth} />
-      {summary.kpis.newUsers === 0 ? (
-        <EmptyState title={NO_DATA_FOR_FILTERS} />
-      ) : (
-        <div className={styles.insights}>
-          <SignupsChart signups={summary.signupsByMonth} />
-          <SignupsMix kpis={summary.kpis} />
-        </div>
-      )}
+      <div className={styles.insights}>
+        <SignupsEvolution params={sellers.params} period={period} />
+        <SignupsMix kpis={summary.kpis} />
+      </div>
       <RecentSellers {...sellers} />
     </>
   );
 }
 
-function DashboardContent(sellers: SellersPaging) {
+function DashboardContent({ period, ...sellers }: SellersPaging & { period: Period }) {
   const query = useDashboardSummary(sellers.params);
 
   if (query.isPending) return <LoadingState message="Carregando o dashboard…" />;
@@ -91,7 +107,7 @@ function DashboardContent(sellers: SellersPaging) {
     return <LoadError message={query.error.message} onRetry={() => void query.refetch()} />;
   }
 
-  return <DashboardData summary={query.data} sellers={sellers} />;
+  return <DashboardData summary={query.data} sellers={sellers} period={period} />;
 }
 
 export function DashboardPage() {
@@ -107,7 +123,12 @@ export function DashboardPage() {
   return (
     <section className={styles.page}>
       <DashboardHeader period={period} params={params} onPeriodChange={changePeriod} />
-      <DashboardContent params={params} page={sellersPage} onPageChange={setSellersPage} />
+      <DashboardContent
+        params={params}
+        period={period}
+        page={sellersPage}
+        onPageChange={setSellersPage}
+      />
     </section>
   );
 }

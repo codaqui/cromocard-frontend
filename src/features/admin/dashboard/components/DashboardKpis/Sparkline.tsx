@@ -1,5 +1,5 @@
 import type { MonthlySignups } from '../../dashboard.types';
-import { smoothLine } from '../SignupsChart/chart-geometry';
+import { smoothLine } from '../SignupsEvolutionChart/chart-geometry';
 import styles from './DashboardKpis.module.css';
 
 const WIDTH = 96;
