@@ -4,6 +4,8 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
 
+import { ApiError } from '@/lib/api-error';
+
 import { sellerVerificationsApi } from '../../seller-verifications.api';
 import type { SellerVerificationDetail } from '../../seller-verifications.types';
 import { SellerVerificationPanel } from './SellerVerificationPanel';
@@ -40,6 +42,15 @@ function buildDetail(overrides: Partial<SellerVerificationDetail> = {}): SellerV
     reviewedAt: null,
     createdAt: '2026-10-20T15:00:00Z',
     seller: { id: 'seller-1', name: 'Fábio TCG Store', email: 'fabio@cromocard.dev' },
+    address: {
+      zipCode: '01504-000',
+      street: 'Rua Vergueiro',
+      number: '1200',
+      complement: 'Conjunto 42',
+      neighborhood: 'Liberdade',
+      city: 'São Paulo',
+      state: 'SP',
+    },
     documents: [
       {
         id: 'doc-1',
@@ -59,6 +70,7 @@ function buildDetail(overrides: Partial<SellerVerificationDetail> = {}): SellerV
 
 function renderPanel(onClose = vi.fn()) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const invalidateQueries = vi.spyOn(queryClient, 'invalidateQueries');
   render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter>
@@ -66,17 +78,51 @@ function renderPanel(onClose = vi.fn()) {
       </MemoryRouter>
     </QueryClientProvider>,
   );
+  return { invalidateQueries };
 }
 
+const alreadyDecided = new ApiError({
+  status: 409,
+  code: 'VERIFICATION_ALREADY_DECIDED',
+  message: 'Este credenciamento já foi decidido.',
+});
+
 describe('SellerVerificationPanel', () => {
-  it('CA2: mostra empresa, responsável, dados bancários e documentos', async () => {
+  it('CA2: mostra empresa, responsável, dados bancários, endereço e documentos', async () => {
     vi.mocked(sellerVerificationsApi.getById).mockResolvedValue(buildDetail());
     renderPanel();
 
     expect(await screen.findByText('Cards Kanto LTDA')).toBeInTheDocument();
     expect(screen.getByText('Victor Hugo Menezes')).toBeInTheDocument();
     expect(screen.getByText('Banco do Brasil')).toBeInTheDocument();
+    expect(screen.getByText('victor@cromocard.dev')).toBeInTheDocument();
+    const address = screen.getByRole('region', { name: 'Endereço do estabelecimento' });
+    expect(
+      within(address).getByText(
+        'Rua Vergueiro, 1200 - Conjunto 42 - Liberdade, São Paulo - SP, CEP 01504-000',
+      ),
+    ).toBeInTheDocument();
     expect(screen.getByText('Cartão CNPJ')).toBeInTheDocument();
+  });
+
+  it('CA2: endereço sem complemento sai sem o separador a mais', async () => {
+    const detail = buildDetail();
+    vi.mocked(sellerVerificationsApi.getById).mockResolvedValue({
+      ...detail,
+      address: { ...detail.address!, complement: null },
+    });
+    renderPanel();
+
+    expect(
+      await screen.findByText('Rua Vergueiro, 1200 - Liberdade, São Paulo - SP, CEP 01504-000'),
+    ).toBeInTheDocument();
+  });
+
+  it('CA2: cadastro sem endereço avisa que não foi informado', async () => {
+    vi.mocked(sellerVerificationsApi.getById).mockResolvedValue(buildDetail({ address: null }));
+    renderPanel();
+
+    expect(await screen.findByText('Endereço não informado.')).toBeInTheDocument();
   });
 
   it('CA3: valida um documento enviado', async () => {
@@ -95,6 +141,21 @@ describe('SellerVerificationPanel', () => {
 
     expect(sellerVerificationsApi.validateDocument).toHaveBeenCalledWith('ver-1', 'doc-1');
     expect(await screen.findByText('Documento validado com sucesso.')).toBeInTheDocument();
+  });
+
+  it('CA3: mostra o erro quando a validação do documento falha', async () => {
+    vi.mocked(sellerVerificationsApi.getById).mockResolvedValue(buildDetail());
+    vi.mocked(sellerVerificationsApi.validateDocument).mockRejectedValue(
+      new Error('Não foi possível validar o documento.'),
+    );
+    renderPanel();
+    await screen.findByText('Cards Kanto LTDA');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Validar' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Não foi possível validar o documento.',
+    );
   });
 
   it('tipo de documento sem rótulo mostra o tipo como veio da API', async () => {
@@ -152,6 +213,33 @@ describe('SellerVerificationPanel', () => {
 
     expect(sellerVerificationsApi.approve).toHaveBeenCalledWith('ver-1', {});
     expect(await screen.findByText('Credenciamento aprovado com sucesso.')).toBeInTheDocument();
+  });
+
+  it('R12: aprovar recarrega a lista de usuários, para o selo "Em análise" sair', async () => {
+    const detail = buildDetail();
+    vi.mocked(sellerVerificationsApi.getById).mockResolvedValue(detail);
+    vi.mocked(sellerVerificationsApi.approve).mockResolvedValue({ ...detail, status: 'APPROVED' });
+    const { invalidateQueries } = renderPanel();
+    await screen.findByText('Cards Kanto LTDA');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Validar Lojista' }));
+
+    await vi.waitFor(() =>
+      expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['users', 'list'] }),
+    );
+  });
+
+  it('R14: mostra o erro quando outro admin já decidiu o credenciamento', async () => {
+    vi.mocked(sellerVerificationsApi.getById).mockResolvedValue(buildDetail());
+    vi.mocked(sellerVerificationsApi.approve).mockRejectedValue(alreadyDecided);
+    renderPanel();
+    await screen.findByText('Cards Kanto LTDA');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Validar Lojista' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Este credenciamento já foi decidido.',
+    );
   });
 
   it('CA5: rejeita com motivo e notifica o vendedor', async () => {

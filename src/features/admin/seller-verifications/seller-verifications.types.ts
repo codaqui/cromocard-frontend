@@ -29,6 +29,16 @@ export interface SellerVerificationNote {
   author: { id: string; name: string };
 }
 
+export interface SellerAddress {
+  zipCode: string;
+  street: string;
+  number: string;
+  complement: string | null;
+  neighborhood: string;
+  city: string;
+  state: string;
+}
+
 export interface SellerVerificationDetail {
   id: string;
   status: SellerVerificationStatus;
@@ -50,6 +60,7 @@ export interface SellerVerificationDetail {
   reviewedAt: string | null;
   createdAt: string;
   seller: { id: string; name: string; email: string };
+  address: SellerAddress | null;
   documents: SellerDocument[];
   notes: SellerVerificationNote[];
 }

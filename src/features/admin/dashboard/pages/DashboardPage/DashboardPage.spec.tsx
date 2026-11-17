@@ -154,6 +154,7 @@ describe('DashboardPage', () => {
     await screen.findByRole('row', { name: /Fábio TCG Store/ });
     vi.mocked(sellerVerificationsApi.getById).mockResolvedValue({
       ...sellerVerificationsPage.data[0]!,
+      address: null,
       tradeName: null,
       stateRegistration: null,
       openingDate: null,

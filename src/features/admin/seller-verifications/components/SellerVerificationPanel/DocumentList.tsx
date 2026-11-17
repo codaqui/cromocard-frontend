@@ -1,4 +1,5 @@
 import { Button } from '@/components/Button/Button';
+import { FormError } from '@/components/FormError/FormError';
 import { formatDate } from '@/utils/formatDate';
 
 import { documentTypeLabels } from '../../seller-verifications.labels';
@@ -8,6 +9,7 @@ import styles from './SellerVerificationPanel.module.css';
 interface DocumentListProps {
   documents: SellerDocument[];
   isValidating: boolean;
+  errorMessage?: string;
   onValidate: (documentId: string) => void;
 }
 
@@ -65,21 +67,29 @@ function DocumentItem({
   );
 }
 
-export function DocumentList({ documents, isValidating, onValidate }: DocumentListProps) {
+export function DocumentList({
+  documents,
+  isValidating,
+  errorMessage,
+  onValidate,
+}: DocumentListProps) {
   if (documents.length === 0) {
     return <p className={styles.emptyHint}>Nenhum documento enviado.</p>;
   }
 
   return (
-    <ul className={styles.documentList}>
-      {documents.map((document) => (
-        <DocumentItem
-          key={document.id}
-          document={document}
-          isValidating={isValidating}
-          onValidate={onValidate}
-        />
-      ))}
-    </ul>
+    <>
+      <ul className={styles.documentList}>
+        {documents.map((document) => (
+          <DocumentItem
+            key={document.id}
+            document={document}
+            isValidating={isValidating}
+            onValidate={onValidate}
+          />
+        ))}
+      </ul>
+      <FormError message={errorMessage} />
+    </>
   );
 }

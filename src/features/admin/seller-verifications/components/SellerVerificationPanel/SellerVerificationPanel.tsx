@@ -4,6 +4,7 @@ import { Badge } from '@/components/Badge/Badge';
 import { Button } from '@/components/Button/Button';
 import { Drawer } from '@/components/Drawer/Drawer';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
+import { FormError } from '@/components/FormError/FormError';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { Toast } from '@/components/Toast/Toast';
 import { formatDate } from '@/utils/formatDate';
@@ -21,7 +22,7 @@ import {
   useSellerVerification,
   useValidateSellerDocument,
 } from '../../seller-verifications.queries';
-import type { SellerVerificationDetail } from '../../seller-verifications.types';
+import type { SellerAddress, SellerVerificationDetail } from '../../seller-verifications.types';
 import { DocumentList } from './DocumentList';
 import { InternalNotes } from './InternalNotes';
 import { RejectDialog } from './RejectDialog';
@@ -88,6 +89,28 @@ function BankSection({ detail }: { detail: SellerVerificationDetail }) {
   );
 }
 
+function formatAddress(address: SellerAddress): string {
+  const streetLine = [
+    `${address.street}, ${address.number}`,
+    address.complement,
+    address.neighborhood,
+  ]
+    .filter(Boolean)
+    .join(' - ');
+  return `${streetLine}, ${address.city} - ${address.state}, CEP ${address.zipCode}`;
+}
+
+function AddressSection({ address }: { address: SellerAddress | null }) {
+  return (
+    <section className={styles.section} aria-label="Endereço do estabelecimento">
+      <h3 className={styles.sectionTitle}>Endereço do estabelecimento</h3>
+      <p className={address ? styles.fieldValue : styles.emptyHint}>
+        {address ? formatAddress(address) : 'Endereço não informado.'}
+      </p>
+    </section>
+  );
+}
+
 function DecidedInfo({ detail }: { detail: SellerVerificationDetail }) {
   return (
     <p className={styles.decidedInfo}>
@@ -102,22 +125,32 @@ function DecidedInfo({ detail }: { detail: SellerVerificationDetail }) {
 interface PanelFooterProps {
   detail: SellerVerificationDetail;
   isApproving: boolean;
+  approveErrorMessage?: string;
   onApprove: () => void;
   onOpenReject: () => void;
 }
 
-function PanelFooter({ detail, isApproving, onApprove, onOpenReject }: PanelFooterProps) {
+function PanelFooter({
+  detail,
+  isApproving,
+  approveErrorMessage,
+  onApprove,
+  onOpenReject,
+}: PanelFooterProps) {
   if (!canDecide(detail.status)) return <DecidedInfo detail={detail} />;
 
   return (
-    <div className={styles.decisionActions}>
-      <Button variant="danger" onClick={onOpenReject}>
-        Rejeitar
-      </Button>
-      <Button disabled={isApproving} onClick={onApprove}>
-        {isApproving ? 'Aguarde…' : 'Validar Lojista'}
-      </Button>
-    </div>
+    <>
+      <FormError message={approveErrorMessage} />
+      <div className={styles.decisionActions}>
+        <Button variant="danger" onClick={onOpenReject}>
+          Rejeitar
+        </Button>
+        <Button disabled={isApproving} onClick={onApprove}>
+          {isApproving ? 'Aguarde…' : 'Validar Lojista'}
+        </Button>
+      </div>
+    </>
   );
 }
 
@@ -140,6 +173,7 @@ function useDocumentAndNoteActions(id: string, notify: (message: string) => void
   return {
     validateDocument: {
       isPending: validateDocument.isPending,
+      errorMessage: validateDocument.error?.message,
       run: (documentId: string) =>
         validateDocument.mutate(
           { id, documentId },
@@ -163,6 +197,7 @@ function useApproveAction(id: string, notify: (message: string) => void) {
 
   return {
     isPending: approve.isPending,
+    errorMessage: approve.error?.message,
     run: () =>
       approve.mutate(
         { id, input: {} },
@@ -229,6 +264,7 @@ function DocumentsSection({
       <DocumentList
         documents={detail.documents}
         isValidating={actions.validateDocument.isPending}
+        errorMessage={actions.validateDocument.errorMessage}
         onValidate={actions.validateDocument.run}
       />
     </section>
@@ -266,6 +302,7 @@ function PanelDecisionFooter({ detail, actions }: PanelDecisionFooterProps) {
       <PanelFooter
         detail={detail}
         isApproving={actions.approve.isPending}
+        approveErrorMessage={actions.approve.errorMessage}
         onApprove={actions.approve.run}
         onOpenReject={actions.openReject}
       />
@@ -294,6 +331,7 @@ function PanelBody({
       <CompanySection detail={detail} />
       <ResponsibleSection detail={detail} />
       <BankSection detail={detail} />
+      <AddressSection address={detail.address} />
       <DocumentsSection detail={detail} actions={actions} />
       <NotesSection detail={detail} actions={actions} />
       <PanelDecisionFooter detail={detail} actions={actions} />

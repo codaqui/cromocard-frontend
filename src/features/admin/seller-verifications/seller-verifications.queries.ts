@@ -6,6 +6,8 @@ import {
   type QueryClient,
 } from '@tanstack/react-query';
 
+import { usersKeys } from '@/features/users';
+
 import { sellerVerificationsApi } from './seller-verifications.api';
 import type { AddNoteInput, ApproveInput, RejectInput } from './seller-verifications.schemas';
 import type {
@@ -24,6 +26,11 @@ export const sellerVerificationsKeys = {
 
 function invalidateSellerVerifications(queryClient: QueryClient) {
   return queryClient.invalidateQueries({ queryKey: sellerVerificationsKeys.all });
+}
+
+function invalidateAfterDecision(queryClient: QueryClient) {
+  void queryClient.invalidateQueries({ queryKey: usersKeys.lists() });
+  return invalidateSellerVerifications(queryClient);
 }
 
 export function useSellerVerificationsList(params: ListSellerVerificationsParams) {
@@ -75,7 +82,7 @@ export function useApproveSellerVerification() {
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: ApproveInput }) =>
       sellerVerificationsApi.approve(id, input),
-    onSuccess: () => invalidateSellerVerifications(queryClient),
+    onSuccess: () => invalidateAfterDecision(queryClient),
   });
 }
 
@@ -85,6 +92,6 @@ export function useRejectSellerVerification() {
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: RejectInput }) =>
       sellerVerificationsApi.reject(id, input),
-    onSuccess: () => invalidateSellerVerifications(queryClient),
+    onSuccess: () => invalidateAfterDecision(queryClient),
   });
 }
