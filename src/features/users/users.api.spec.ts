@@ -66,8 +66,22 @@ describe('usersApi', () => {
   });
 
   it('suspend suspende um usuário com o motivo', () => {
-    void usersApi.suspend('user-1', { reason: 'Violou as regras' });
-    expect(callsOf('post')[0]).toEqual(['/users/user-1/suspend', { reason: 'Violou as regras' }]);
+    void usersApi.suspend('user-1', { reason: 'Violou as regras', days: 7 });
+    expect(callsOf('post')[0]).toEqual([
+      '/users/user-1/suspend',
+      { reason: 'Violou as regras', days: 7 },
+    ]);
+  });
+
+  it('warn adverte um usuário com o motivo e a denúncia de origem', () => {
+    const input = { reason: 'Mensagem ofensiva', reportId: 'report-1' };
+    void usersApi.warn('user-1', input);
+    expect(callsOf('post')[0]).toEqual(['/users/user-1/warn', input]);
+  });
+
+  it('block bane um usuário com o motivo', () => {
+    void usersApi.block('user-1', { reason: 'Golpe recorrente' });
+    expect(callsOf('post')[0]).toEqual(['/users/user-1/block', { reason: 'Golpe recorrente' }]);
   });
 
   it('reactivate reativa um usuário sem motivo', () => {
