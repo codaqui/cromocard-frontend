@@ -1,8 +1,19 @@
-import type { AlbumStatus, CatalogItemKind, CatalogNotice, CategoryType } from './catalog.types';
+import type {
+  AlbumStatus,
+  CatalogItemKind,
+  CatalogNotice,
+  CategoryBadge,
+  CategoryType,
+} from './catalog.types';
 
 export const categoryTypeLabels: Record<CategoryType, string> = {
   ALBUM: 'Álbum',
   CARD: 'Carta',
+};
+
+export const categoryBadgeLabels: Record<CategoryBadge, string> = {
+  STANDARD: 'Padrão',
+  TRENDING: 'Em alta',
 };
 
 export const albumStatusLabels: Record<AlbumStatus, string> = {

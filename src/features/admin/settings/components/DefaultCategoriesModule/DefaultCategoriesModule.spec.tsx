@@ -6,6 +6,7 @@ import { ApiError } from '@/lib/api-error';
 
 import { settingsApi } from '../../settings.api';
 import { settingsNotices } from '../../settings.labels';
+import { categoryOption, defaultCategory } from '../../test/fixtures';
 import { imageFile, renderSettings } from '../../test/renderSettings';
 import { DefaultCategoriesModule } from './DefaultCategoriesModule';
 
@@ -19,19 +20,9 @@ vi.mock('../../settings.api', () => ({
 }));
 
 const BACK_URL = 'https://hml-api.cromocard.com.br/uploads/cards/verso-pokemon.png';
-const POKEMON = { id: 'c-pokemon', name: 'Pokémon', type: 'CARD' as const, backImageUrl: BACK_URL };
-const MAGIC = {
-  id: 'c-magic',
-  name: 'Magic: The Gathering',
-  type: 'CARD' as const,
-  backImageUrl: null,
-};
-const option = (id: string, name: string, parentCategoryId: string | null = null) => ({
-  id,
-  name,
-  type: 'CARD' as const,
-  parentCategoryId,
-});
+const POKEMON = defaultCategory('c-pokemon', 'Pokémon', { backImageUrl: BACK_URL });
+const MAGIC = defaultCategory('c-magic', 'Magic: The Gathering');
+const option = categoryOption;
 
 function renderCategories() {
   const notify = vi.fn();
@@ -83,8 +74,8 @@ describe('DefaultCategoriesModule', () => {
 
     await waitFor(() => expect(notify).toHaveBeenCalledWith(settingsNotices.defaultCategories));
     expect(vi.mocked(settingsApi.updateDefaultCategories).mock.calls[0]?.[0]).toEqual([
-      { id: 'c-pokemon', backImageUrl: BACK_URL },
-      { id: 'c-futebol', backImageUrl: null },
+      { id: 'c-pokemon', backImageUrl: BACK_URL, isPinned: false },
+      { id: 'c-futebol', backImageUrl: null, isPinned: false },
     ]);
   });
 
@@ -125,8 +116,8 @@ describe('DefaultCategoriesModule', () => {
 
     await waitFor(() =>
       expect(vi.mocked(settingsApi.updateDefaultCategories).mock.calls[0]?.[0]).toEqual([
-        { id: 'c-pokemon', backImageUrl: BACK_URL },
-        { id: 'c-magic', backImageUrl: uploaded },
+        { id: 'c-pokemon', backImageUrl: BACK_URL, isPinned: false },
+        { id: 'c-magic', backImageUrl: uploaded, isPinned: false },
       ]),
     );
     expect(settingsApi.uploadImage).toHaveBeenCalledWith('cards', expect.any(File));
@@ -284,12 +275,9 @@ describe('DefaultCategoriesModule', () => {
   });
 
   it('R10: com 50 categorias padrão, não deixa adicionar outra', async () => {
-    const fifty = Array.from({ length: 50 }, (_, index) => ({
-      id: `c-${index}`,
-      name: `Franquia ${index}`,
-      type: 'CARD' as const,
-      backImageUrl: null,
-    }));
+    const fifty = Array.from({ length: 50 }, (_, index) =>
+      defaultCategory(`c-${index}`, `Franquia ${index}`),
+    );
     vi.mocked(settingsApi.listDefaultCategories).mockResolvedValue(fifty);
     renderCategories();
 
@@ -331,7 +319,7 @@ describe('DefaultCategoriesModule', () => {
     await user.click(saveButton());
     await waitFor(() =>
       expect(vi.mocked(settingsApi.updateDefaultCategories).mock.calls[0]?.[0]).toEqual([
-        { id: 'c-pokemon', backImageUrl: BACK_URL },
+        { id: 'c-pokemon', backImageUrl: BACK_URL, isPinned: false },
       ]),
     );
   });

@@ -50,7 +50,7 @@ describe('settingsApi', () => {
   });
 
   it('R10: lista e salva as categorias padrão com os versos', () => {
-    const categories = [{ id: 'c-1', backImageUrl: null }];
+    const categories = [{ id: 'c-1', backImageUrl: null, isPinned: false }];
     void settingsApi.listDefaultCategories();
     void settingsApi.updateDefaultCategories(categories);
     expect(callsOf('get')).toContainEqual(['/admin/settings/default-categories']);
