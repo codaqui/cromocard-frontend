@@ -5,7 +5,6 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { adminBackofficeRoutes } from '@/features/admin';
 import { catalogBackofficeRoutes } from '@/features/catalog';
 import { communityBackofficeRoutes } from '@/features/community';
-import { notificationsBackofficeRoutes } from '@/features/notifications';
 import { paths } from '@/routes/paths';
 import { preloadLazyRoutes } from '@/test/preloadLazyRoutes';
 import { renderWithProviders } from '@/test/renderWithProviders';
@@ -17,7 +16,6 @@ const routes = [
     element: <AdminLayout />,
     children: [
       ...adminBackofficeRoutes,
-      ...notificationsBackofficeRoutes,
       ...catalogBackofficeRoutes,
       ...communityBackofficeRoutes,
       { path: paths.backoffice.users, element: <h1>Usuários</h1> },
@@ -27,7 +25,6 @@ const routes = [
 ];
 
 const underConstructionModules = [
-  { label: 'Notificação', story: 'CCD060' },
   { label: 'Relatórios', story: 'CCD063' },
   { label: 'Solicitações', story: 'CCD064' },
   { label: 'Configurações', story: 'CCD066' },
@@ -82,6 +79,17 @@ describe('AdminLayout', () => {
       'aria-current',
       'page',
     );
+  });
+
+  it('navega para a Notificação Global', async () => {
+    renderBackoffice();
+    const menu = await screen.findByRole('navigation', { name: 'Módulos oficiais' });
+
+    await userEvent.click(within(menu).getByRole('link', { name: 'Notificação' }));
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Notificação Global' }),
+    ).toBeInTheDocument();
   });
 
   it.each(underConstructionModules)(

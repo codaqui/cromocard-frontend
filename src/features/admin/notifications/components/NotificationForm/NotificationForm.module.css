@@ -1,0 +1,105 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+}
+
+.heading svg {
+  color: var(--color-primary);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  margin-bottom: var(--space-3);
+  padding: 0;
+  color: var(--color-label);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.options > * {
+  flex-basis: 9rem;
+}
+
+.scheduleOption svg {
+  color: var(--color-warning);
+}
+
+.groupError {
+  color: var(--color-danger);
+  font-size: var(--font-size-xs);
+}
+
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-4) var(--space-4) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.notice svg {
+  flex: none;
+  color: var(--color-warning);
+}
+
+.noticeTitle {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.submit {
+  position: relative;
+  width: 100%;
+  min-height: 3.5rem;
+  margin-top: calc(var(--space-6) * -1 + var(--space-2));
+  font-size: var(--font-size-lg);
+}
+
+.submit svg {
+  position: absolute;
+  left: var(--space-8);
+}
+
+.cancel {
+  width: 100%;
+  margin-top: calc(var(--space-6) * -1 + var(--space-2));
+}
+
+@media (max-width: 480px) {
+  .submit {
+    padding-left: calc(var(--space-6) + 22px);
+    font-size: var(--font-size-md);
+  }
+
+  .submit svg {
+    left: var(--space-4);
+  }
+}

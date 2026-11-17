@@ -151,6 +151,8 @@
   --color-chart-grid: #283643;
   --color-glow-primary: rgb(50 145 255 / 0.12);
   --color-glow-accent: rgb(0 210 255 / 0.14);
+  /* Ciano dos destaques do Figma (dia escolhido, números e status do envio). */
+  --color-highlight: #00d2ff;
   --color-glow-warning: rgb(201 129 0 / 0.12);
   --color-danger-strong: #d32f2f;
   --color-alert: #93000a;
