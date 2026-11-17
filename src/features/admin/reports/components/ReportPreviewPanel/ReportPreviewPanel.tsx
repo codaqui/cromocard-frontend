@@ -5,7 +5,7 @@ import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { type Period, PeriodFilter } from '@/components/PeriodFilter/PeriodFilter';
 import { formatCount, formatPeriodRange } from '../../reports.period';
 
-import { formatReportCell } from '../../reports.format';
+import { formatDateRange, formatReportCell } from '../../reports.format';
 import { SAMPLE_COLUMN_KEYS, periodLabel, reportsMessages } from '../../reports.labels';
 import type { ExportFormat, ReportColumn, ReportPreview } from '../../reports.types';
 import styles from './ReportPreviewPanel.module.css';
@@ -17,13 +17,18 @@ interface ReportPreviewPanelProps {
   onExport: (format: ExportFormat) => void;
 }
 
+function columnsLabel({ columns }: ReportPreview): string {
+  const text = columns.map(({ label }) => label.toLowerCase()).join(', ');
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 function Summary({ preview, period }: { preview: ReportPreview; period: Period }) {
-  const range = formatPeriodRange(preview.period.from, preview.period.to);
+  const range = formatDateRange(preview.period.from, preview.period.to);
   const items = [
     ['Relatório', preview.title],
     ['Período', periodLabel(period, range)],
     ['Total', `${formatCount(preview.total)} registros`],
-    ['Colunas', preview.columns.map(({ label }) => label).join(', ')],
+    ['Colunas', columnsLabel(preview)],
   ];
   return (
     <dl className={styles.summary}>
@@ -149,7 +154,9 @@ export function ReportPreviewPanel({
       <h2 id="report-preview-title" className={styles.title}>
         <Icon name="manageSearch" size={20} /> Pré-visualização
       </h2>
-      <PeriodFilter value={period} onChange={onPeriodChange} />
+      <div className={styles.period}>
+        <PeriodFilter value={period} onChange={onPeriodChange} />
+      </div>
       <PreviewBody preview={preview} period={period} />
       <ExportActions disabled={!canExport} onExport={onExport} />
     </section>

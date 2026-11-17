@@ -113,7 +113,7 @@
   padding: var(--space-2);
   font-weight: 600;
   color: var(--color-text);
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
 }
 
 .table th:last-child,
@@ -145,4 +145,33 @@
   font-size: var(--font-size-xs);
   text-align: center;
   color: var(--color-text-muted);
+}
+
+.period [role='group'] {
+  display: flex;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+.period [role='group'] > button {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-inline: var(--space-1);
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+}
+
+@media (max-width: 40rem) {
+  .panel {
+    padding: var(--space-4);
+  }
+
+  .period [role='group'] {
+    flex-wrap: wrap;
+  }
+
+  .table th,
+  .table td {
+    padding-inline: var(--space-1);
+  }
 }

@@ -35,3 +35,7 @@ export function reportFileName(
   const day = (iso: string) => isoDateFormatter.format(new Date(iso));
   return `cromocard-${type}-${day(from)}-${day(to)}.${format}`;
 }
+
+export function formatDateRange(from: string, to: string): string {
+  return `${dateFormatter.format(new Date(from))} a ${dateFormatter.format(new Date(to))}`;
+}

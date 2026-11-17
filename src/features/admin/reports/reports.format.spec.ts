@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatReportCell, reportFileName } from './reports.format';
+import { formatDateRange, formatReportCell, reportFileName } from './reports.format';
 
 describe('reports.format', () => {
   it('mostra datas no fuso de Brasília e traduz papéis e tipos', () => {
@@ -20,6 +20,12 @@ describe('reports.format', () => {
 
     expect(reportFileName('signups', period, 'csv')).toBe(
       'cromocard-signups-2026-10-18-2026-11-16.csv',
+    );
+  });
+
+  it('mostra o intervalo personalizado como no Figma', () => {
+    expect(formatDateRange('2025-01-01T03:00:00.000Z', '2025-02-01T02:59:59.999Z')).toBe(
+      '01/01/2025 a 31/01/2025',
     );
   });
 });

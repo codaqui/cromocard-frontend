@@ -106,7 +106,7 @@ describe('ReportsPage', () => {
     expect(within(panel).getByRole('cell', { name: 'Vendedor' })).toBeInTheDocument();
     expect(within(panel).getByText('Últimos 30 dias')).toBeInTheDocument();
     expect(within(panel).getByText('4.218 registros')).toBeInTheDocument();
-    expect(within(panel).getByText('Nome, E-mail, Papel, Cadastro')).toBeInTheDocument();
+    expect(within(panel).getByText('Nome, e-mail, papel, cadastro')).toBeInTheDocument();
     expect(reportsApi.preview).toHaveBeenCalledWith('signups', { period: '30d' });
   });
 

@@ -29,12 +29,21 @@
 .columns {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-  align-items: start;
   gap: var(--space-6);
 }
 
 @media (max-width: 64rem) {
   .columns {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 40rem) {
+  .header {
+    padding: var(--space-4);
+  }
+
+  .title {
+    font-size: var(--font-size-xl);
   }
 }
