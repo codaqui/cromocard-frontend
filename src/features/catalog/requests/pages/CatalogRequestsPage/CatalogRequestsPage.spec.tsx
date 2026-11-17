@@ -10,8 +10,16 @@ import type { CatalogRequest, CatalogRequestsMeta } from '../../catalog-requests
 import { CatalogRequestsPage } from './CatalogRequestsPage';
 
 vi.mock('../../catalog-requests.api', () => ({
-  catalogRequestsApi: { list: vi.fn(), approve: vi.fn(), reject: vi.fn() },
+  catalogRequestsApi: {
+    list: vi.fn(),
+    approve: vi.fn(),
+    reject: vi.fn(),
+    downloadChecklist: vi.fn(),
+  },
 }));
+
+const downloadFile = vi.hoisted(() => vi.fn());
+vi.mock('@/lib/download-file', () => ({ downloadFile }));
 
 const card: CatalogRequest = {
   id: '0199a000-0000-7000-8000-000000008812',
@@ -267,5 +275,181 @@ describe('CatalogRequestsPage', () => {
     expect(
       await screen.findByRole('dialog', { name: 'Não foi possível aprovar' }),
     ).toHaveTextContent('Sem conexão. A solicitação continua pendente.');
+  });
+
+  describe('campos da CCD103', () => {
+    const fullCard: CatalogRequest = {
+      ...card,
+      data: {
+        ...card.data,
+        illustrator: 'Atsuko Nishida',
+        estimatedPopulation: 39,
+        justification: 'Entregue aos vencedores do concurso de 1998.',
+        sources: [
+          { label: 'PokéBeach Archive Database #PKB-98ILL', url: 'https://www.pokebeach.com/' },
+          { label: 'Revista CoroCoro' },
+        ],
+      },
+    };
+
+    const fullAlbum: CatalogRequest = {
+      ...album,
+      data: {
+        ...album.data,
+        coverImageUrl: 'https://cdn.cromocard.dev/capa.png',
+        checklist: [
+          {
+            number: '001',
+            code: 'OP06-001',
+            name: 'Yamato',
+            rarity: 'Rara',
+            variants: 'Textured Foil',
+          },
+          {
+            number: '022',
+            code: 'OP06-022',
+            name: 'Roronoa Zoro',
+            rarity: 'Lendária',
+            variants: 'Manga',
+          },
+        ],
+      },
+      checklistSummary: {
+        total: 126,
+        rarities: [
+          { name: 'Lendária', count: 2 },
+          { name: 'Épica', count: 10 },
+          { name: 'Rara', count: 24 },
+        ],
+      },
+    };
+
+    const fullCategory: CatalogRequest = {
+      ...category,
+      data: {
+        ...category.data,
+        description: 'Card game da Disney publicado pela Ravensburger.',
+        publisher: 'Ravensburger',
+        logoUrl: 'https://cdn.cromocard.dev/logo.png',
+        subcategories: ['The First Chapter', 'Rise of the Floodborn', 'Into the Inklands'],
+      },
+      votes: {
+        for: 331,
+        neutral: 6,
+        against: 3,
+        total: 340,
+        goal: 200,
+        forPercent: 97.4,
+        goalPercent: 170,
+      },
+    };
+
+    beforeEach(() => {
+      vi.mocked(catalogRequestsApi.list).mockResolvedValue(
+        pageOf([fullCard, fullAlbum, fullCategory]),
+      );
+      downloadFile.mockReset();
+    });
+
+    it('R10: a carta mostra ilustrador, população, justificativa e as fontes com link', async () => {
+      renderPage();
+
+      const item = await cardOf(/Pikachu/);
+      expect(item).toHaveTextContent('Atsuko Nishida');
+      expect(item).toHaveTextContent('39 Cópias Globais');
+      expect(item).toHaveTextContent('“Entregue aos vencedores do concurso de 1998.”');
+      expect(within(item).getByRole('link', { name: /PokéBeach Archive/ })).toHaveAttribute(
+        'href',
+        'https://www.pokebeach.com/',
+      );
+      expect(within(item).getByText('Revista CoroCoro')).toBeInTheDocument();
+    });
+
+    it('CA4: a categoria mostra 340/200 (170% da meta), a divisão dos votos e o selo', async () => {
+      renderPage();
+
+      const item = await cardOf(/Disney/);
+      expect(item).toHaveTextContent('Votação da comunidade (meta: 200 votos)');
+      expect(item).toHaveTextContent('340 / 200 Votos (170% da Meta)');
+      for (const value of ['331 (97,4%)', '6 (1,8%)', '3 (0,9%)', '340 votos', '97,4% a favor']) {
+        expect(item).toHaveTextContent(value);
+      }
+      expect(within(item).getByRole('progressbar')).toHaveAttribute('aria-valuenow', '100');
+      expect(item).not.toHaveTextContent('@lucas_slab_collector');
+    });
+
+    it('CA5: a categoria lista as subcategorias a criar e o rodapé conta quantas', async () => {
+      renderPage();
+
+      const item = await cardOf(/Disney/);
+      for (const name of fullCategory.data.subcategories ?? []) {
+        expect(within(item).getByText(name)).toBeInTheDocument();
+      }
+      expect(item).toHaveTextContent(
+        'Ao aprovar, a categoria e as 3 subcategorias são criadas e a votação é encerrada.',
+      );
+    });
+
+    it('CA6: o álbum mostra o resumo e o checklist e baixa a planilha em CSV', async () => {
+      const blob = new Blob(['csv']);
+      vi.mocked(catalogRequestsApi.downloadChecklist).mockResolvedValue(blob);
+      renderPage();
+
+      const item = await cardOf(/One Piece/);
+      for (const value of [
+        '126 cartas',
+        'Lendárias',
+        'Épicas',
+        'Raras',
+        '24 cartas',
+        'OP06-022',
+        'Roronoa Zoro',
+        'Textured Foil',
+      ]) {
+        expect(item).toHaveTextContent(value);
+      }
+      await userEvent.click(within(item).getByRole('button', { name: 'Baixar Planilha .CSV' }));
+
+      expect(catalogRequestsApi.downloadChecklist).toHaveBeenCalledWith(album.id);
+      expect(downloadFile).toHaveBeenCalledWith(blob, 'checklist-SOL-4091.csv');
+    });
+
+    it('CA6: falha ao baixar a planilha é avisada no cartão', async () => {
+      vi.mocked(catalogRequestsApi.downloadChecklist).mockRejectedValue(new Error('offline'));
+      renderPage();
+
+      const item = await cardOf(/One Piece/);
+      await userEvent.click(within(item).getByRole('button', { name: 'Baixar Planilha .CSV' }));
+
+      expect(
+        await within(item).findByText('Não foi possível baixar a planilha. Tente de novo.'),
+      ).toBeInTheDocument();
+    });
+
+    it('CA11: mostra a capa do álbum com o total do checklist e o logo da categoria', async () => {
+      renderPage();
+
+      const albumItem = await cardOf(/One Piece/);
+      expect(within(albumItem).getByRole('img', { name: /Capa sugerida/ })).toHaveAttribute(
+        'src',
+        'https://cdn.cromocard.dev/capa.png',
+      );
+      expect(albumItem).toHaveTextContent('BANDAI 2024');
+      expect(albumItem).toHaveTextContent('126 Cartas no Checklist');
+      const categoryItem = screen.getByRole('article', { name: /Disney/ });
+      expect(within(categoryItem).getByRole('img', { name: /Logo enviado/ })).toBeInTheDocument();
+      expect(categoryItem).toHaveTextContent('RAVENSBURGER');
+    });
+
+    it('CA11: sem imagem, a capa e o logo não aparecem', async () => {
+      vi.mocked(catalogRequestsApi.list).mockResolvedValue(pageOf([album, category]));
+      renderPage();
+
+      expect(await cardOf(/One Piece/)).not.toHaveTextContent('Capa sugerida');
+      expect(screen.getByRole('article', { name: /Disney/ })).not.toHaveTextContent('Logo enviado');
+      expect(screen.getByRole('article', { name: /Disney/ })).toHaveTextContent(
+        'Ao aprovar, a categoria é criada e a votação é encerrada.',
+      );
+    });
   });
 });

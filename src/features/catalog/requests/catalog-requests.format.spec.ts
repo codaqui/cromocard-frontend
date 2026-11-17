@@ -5,6 +5,13 @@ import { ApiError } from '@/lib/api-error';
 import {
   alreadyReviewedMessage,
   approvalFailureMessage,
+  cardsLabel,
+  categoryApprovalNote,
+  checklistFileName,
+  percentLabel,
+  populationLabel,
+  quorumHeadline,
+  rarityPluralLabel,
   handleOf,
   initialsOf,
   isAlreadyReviewed,
@@ -131,5 +138,48 @@ describe('catalog-requests.format', () => {
     expect(approvalFailureMessage(request, incomplete)).toBe(
       'Faltam dados obrigatórios para publicar. A solicitação continua pendente.',
     );
+  });
+});
+
+describe('textos da CCD103', () => {
+  it('formata percentuais, cartas e população em pt-BR', () => {
+    expect(percentLabel(97.4)).toBe('97,4%');
+    expect(percentLabel(170)).toBe('170%');
+    expect(cardsLabel(1)).toBe('1 carta');
+    expect(cardsLabel(1260)).toBe('1.260 cartas');
+    expect(populationLabel(1)).toBe('1 Cópia Global');
+    expect(populationLabel(39)).toBe('39 Cópias Globais');
+  });
+
+  it('põe a raridade no plural do resumo', () => {
+    expect(rarityPluralLabel('Lendária')).toBe('Lendárias');
+    expect(rarityPluralLabel('Comum')).toBe('Comuns');
+    expect(rarityPluralLabel('Incomum')).toBe('Incomuns');
+  });
+
+  it('resume o quórum e o rodapé da categoria', () => {
+    const votes = {
+      for: 331,
+      neutral: 6,
+      against: 3,
+      total: 340,
+      goal: 200,
+      forPercent: 97.4,
+      goalPercent: 170,
+    };
+    expect(quorumHeadline(votes)).toBe('340 / 200 Votos (170% da Meta)');
+    expect(categoryApprovalNote(0)).toBe(
+      'Ao aprovar, a categoria é criada e a votação é encerrada.',
+    );
+    expect(categoryApprovalNote(1)).toBe(
+      'Ao aprovar, a categoria e a subcategoria são criadas e a votação é encerrada.',
+    );
+    expect(categoryApprovalNote(5)).toBe(
+      'Ao aprovar, a categoria e as 5 subcategorias são criadas e a votação é encerrada.',
+    );
+  });
+
+  it('usa o protocolo no nome da planilha', () => {
+    expect(checklistFileName({ code: '#SOL-4091' })).toBe('checklist-SOL-4091.csv');
   });
 });
