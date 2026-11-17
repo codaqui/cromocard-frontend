@@ -101,7 +101,8 @@ export const catalogItemTexts: Record<CatalogItemKind, CatalogItemTexts> = {
   },
   category: {
     createTitle: 'Nova categoria',
-    createSubtitle: 'A ordem das categorias padrão fica em Configurações.',
+    createSubtitle:
+      'O slug é gerado a partir do nome. A ordem das categorias padrão fica em Configurações.',
     createLabel: 'Cadastrar categoria',
     createAction: 'cadastrar a categoria',
     editTitle: 'Editar categoria',

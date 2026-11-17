@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 
 import { useApiFieldErrors } from '@/hooks/useApiFieldErrors';
+import { slugify } from '@/lib/slug';
 
 import {
   type CategoryFormValues,
@@ -17,7 +18,7 @@ function categoryTypeOf(value: string): CategoryType | undefined {
   return CATEGORY_TYPES.find((type) => type === value);
 }
 
-const categoryFields = ['name', 'type', 'parentCategoryId', 'description'] as const;
+const categoryFields = ['name', 'type', 'parentCategoryId', 'description', 'badge'] as const;
 
 function categoryFormDefaults(category?: Category): CategoryFormValues {
   return {
@@ -25,6 +26,7 @@ function categoryFormDefaults(category?: Category): CategoryFormValues {
     type: category?.type ?? '',
     parentCategoryId: category?.parentCategoryId ?? '',
     description: category?.description ?? '',
+    badge: category?.badge ?? '',
   };
 }
 
@@ -45,8 +47,10 @@ export function useCategoryForm({
   const submit = (event: FormEvent) => void handleSubmit(onSubmit)(event);
 
   const type = categoryTypeOf(useWatch({ control, name: 'type' }));
+  const name = useWatch({ control, name: 'name' });
+  const slug = name.trim() ? slugify(name) : '';
   // Trocar o tipo invalida a categoria pai escolhida, que precisa ser do mesmo tipo.
   const registerType = () => register('type', { onChange: () => setValue('parentCategoryId', '') });
 
-  return { register, registerType, type, errors: formState.errors, formError, submit };
+  return { register, registerType, type, slug, errors: formState.errors, formError, submit };
 }

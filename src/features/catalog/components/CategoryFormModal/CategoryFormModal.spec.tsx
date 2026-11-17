@@ -77,7 +77,83 @@ describe('CategoryFormModal', () => {
       type: 'CARD',
       parentCategoryId: cardCategory.id,
       description: 'Seleções das copas',
+      badge: null,
     });
+  });
+
+  it('CA14: oferece Nenhum, Padrão e Em alta como selo e começa em Nenhum', () => {
+    renderModal();
+
+    const select = screen.getByLabelText('Selo de exibição');
+    const options = within(select)
+      .getAllByRole('option')
+      .map((option) => option.textContent);
+
+    expect(options).toEqual(['Nenhum', 'Padrão', 'Em alta']);
+    expect(select).toHaveValue('');
+  });
+
+  it('CA14: envia o selo escolhido e, sem escolher, envia nulo', async () => {
+    renderModal();
+    await userEvent.type(screen.getByLabelText('Nome *'), 'One Piece');
+    await userEvent.selectOptions(screen.getByLabelText('Tipo *'), 'CARD');
+    await userEvent.selectOptions(screen.getByLabelText('Selo de exibição'), 'TRENDING');
+    await saveAndConfirm();
+
+    await vi.waitFor(() => expect(catalogApi.createCategory).toHaveBeenCalled());
+    expect(catalogApi.createCategory).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'One Piece', badge: 'TRENDING' }),
+    );
+  });
+
+  it('CA6: mostra o slug do nome digitado, somente leitura, e explica de onde ele vem', async () => {
+    renderModal();
+
+    await userEvent.type(screen.getByLabelText('Nome *'), 'Yu-Gi-Oh! TCG');
+
+    const slug = screen.getByLabelText('Slug');
+    expect(slug).toHaveValue('yu-gi-oh-tcg');
+    expect(slug).toHaveAttribute('readonly');
+    expect(
+      screen.getByText(
+        'O slug é gerado a partir do nome. A ordem das categorias padrão fica em Configurações.',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('CA6: o slug fica vazio enquanto o nome está vazio', () => {
+    renderModal();
+
+    expect(screen.getByLabelText('Slug')).toHaveValue('');
+  });
+
+  it('CA12: na edição, o slug acompanha o nome renomeado', async () => {
+    renderModal(cardCategory);
+    expect(screen.getByLabelText('Slug')).toHaveValue('selecoes');
+
+    await userEvent.clear(screen.getByLabelText('Nome *'));
+    await userEvent.type(screen.getByLabelText('Nome *'), 'Seleções 2026');
+
+    expect(screen.getByLabelText('Slug')).toHaveValue('selecoes-2026');
+  });
+
+  it('CA13: mostra o 409 SLUG_TAKEN no campo Nome', async () => {
+    vi.mocked(catalogApi.createCategory).mockRejectedValue(
+      new ApiError({
+        status: 409,
+        code: 'SLUG_TAKEN',
+        message: 'Já existe uma categoria com um nome que gera o mesmo slug',
+        details: [{ field: 'name', message: 'Já existe uma categoria com este nome' }],
+      }),
+    );
+    renderModal();
+    await userEvent.type(screen.getByLabelText('Nome *'), 'Pokemon');
+    await userEvent.selectOptions(screen.getByLabelText('Tipo *'), 'CARD');
+    await saveAndConfirm();
+
+    expect(await screen.findByText('Já existe uma categoria com este nome')).toBeInTheDocument();
+    expect(screen.getByLabelText('Nome *')).toHaveAttribute('aria-invalid', 'true');
+    expect(onSaved).not.toHaveBeenCalled();
   });
 
   it('R15: sem tipo escolhido, a categoria pai fica bloqueada', () => {
