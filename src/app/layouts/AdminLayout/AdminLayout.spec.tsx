@@ -29,7 +29,6 @@ const routes = [
 const underConstructionModules = [
   { label: 'Notificação', story: 'CCD060' },
   { label: 'Relatórios', story: 'CCD063' },
-  { label: 'Solicitações', story: 'CCD064' },
   { label: 'Configurações', story: 'CCD066' },
 ];
 
@@ -82,6 +81,17 @@ describe('AdminLayout', () => {
       'aria-current',
       'page',
     );
+  });
+
+  it('navega para a Fila de Solicitações', async () => {
+    renderBackoffice();
+    const menu = await screen.findByRole('navigation', { name: 'Módulos oficiais' });
+
+    await userEvent.click(within(menu).getByRole('link', { name: 'Solicitações' }));
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Fila de Solicitações' }),
+    ).toBeInTheDocument();
   });
 
   it.each(underConstructionModules)(
