@@ -87,6 +87,9 @@ describe('SignupsEvolutionChart', () => {
     await userEvent.tab();
 
     expect(screen.getByRole('tooltip')).toHaveTextContent('1 novo cadastro1 lojista certificado');
+
+    await userEvent.tab();
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
   });
 
   it('CA2: no período de hoje, os pontos são por hora até agora', () => {

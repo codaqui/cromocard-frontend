@@ -179,6 +179,27 @@ describe('DashboardPage', () => {
     expect(await screen.findByText('Colecionadores (+2)')).toBeInTheDocument();
   });
 
+  it('atualiza a lista de vendedores pelo botão', async () => {
+    renderPage();
+    await screen.findByRole('row', { name: /Fábio TCG Store/ });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Atualizar Lista' }));
+
+    expect(dashboardApi.listRecentSellers).toHaveBeenCalledTimes(2);
+  });
+
+  it('mostra o erro da lista de vendedores e tenta de novo', async () => {
+    vi.mocked(dashboardApi.listRecentSellers).mockRejectedValueOnce(
+      new Error('Lista indisponível'),
+    );
+
+    renderPage();
+
+    expect(await screen.findByText('Lista indisponível')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }));
+    expect(await screen.findByRole('row', { name: /Fábio TCG Store/ })).toBeInTheDocument();
+  });
+
   it('CA8: mostra o erro e tenta de novo', async () => {
     vi.mocked(dashboardApi.getSummary).mockRejectedValueOnce(new Error('Serviço indisponível'));
 

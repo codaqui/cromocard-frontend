@@ -8,51 +8,64 @@ export interface ChartPoint {
   y: number;
 }
 
-function xPositions(count: number): number[] {
-  if (count === 1) return [SIDE_INSET, CHART_WIDTH - SIDE_INSET];
-  const step = (CHART_WIDTH - SIDE_INSET * 2) / (count - 1);
-  return Array.from({ length: count }, (_, index) => SIDE_INSET + index * step);
+interface TangentPoint extends ChartPoint {
+  tangent: number;
+}
+
+interface Segment<T> {
+  from: T;
+  to: T;
+}
+
+export function xOf(index: number, count: number): number {
+  if (count === 1) return SIDE_INSET;
+  return SIDE_INSET + index * ((CHART_WIDTH - SIDE_INSET * 2) / (count - 1));
 }
 
 export function toChartPoints(values: number[], highest: number): ChartPoint[] {
-  const series = values.length === 1 ? [values[0] ?? 0, values[0] ?? 0] : values;
-  const xs = xPositions(values.length);
+  const series = values.length === 1 ? [...values, ...values] : values;
   const usableHeight = CHART_HEIGHT - TOP_INSET;
   return series.map((value, index) => ({
-    x: xs[index] ?? 0,
+    x: xOf(index, series.length),
     y: CHART_HEIGHT - (value / highest) * usableHeight,
   }));
 }
 
-function slopesBetween(points: ChartPoint[]): number[] {
-  return points.slice(1).map((point, index) => {
-    const previous = points[index] ?? point;
-    return (point.y - previous.y) / (point.x - previous.x);
+function segmentsOf<T>(items: T[]): Segment<T>[] {
+  return items.flatMap((from, index) => {
+    const to = items[index + 1];
+    return to === undefined ? [] : [{ from, to }];
   });
 }
 
-function monotoneTangents(points: ChartPoint[]): number[] {
-  const slopes = slopesBetween(points);
-  return points.map((_, index) => {
-    const before = slopes[index - 1];
-    const after = slopes[index];
-    if (before === undefined) return after ?? 0;
-    if (after === undefined) return before;
-    if (before * after <= 0) return 0;
-    return (2 * before * after) / (before + after);
-  });
+const slopeOf = ({ from, to }: Segment<ChartPoint>) => (to.y - from.y) / (to.x - from.x);
+
+function tangentAt(slopes: number[], index: number): number {
+  const before = slopes[index - 1];
+  const after = slopes[index];
+  if (before === undefined) return after ?? 0;
+  if (after === undefined) return before;
+  if (before * after <= 0) return 0;
+  return (2 * before * after) / (before + after);
+}
+
+function withTangents(points: ChartPoint[]): TangentPoint[] {
+  const slopes = segmentsOf(points).map(slopeOf);
+  return points.map((point, index) => ({ ...point, tangent: tangentAt(slopes, index) }));
+}
+
+function curveTo({ from, to }: Segment<TangentPoint>): string {
+  const third = (to.x - from.x) / 3;
+  const startY = from.y + from.tangent * third;
+  const endY = to.y - to.tangent * third;
+  return `C ${from.x + third} ${startY} ${to.x - third} ${endY} ${to.x} ${to.y}`;
 }
 
 export function smoothLine(points: ChartPoint[]): string {
-  const tangents = monotoneTangents(points);
-  return points.reduce((path, point, index) => {
-    if (index === 0) return `M ${point.x} ${point.y}`;
-    const previous = points[index - 1] ?? point;
-    const third = (point.x - previous.x) / 3;
-    const startY = previous.y + (tangents[index - 1] ?? 0) * third;
-    const endY = point.y - (tangents[index] ?? 0) * third;
-    return `${path} C ${previous.x + third} ${startY} ${point.x - third} ${endY} ${point.x} ${point.y}`;
-  }, '');
+  const [first] = points;
+  if (!first) return '';
+  const curves = segmentsOf(withTangents(points)).map(curveTo);
+  return [`M ${first.x} ${first.y}`, ...curves].join(' ');
 }
 
 export function areaUnder(points: ChartPoint[]): string {

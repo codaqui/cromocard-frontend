@@ -9,6 +9,7 @@ import {
   type ChartPoint,
   smoothLine,
   toChartPoints,
+  xOf,
 } from './chart-geometry';
 import { pointLabel } from './evolution-labels';
 import styles from './SignupsEvolutionChart.module.css';
@@ -82,24 +83,23 @@ function GridLines() {
 }
 
 interface HoverBandsProps extends EvolutionPlotProps {
-  xs: number[];
   onSelect: (index: number | null) => void;
 }
 
-function HoverBands({ points, bucket, xs, onSelect }: HoverBandsProps) {
-  const width = CHART_WIDTH / Math.max(1, points.length);
+function HoverBands({ points, bucket, onSelect }: HoverBandsProps) {
+  const width = CHART_WIDTH / points.length;
 
-  return xs.map((x, index) => (
+  return points.map((point, index) => (
     <rect
-      key={points[index]?.at ?? index}
-      x={x - width / 2}
+      key={point.at}
+      x={xOf(index, points.length) - width / 2}
       y={0}
       width={width}
       height={CHART_HEIGHT}
       className={styles.band}
       tabIndex={0}
       role="button"
-      aria-label={points[index] ? pointSummary(points[index], bucket) : undefined}
+      aria-label={pointSummary(point, bucket)}
       onMouseEnter={() => onSelect(index)}
       onFocus={() => onSelect(index)}
       onMouseLeave={() => onSelect(null)}
@@ -142,12 +142,7 @@ export function EvolutionPlot({ points, bucket }: EvolutionPlotProps) {
         <GridLines />
         <Series points={collectors} tone="collectors" fillId={fillId} />
         <Series points={sellers} tone="sellers" />
-        <HoverBands
-          points={points}
-          bucket={bucket}
-          xs={collectors.slice(0, points.length).map(({ x }) => x)}
-          onSelect={setSelected}
-        />
+        <HoverBands points={points} bucket={bucket} onSelect={setSelected} />
       </svg>
       {point && anchor && <Tooltip point={point} bucket={bucket} anchor={anchor} />}
     </div>
