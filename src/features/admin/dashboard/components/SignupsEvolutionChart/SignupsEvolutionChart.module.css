@@ -1,4 +1,5 @@
 .chart {
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -17,6 +18,11 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-4);
+}
+
+.heading {
+  flex: 1;
+  min-width: 0;
 }
 
 .title {
@@ -196,6 +202,18 @@
 
 .axisLabel:last-child {
   transform: translateX(-100%);
+}
+
+@container (max-width: 40rem) {
+  .axisLabel:nth-child(even):not(:last-child) {
+    display: none;
+  }
+}
+
+@container (max-width: 26rem) {
+  .axisLabel:not(:first-child, :last-child) {
+    display: none;
+  }
 }
 
 .currentLabel {

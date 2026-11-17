@@ -13,6 +13,7 @@ export interface KpiTileProps {
   badge?: string;
   badgeTone?: 'info' | 'warning';
   description: string;
+  descriptionTone?: 'accent';
   glow: KpiGlow;
   aside?: ReactNode;
   footer?: ReactNode;
@@ -64,7 +65,9 @@ export function KpiTile({
       <div className={styles.body}>
         <TileHeading labelId={labelId} label={label} badge={badge} badgeTone={badgeTone} />
         <TileFigure value={figure.value} unit={figure.unit} aside={figure.aside} />
-        <p className={styles.description}>{figure.description}</p>
+        <p className={cn(styles.description, figure.descriptionTone && styles.accentText)}>
+          {figure.description}
+        </p>
       </div>
       {footer && <footer className={styles.footer}>{footer}</footer>}
     </section>

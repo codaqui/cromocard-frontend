@@ -61,7 +61,7 @@ interface HeaderProps {
 function Header({ titleId, subtitle, totals }: HeaderProps) {
   return (
     <header className={styles.header}>
-      <div>
+      <div className={styles.heading}>
         <h2 id={titleId} className={styles.title}>
           {EVOLUTION_TITLE}
         </h2>

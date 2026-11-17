@@ -113,6 +113,11 @@
   color: var(--color-label);
 }
 
+.accentText {
+  font-weight: 700;
+  color: var(--color-chart-secondary);
+}
+
 .sparkline {
   flex-shrink: 0;
   width: var(--size-sparkline-width);

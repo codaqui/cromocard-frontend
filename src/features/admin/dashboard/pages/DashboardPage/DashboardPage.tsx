@@ -89,7 +89,7 @@ function DashboardData({ summary, sellers, period }: DashboardDataProps) {
 
   return (
     <>
-      <DashboardKpis kpis={summary.kpis} signups={summary.signupsByMonth} />
+      <DashboardKpis summary={summary} period={period} params={sellers.params} />
       <div className={styles.insights}>
         <SignupsEvolution params={sellers.params} period={period} />
         <SignupsMix kpis={summary.kpis} />

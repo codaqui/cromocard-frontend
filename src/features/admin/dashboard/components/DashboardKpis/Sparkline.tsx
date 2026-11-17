@@ -1,4 +1,5 @@
-import type { MonthlySignups } from '../../dashboard.types';
+import { useSignupsEvolution } from '../../dashboard.queries';
+import type { DashboardPeriodParams } from '../../dashboard.types';
 import { smoothLine } from '../SignupsEvolutionChart/chart-geometry';
 import styles from './DashboardKpis.module.css';
 
@@ -15,10 +16,10 @@ function toPoints(totals: number[]) {
   }));
 }
 
-export function Sparkline({ signups }: { signups: MonthlySignups[] }) {
-  if (signups.length < 2) return null;
-
-  const totals = signups.map(({ customers, sellers }) => customers + sellers);
+export function Sparkline({ params }: { params: DashboardPeriodParams }) {
+  const { data } = useSignupsEvolution(params);
+  const totals = data?.points.map(({ collectors, sellers }) => collectors + sellers) ?? [];
+  if (totals.length < 2) return null;
 
   return (
     <svg

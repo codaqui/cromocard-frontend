@@ -92,7 +92,7 @@ describe('DashboardPage', () => {
     expect(await screen.findByRole('region', { name: 'Total de usuários' })).toHaveTextContent(
       '1.250',
     );
-    expect(screen.getByRole('region', { name: 'Cartas cadastradas' })).toHaveTextContent('—');
+    expect(screen.getByRole('region', { name: 'Cartas no catálogo' })).toHaveTextContent('—');
     expect(screen.getByRole('region', { name: 'Novos cadastros' })).toHaveTextContent('4');
     expect(
       await screen.findByRole('region', {
