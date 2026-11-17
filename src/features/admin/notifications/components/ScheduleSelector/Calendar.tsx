@@ -74,7 +74,7 @@ function MonthDays({ month, day, minDay, onDayChange }: CalendarProps & { month:
 
 /** Calendário do frame 277-2689: dias passados e de outros meses ficam desabilitados. */
 export function Calendar(props: CalendarProps) {
-  const [month, setMonth] = useState(() => monthOf(props.day || props.minDay));
+  const [month, setMonth] = useState(() => monthOf(props.day));
   return (
     <div className={styles.calendar}>
       <MonthNav month={month} minDay={props.minDay} onMonthChange={setMonth} />
@@ -92,7 +92,7 @@ export function Calendar(props: CalendarProps) {
       </table>
       <p className={styles.selectedDay}>
         <span>Dia Selecionado:</span>
-        <strong>{props.day ? formatLongDay(props.day) : 'nenhum'}</strong>
+        <strong>{formatLongDay(props.day)}</strong>
       </p>
     </div>
   );
