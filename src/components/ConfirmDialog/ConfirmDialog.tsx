@@ -19,6 +19,7 @@ interface ConfirmDialogProps {
   tone?: ConfirmTone;
   requireReason?: boolean;
   reasonLabel?: string;
+  reasonRequiredMessage?: string;
   confirmationText?: string;
   extraFields?: ReactNode;
   canConfirm?: boolean;

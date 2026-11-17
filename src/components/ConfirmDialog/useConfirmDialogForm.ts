@@ -7,6 +7,8 @@ import { z } from '@/lib/zod';
 
 interface ConfirmDialogFormOptions {
   requireReason: boolean;
+  /** Texto do erro quando o motivo obrigatório fica em branco (ex.: frame 847-1380 das solicitações). */
+  reasonRequiredMessage?: string;
   confirmationText?: string;
   onConfirm: (reason?: string) => void;
 }
@@ -19,9 +21,18 @@ function matches(expected: string) {
   });
 }
 
-function buildSchema({ requireReason, confirmationText }: ConfirmDialogFormOptions) {
+function requiredReason(blankMessage?: string) {
+  if (!blankMessage) return reasonSchema;
+  return z.string().trim().min(1, { error: blankMessage }).pipe(reasonSchema);
+}
+
+function buildSchema({
+  requireReason,
+  reasonRequiredMessage,
+  confirmationText,
+}: ConfirmDialogFormOptions) {
   return z.object({
-    reason: requireReason ? reasonSchema : optionalText,
+    reason: requireReason ? requiredReason(reasonRequiredMessage) : optionalText,
     confirmation: confirmationText ? matches(confirmationText) : optionalText,
   });
 }
