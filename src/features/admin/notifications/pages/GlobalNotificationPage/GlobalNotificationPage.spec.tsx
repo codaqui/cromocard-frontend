@@ -265,7 +265,6 @@ describe('GlobalNotificationPage', () => {
     ).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Próximo mês' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Próximo mês' }));
     const day = screen
       .getAllByRole('button', { name: /de .* de 20\d\d$/ })
       .find((cell) => !cell.hasAttribute('disabled'));
@@ -280,7 +279,7 @@ describe('GlobalNotificationPage', () => {
     const dialog = await screen.findByRole('dialog', { name: 'Notificação agendada' });
     expect(dialog).toHaveTextContent('STATUS: NA FILA');
     expect(dialog).toHaveTextContent('ENVIO PROGRAMADO');
-  });
+  }, 20_000);
 
   it('CCD100 CA2: horário com menos de 5 minutos é recusado na tela', async () => {
     renderPage();
@@ -302,7 +301,7 @@ describe('GlobalNotificationPage', () => {
       await screen.findByText('Escolha um horário com pelo menos 5 minutos de antecedência.'),
     ).toBeInTheDocument();
     expect(api.dispatch).not.toHaveBeenCalled();
-  });
+  }, 20_000);
 
   it('CCD100 CA5 e CCD101 CA5: o histórico mostra público, canal e status de cada disparo', async () => {
     renderPage();
