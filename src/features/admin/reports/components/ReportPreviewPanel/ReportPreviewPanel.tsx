@@ -13,7 +13,7 @@ import styles from './ReportPreviewPanel.module.css';
 interface ReportPreviewPanelProps {
   period: Period;
   onPeriodChange: (period: Period) => void;
-  preview: { data?: ReportPreview; isPending: boolean; error: Error | null };
+  preview: { data?: ReportPreview; isFetching: boolean; error: Error | null };
   onExport: (format: ExportFormat) => void;
 }
 
@@ -148,7 +148,7 @@ export function ReportPreviewPanel({
   preview,
   onExport,
 }: ReportPreviewPanelProps) {
-  const canExport = !preview.isPending && (preview.data?.total ?? 0) > 0;
+  const canExport = !preview.isFetching && (preview.data?.total ?? 0) > 0;
   return (
     <section className={styles.panel} aria-labelledby="report-preview-title">
       <h2 id="report-preview-title" className={styles.title}>

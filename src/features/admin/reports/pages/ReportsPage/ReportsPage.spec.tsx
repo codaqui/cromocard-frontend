@@ -131,6 +131,17 @@ describe('ReportsPage', () => {
     expect(reportsApi.preview).toHaveBeenLastCalledWith('catalog', { period: '7d' });
   });
 
+  it('não deixa exportar enquanto a prévia do novo relatório carrega', async () => {
+    renderPage();
+    await screen.findByRole('cell', { name: 'Ana Lima' });
+    vi.mocked(reportsApi.preview).mockReturnValue(new Promise(() => undefined));
+
+    await userEvent.click(screen.getByRole('button', { name: /Catálogo/ }));
+
+    expect(screen.getByRole('button', { name: 'Exportar PDF' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Exportar CSV' })).toBeDisabled();
+  });
+
   it('CA4: período sem dados mostra a mensagem e desabilita a exportação', async () => {
     vi.mocked(reportsApi.preview).mockResolvedValue({ ...signupsPreview, rows: [], total: 0 });
     renderPage();
