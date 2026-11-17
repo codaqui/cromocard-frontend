@@ -147,3 +147,9 @@
     padding-left: 0;
   }
 }
+
+.add:disabled {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  text-decoration: none;
+}

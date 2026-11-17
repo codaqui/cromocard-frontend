@@ -154,4 +154,16 @@ describe('NotificationTemplatesModule', () => {
 
     expect(await within(dialog()).findByRole('button', { name: 'Salvando…' })).toBeDisabled();
   });
+  it('R11: com 50 templates, Novo template fica desabilitado', () => {
+    const fifty = Array.from({ length: 50 }, (_, index) => ({
+      ...MAINTENANCE,
+      name: `Aviso ${index}`,
+    }));
+    renderTemplates(fifty);
+
+    const newButton = screen.getByRole('button', { name: /Novo template/ });
+
+    expect(newButton).toBeDisabled();
+    expect(newButton).toHaveAttribute('title', expect.stringContaining('Limite de 50 templates'));
+  });
 });

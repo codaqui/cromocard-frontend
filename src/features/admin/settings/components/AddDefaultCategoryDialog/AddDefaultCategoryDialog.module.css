@@ -45,3 +45,8 @@
   font-size: var(--font-size-sm);
   color: var(--color-danger);
 }
+
+.loadMore {
+  width: 100%;
+  margin-top: var(--space-3);
+}

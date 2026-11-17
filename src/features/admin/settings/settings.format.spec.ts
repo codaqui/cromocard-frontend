@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest';
 
 import { ApiError } from '@/lib/api-error';
 
-import { formatGoal, templateSummary, toGlobalSettings, withFormFields } from './settings.format';
+import {
+  formatGoal,
+  templateSummary,
+  toGlobalSettings,
+  withFormFields,
+  withTemplate,
+} from './settings.format';
 import { SETTING_KEYS, type SettingView } from './settings.types';
 
 const BANNER = {
@@ -110,5 +116,17 @@ describe('withFormFields', () => {
     });
     expect(withFormFields(error)).toBe(error);
     expect(withFormFields(null)).toBeNull();
+  });
+});
+
+describe('withTemplate', () => {
+  const input = { name: 'Novo', title: 'Título', content: 'Texto' };
+
+  it('R11: novo template entra no fim da lista', () => {
+    expect(withTemplate([TEMPLATE], null, input)).toEqual([TEMPLATE, input]);
+  });
+
+  it('R11: editar troca só o template da posição e mantém o id', () => {
+    expect(withTemplate([TEMPLATE], 0, input)).toEqual([{ ...input, id: TEMPLATE.id }]);
   });
 });

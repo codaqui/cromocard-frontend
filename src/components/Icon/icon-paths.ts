@@ -109,8 +109,6 @@ export const iconPaths = {
   viewCarousel: 'M7 19h10V4H7v15zm-5-2h4V6H2v11zM18 6v11h4V6h-4z',
   sort: 'M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z',
   add: 'M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z',
-  image:
-    'M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z',
 } as const;
 
 export type IconName = keyof typeof iconPaths;

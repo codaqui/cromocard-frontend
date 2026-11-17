@@ -1,6 +1,6 @@
 import { ApiError } from '@/lib/api-error';
 
-import { settingValueSchemas } from './settings.schemas';
+import { settingValueSchemas, type TemplateInput } from './settings.schemas';
 import {
   type Goals,
   type GlobalSettings,
@@ -53,4 +53,15 @@ export function withFormFields(error: ApiError | null): ApiError | null {
     field: detail.field.replace(FIELD_PREFIX, ''),
   }));
   return new ApiError({ status: error.status, code: error.code, message: error.message, details });
+}
+
+export function withTemplate(
+  templates: NotificationTemplate[],
+  index: number | null,
+  input: TemplateInput,
+): NotificationTemplate[] {
+  if (index === null) return [...templates, input];
+  return templates.map((template, position) =>
+    position === index ? { ...template, ...input } : template,
+  );
 }

@@ -6,6 +6,8 @@ export const BANNER_CTA_TEXT_MAX = 30;
 export const TEMPLATE_NAME_MAX = 60;
 export const TEMPLATE_TITLE_MAX = 120;
 export const TEMPLATE_CONTENT_MAX = 500;
+export const TEMPLATES_MAX = 50;
+export const DEFAULT_CATEGORIES_MAX = 50;
 
 const URL_MAX_LENGTH = 500;
 const GOAL_MAX = 1_000_000;
@@ -85,7 +87,7 @@ export const backImageSchema = z
   .mime(['image/png', 'image/jpeg', 'image/webp'], { error: 'Envie uma imagem PNG, JPG ou WEBP' })
   .max(IMAGE_MAX_BYTES, { error: IMAGE_SIZE_ERROR });
 
-export function imageErrorOf(schema: typeof bannerImageSchema, file: File): string | null {
+export function imageErrorOf(schema: z.ZodType<File>, file: File): string | null {
   return (
     schema
       .safeParse(file)

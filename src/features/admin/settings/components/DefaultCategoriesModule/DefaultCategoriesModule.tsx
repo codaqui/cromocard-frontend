@@ -13,6 +13,7 @@ import {
 } from '../../hooks/useDefaultCategoriesEditor';
 import type { Notify } from '../../hooks/useSettingsNotice';
 import { useDefaultCategories } from '../../settings.queries';
+import { DEFAULT_CATEGORIES_MAX } from '../../settings.schemas';
 import type { CategoryOption, DefaultCategory } from '../../settings.types';
 import { AddDefaultCategoryDialog } from '../AddDefaultCategoryDialog/AddDefaultCategoryDialog';
 import { ModuleActions } from '../ModuleActions/ModuleActions';
@@ -66,10 +67,18 @@ function CategoryList({ draft, notify }: { draft: Draft; notify: Notify }) {
   );
 }
 
-function ModuleLinks({ onAdd }: { onAdd: () => void }) {
+const CATEGORIES_LIMIT_HINT = `Limite de ${DEFAULT_CATEGORIES_MAX} categorias padrão: remova uma para adicionar outra.`;
+
+function ModuleLinks({ onAdd, isFull }: { onAdd: () => void; isFull: boolean }) {
   return (
     <div className={styles.links}>
-      <button type="button" className={styles.add} onClick={onAdd}>
+      <button
+        type="button"
+        className={styles.add}
+        disabled={isFull}
+        title={isFull ? CATEGORIES_LIMIT_HINT : undefined}
+        onClick={onAdd}
+      >
         <Icon name="add" size={16} />
         Adicionar categoria padrão
       </button>
@@ -89,7 +98,10 @@ function CategoryAdder({ draft }: { draft: Draft }) {
 
   return (
     <>
-      <ModuleLinks onAdd={() => setAdding(true)} />
+      <ModuleLinks
+        onAdd={() => setAdding(true)}
+        isFull={draft.draft.length >= DEFAULT_CATEGORIES_MAX}
+      />
       {isAdding && (
         <AddDefaultCategoryDialog
           excludedIds={draft.draft.map(({ id }) => id)}

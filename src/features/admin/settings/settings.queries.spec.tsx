@@ -3,8 +3,11 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { ApiError } from '@/lib/api-error';
+
 import { settingsApi } from './settings.api';
 import {
+  CATEGORY_OPTIONS_PAGE_SIZE,
   settingsKeys,
   useCategoryOptions,
   useDefaultCategories,
@@ -144,19 +147,49 @@ describe('categorias padrão', () => {
     await waitFor(() => expect(result.current.data).toEqual([POKEMON]));
   });
 
-  it('L9: só busca as franquias do catálogo quando o diálogo pede', async () => {
-    vi.mocked(settingsApi.listCategoryOptions).mockResolvedValue({ data: [], meta: {} } as never);
-    const { wrapper } = setup();
-    const { rerender } = renderHook(({ open }) => useCategoryOptions({ q: 'poke' }, open), {
-      wrapper,
-      initialProps: { open: false },
+  it('L9: busca as franquias de 100 em 100 e para na última página', async () => {
+    const page = (n: number) => ({
+      data: [],
+      meta: { page: n, pageSize: CATEGORY_OPTIONS_PAGE_SIZE, total: 150, totalPages: 2 },
     });
-    expect(settingsApi.listCategoryOptions).not.toHaveBeenCalled();
+    vi.mocked(settingsApi.listCategoryOptions)
+      .mockResolvedValueOnce(page(1))
+      .mockResolvedValueOnce(page(2));
+    const { wrapper } = setup();
+    const { result } = renderHook(() => useCategoryOptions('poke'), { wrapper });
 
-    rerender({ open: true });
+    await waitFor(() => expect(result.current.hasNextPage).toBe(true));
+    await act(() => result.current.fetchNextPage());
+
+    expect(settingsApi.listCategoryOptions).toHaveBeenLastCalledWith({
+      q: 'poke',
+      page: 2,
+      pageSize: CATEGORY_OPTIONS_PAGE_SIZE,
+    });
+    await waitFor(() => expect(result.current.hasNextPage).toBe(false));
+  });
+
+  it('CA4: categoria que sumiu (404) faz a lista de categorias padrão recarregar', async () => {
+    vi.mocked(settingsApi.listDefaultCategories).mockResolvedValue([POKEMON]);
+    vi.mocked(settingsApi.updateDefaultCategories).mockRejectedValue(
+      new ApiError({
+        status: 404,
+        code: 'CATEGORY_NOT_FOUND',
+        message: 'Categoria não encontrada',
+      }),
+    );
+    const { wrapper } = setup();
+    const { result } = renderHook(
+      () => ({ list: useDefaultCategories(), save: useUpdateDefaultCategories() }),
+      { wrapper },
+    );
+    await waitFor(() => expect(result.current.list.isSuccess).toBe(true));
+    const loads = vi.mocked(settingsApi.listDefaultCategories).mock.calls.length;
+
+    await act(() => result.current.save.mutateAsync([]).catch(() => undefined));
 
     await waitFor(() =>
-      expect(settingsApi.listCategoryOptions).toHaveBeenCalledWith({ q: 'poke' }),
+      expect(vi.mocked(settingsApi.listDefaultCategories).mock.calls.length).toBe(loads + 1),
     );
   });
 });

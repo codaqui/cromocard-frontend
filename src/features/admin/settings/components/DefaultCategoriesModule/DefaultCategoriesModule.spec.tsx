@@ -100,7 +100,11 @@ describe('DefaultCategoriesModule', () => {
     expect(within(picker).queryByText('Copa 2026')).not.toBeInTheDocument();
     await user.type(within(picker).getByRole('textbox', { name: 'Buscar franquia' }), 'fut');
     await waitFor(() =>
-      expect(settingsApi.listCategoryOptions).toHaveBeenLastCalledWith({ q: 'fut', pageSize: 100 }),
+      expect(settingsApi.listCategoryOptions).toHaveBeenLastCalledWith({
+        q: 'fut',
+        page: 1,
+        pageSize: 100,
+      }),
     );
   });
 
@@ -257,5 +261,57 @@ describe('DefaultCategoriesModule', () => {
     expect(
       await within(screen.getByRole('dialog')).findByText('Nenhuma franquia encontrada.'),
     ).toBeInTheDocument();
+  });
+  it('L9: Carregar mais traz a próxima página de franquias', async () => {
+    vi.mocked(settingsApi.listCategoryOptions)
+      .mockResolvedValueOnce({
+        data: [option('c-sub', 'Copa 2026', 'c-futebol')],
+        meta: { page: 1, pageSize: 100, total: 101, totalPages: 2 },
+      })
+      .mockResolvedValueOnce({
+        data: [option('c-onepiece', 'One Piece')],
+        meta: { page: 2, pageSize: 100, total: 101, totalPages: 2 },
+      });
+    const { user } = renderCategories();
+    await screen.findByText('Pokémon');
+
+    await user.click(screen.getByRole('button', { name: /Adicionar categoria padrão/ }));
+    const picker = screen.getByRole('dialog');
+    await user.click(await within(picker).findByRole('button', { name: 'Carregar mais' }));
+
+    expect(await within(picker).findByText('One Piece')).toBeInTheDocument();
+    expect(within(picker).queryByRole('button', { name: 'Carregar mais' })).not.toBeInTheDocument();
+  });
+
+  it('R10: com 50 categorias padrão, não deixa adicionar outra', async () => {
+    const fifty = Array.from({ length: 50 }, (_, index) => ({
+      id: `c-${index}`,
+      name: `Franquia ${index}`,
+      type: 'CARD' as const,
+      backImageUrl: null,
+    }));
+    vi.mocked(settingsApi.listDefaultCategories).mockResolvedValue(fifty);
+    renderCategories();
+
+    const add = await screen.findByRole('button', { name: /Adicionar categoria padrão/ });
+
+    expect(add).toBeDisabled();
+    expect(add).toHaveAttribute('title', expect.stringContaining('Limite de 50 categorias padrão'));
+  });
+  it('L9: Carregar mais fica desabilitado enquanto a página chega', async () => {
+    vi.mocked(settingsApi.listCategoryOptions)
+      .mockResolvedValueOnce({
+        data: [option('c-sub', 'Copa 2026', 'c-futebol')],
+        meta: { page: 1, pageSize: 100, total: 101, totalPages: 2 },
+      })
+      .mockReturnValueOnce(new Promise(() => undefined));
+    const { user } = renderCategories();
+    await screen.findByText('Pokémon');
+
+    await user.click(screen.getByRole('button', { name: /Adicionar categoria padrão/ }));
+    const picker = screen.getByRole('dialog');
+    await user.click(await within(picker).findByRole('button', { name: 'Carregar mais' }));
+
+    expect(await within(picker).findByRole('button', { name: 'Carregando…' })).toBeDisabled();
   });
 });

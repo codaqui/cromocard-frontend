@@ -1,8 +1,16 @@
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 
 import { settingsApi } from './settings.api';
 import { toGlobalSettings } from './settings.format';
 import type { ListCategoryOptionsParams, UploadFolder } from './settings.types';
+
+const HTTP_NOT_FOUND = 404;
 
 export const settingsKeys = {
   all: ['admin', 'settings'] as const,
@@ -27,12 +35,16 @@ export function useDefaultCategories() {
   });
 }
 
-export function useCategoryOptions(params: ListCategoryOptionsParams, enabled: boolean) {
-  return useQuery({
-    queryKey: settingsKeys.categoryOptions(params),
-    queryFn: () => settingsApi.listCategoryOptions(params),
+export const CATEGORY_OPTIONS_PAGE_SIZE = 100;
+
+export function useCategoryOptions(q: string | undefined) {
+  return useInfiniteQuery({
+    queryKey: settingsKeys.categoryOptions({ q }),
+    queryFn: ({ pageParam }) =>
+      settingsApi.listCategoryOptions({ q, page: pageParam, pageSize: CATEGORY_OPTIONS_PAGE_SIZE }),
+    initialPageParam: 1,
+    getNextPageParam: ({ meta }) => (meta.page < meta.totalPages ? meta.page + 1 : undefined),
     placeholderData: keepPreviousData,
-    enabled,
   });
 }
 
@@ -64,6 +76,10 @@ export function useUpdateDefaultCategories() {
     mutationFn: settingsApi.updateDefaultCategories,
     onSuccess: (categories) =>
       queryClient.setQueryData(settingsKeys.defaultCategories(), categories),
+    onError: (error) => {
+      if (error.status !== HTTP_NOT_FOUND) return;
+      void queryClient.invalidateQueries({ queryKey: settingsKeys.defaultCategories() });
+    },
   });
 }
 

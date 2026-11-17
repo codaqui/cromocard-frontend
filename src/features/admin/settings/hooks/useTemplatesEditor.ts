@@ -2,20 +2,10 @@ import { useState } from 'react';
 
 import { notifyFailure, type Notify } from './useSettingsNotice';
 import { type SettingsNotice, settingsNotices } from '../settings.labels';
+import { withTemplate } from '../settings.format';
 import { useUpdateTemplates } from '../settings.queries';
 import type { TemplateInput } from '../settings.schemas';
 import type { NotificationTemplate } from '../settings.types';
-
-export function withTemplate(
-  templates: NotificationTemplate[],
-  index: number | null,
-  input: TemplateInput,
-): NotificationTemplate[] {
-  if (index === null) return [...templates, input];
-  return templates.map((template, position) =>
-    position === index ? { ...template, ...input } : template,
-  );
-}
 
 type Persist = (
   templates: NotificationTemplate[],

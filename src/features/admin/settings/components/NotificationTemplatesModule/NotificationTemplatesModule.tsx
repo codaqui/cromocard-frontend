@@ -5,6 +5,7 @@ import { Icon } from '@/components/Icon/Icon';
 import type { Notify } from '../../hooks/useSettingsNotice';
 import { useTemplatesEditor } from '../../hooks/useTemplatesEditor';
 import { templateSummary } from '../../settings.format';
+import { TEMPLATES_MAX } from '../../settings.schemas';
 import type { NotificationTemplate } from '../../settings.types';
 import { SettingsModule } from '../SettingsModule/SettingsModule';
 import { TemplateDialog } from '../TemplateDialog/TemplateDialog';
@@ -57,6 +58,8 @@ function TemplateRow(props: TemplateRowProps) {
     </li>
   );
 }
+
+const TEMPLATES_LIMIT_HINT = `Limite de ${TEMPLATES_MAX} templates: exclua um para criar outro.`;
 
 const EMPTY_MESSAGE = 'Nenhum template cadastrado. Use “Novo template” para criar o primeiro.';
 
@@ -116,24 +119,29 @@ interface NotificationTemplatesModuleProps {
   notify: Notify;
 }
 
+function NewTemplateButton({ count, onClick }: { count: number; onClick: () => void }) {
+  const isFull = count >= TEMPLATES_MAX;
+
+  return (
+    <Button disabled={isFull} title={isFull ? TEMPLATES_LIMIT_HINT : undefined} onClick={onClick}>
+      <Icon name="save" size={16} />
+      Novo template
+    </Button>
+  );
+}
+
 export function NotificationTemplatesModule({
   templates,
   notify,
 }: NotificationTemplatesModuleProps) {
   const editor = useTemplatesEditor(templates, notify);
-  const newButton = (
-    <Button onClick={editor.openNew}>
-      <Icon name="save" size={16} />
-      Novo template
-    </Button>
-  );
 
   return (
     <SettingsModule
       icon="sort"
       title="Módulo 3: Templates de notificação"
       subtitle="Modelos de título e texto que a tela de Notificação Global oferece para preencher."
-      actions={newButton}
+      actions={<NewTemplateButton count={templates.length} onClick={editor.openNew} />}
     >
       <TemplateList templates={templates} editor={editor} />
       <EditingDialog templates={templates} editor={editor} />

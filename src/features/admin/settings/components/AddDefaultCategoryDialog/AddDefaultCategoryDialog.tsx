@@ -11,7 +11,6 @@ import type { CategoryOption } from '../../settings.types';
 import styles from './AddDefaultCategoryDialog.module.css';
 
 const SEARCH_DELAY_MS = 300;
-const OPTIONS_PAGE_SIZE = 100;
 
 interface AddDefaultCategoryDialogProps {
   excludedIds: string[];
@@ -21,11 +20,28 @@ interface AddDefaultCategoryDialogProps {
 
 function useFranchiseOptions(term: string, excludedIds: string[]) {
   const q = useDebounce(term.trim(), SEARCH_DELAY_MS);
-  const query = useCategoryOptions({ q: q || undefined, pageSize: OPTIONS_PAGE_SIZE }, true);
-  const options = (query.data?.data ?? []).filter(
-    ({ id, parentCategoryId }) => parentCategoryId === null && !excludedIds.includes(id),
+  const query = useCategoryOptions(q || undefined);
+  const options = (query.data?.pages ?? [])
+    .flatMap(({ data }) => data)
+    .filter(({ id, parentCategoryId }) => parentCategoryId === null && !excludedIds.includes(id));
+  return { options, query };
+}
+
+type OptionsQuery = ReturnType<typeof useCategoryOptions>;
+
+function LoadMoreButton({ query }: { query: OptionsQuery }) {
+  if (!query.hasNextPage) return null;
+
+  return (
+    <Button
+      variant="secondary"
+      className={styles.loadMore}
+      disabled={query.isFetchingNextPage}
+      onClick={() => void query.fetchNextPage()}
+    >
+      {query.isFetchingNextPage ? 'Carregando…' : 'Carregar mais'}
+    </Button>
   );
-  return { options, isPending: query.isPending, error: query.error };
 }
 
 interface OptionListProps {
@@ -59,23 +75,28 @@ function FranchiseResults({
   excludedIds,
   onAdd,
 }: { term: string } & Omit<AddDefaultCategoryDialogProps, 'onClose'>) {
-  const { options, isPending, error } = useFranchiseOptions(term, excludedIds);
-  if (error) {
+  const { options, query } = useFranchiseOptions(term, excludedIds);
+  if (query.error) {
     return (
       <p className={styles.error} role="alert">
-        {error.message}
+        {query.error.message}
       </p>
     );
   }
-  if (isPending) return <LoadingState message="Buscando franquias…" />;
-  return <OptionList options={options} onAdd={onAdd} />;
+  if (query.isPending) return <LoadingState message="Buscando franquias…" />;
+  return (
+    <>
+      <OptionList options={options} onAdd={onAdd} />
+      <LoadMoreButton query={query} />
+    </>
+  );
 }
 
 export function AddDefaultCategoryDialog({ onClose, ...results }: AddDefaultCategoryDialogProps) {
   const [term, setTerm] = useState('');
 
   return (
-    <Modal open title="Adicionar categoria padrão" icon="add" onClose={onClose}>
+    <Modal open title="Adicionar categoria padrão" onClose={onClose}>
       <p className={styles.subtitle}>
         Só franquias, categorias sem categoria pai, podem ser padrão.
       </p>
