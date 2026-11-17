@@ -1,6 +1,6 @@
 import { isValidCpf, normalizeCpf } from '@/lib/cpf';
 import { isValidPhone, normalizePhone } from '@/lib/phone';
-import { reasonSchema } from '@/lib/reason';
+import { reasonSchema, warningReasonSchema } from '@/lib/reason';
 import { z } from '@/lib/zod';
 import { USER_ROLES } from '@/types/authenticated-user';
 
@@ -78,12 +78,13 @@ export const reasonBodySchema = z.object({
 
 const suspensionDaysSchema = z.union(SUSPENSION_DAY_OPTIONS.map((days) => z.literal(days)));
 
-export const warnUserSchema = reasonBodySchema.extend({
+export const warnUserSchema = z.object({
+  reason: warningReasonSchema,
   reportId: z.uuid().optional(),
 });
 
 export const suspendUserSchema = reasonBodySchema.extend({
-  days: suspensionDaysSchema.optional(),
+  days: suspensionDaysSchema,
 });
 
 export const blockUserSchema = reasonBodySchema;

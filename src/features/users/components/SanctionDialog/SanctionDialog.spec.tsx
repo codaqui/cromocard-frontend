@@ -78,6 +78,29 @@ describe('SanctionDialog', () => {
     await vi.waitFor(() => expect(onSaved).toHaveBeenCalledWith('warn'));
   });
 
+  it('R3: a justificativa da advertência aceita até 255 caracteres, as demais até 500', async () => {
+    renderDialog(buildTarget());
+    const reason = screen.getByLabelText('Justificativa (obrigatória)');
+
+    expect(reason).toHaveAttribute('maxLength', '500');
+    await userEvent.click(screen.getByRole('radio', { name: /Advertir/ }));
+    expect(reason).toHaveAttribute('maxLength', '255');
+  });
+
+  it('R3: trocar para Advertir com uma justificativa longa avisa o limite e não chama a API', async () => {
+    renderDialog(buildTarget());
+
+    await userEvent.click(screen.getByLabelText('Justificativa (obrigatória)'));
+    await userEvent.paste('a'.repeat(300));
+    await userEvent.click(screen.getByRole('radio', { name: /Advertir/ }));
+    await userEvent.click(screen.getByRole('button', { name: 'Aplicar sanção' }));
+
+    expect(
+      await screen.findByText('A justificativa da advertência pode ter no máximo 255 caracteres'),
+    ).toBeInTheDocument();
+    expect(usersApi.warn).not.toHaveBeenCalled();
+  });
+
   it('CA2: suspende o usuário com o prazo escolhido', async () => {
     const target = buildTarget();
     vi.mocked(usersApi.suspend).mockResolvedValue({
@@ -138,6 +161,23 @@ describe('SanctionDialog', () => {
       }),
     );
     await vi.waitFor(() => expect(onSaved).toHaveBeenCalledWith('block'));
+  });
+
+  it('o erro de uma tentativa anterior some ao aplicar outra sanção', async () => {
+    vi.mocked(usersApi.warn).mockRejectedValue(new Error('Falha ao advertir'));
+    vi.mocked(usersApi.suspend).mockReturnValue(new Promise(() => undefined));
+    renderDialog(buildTarget());
+
+    await userEvent.click(screen.getByRole('radio', { name: /Advertir/ }));
+    await typeReason('Linguagem ofensiva no chat do grupo');
+    await userEvent.click(screen.getByRole('button', { name: 'Aplicar sanção' }));
+    expect(await screen.findByText('Falha ao advertir')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('radio', { name: /Suspender/ }));
+    await userEvent.click(screen.getByRole('button', { name: 'Aplicar sanção' }));
+
+    await vi.waitFor(() => expect(usersApi.suspend).toHaveBeenCalled());
+    expect(screen.queryByText('Falha ao advertir')).not.toBeInTheDocument();
   });
 
   it('esconde o seletor de prazo fora da opção Suspender', async () => {

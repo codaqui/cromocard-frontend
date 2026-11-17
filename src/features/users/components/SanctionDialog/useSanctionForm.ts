@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import type { FormEvent } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { reasonSchema } from '@/lib/reason';
+import { reasonSchema, WARNING_REASON_MAX_LENGTH } from '@/lib/reason';
 import { z } from '@/lib/zod';
 
 import type { SanctionType } from '../../users.labels';
@@ -11,11 +11,16 @@ import { SUSPENSION_DAY_OPTIONS } from '../../users.types';
 const sanctionTypeSchema = z.enum(['WARN', 'SUSPEND', 'BLOCK']);
 const suspensionDaysSchema = z.union(SUSPENSION_DAY_OPTIONS.map((days) => z.literal(days)));
 
-const sanctionSchema = z.object({
-  type: sanctionTypeSchema,
-  days: suspensionDaysSchema,
-  reason: reasonSchema,
-});
+const sanctionSchema = z
+  .object({
+    type: sanctionTypeSchema,
+    days: suspensionDaysSchema,
+    reason: reasonSchema,
+  })
+  .refine(({ type, reason }) => type !== 'WARN' || reason.length <= WARNING_REASON_MAX_LENGTH, {
+    path: ['reason'],
+    error: `A justificativa da advertência pode ter no máximo ${WARNING_REASON_MAX_LENGTH} caracteres`,
+  });
 
 export type SanctionFormValues = z.infer<typeof sanctionSchema>;
 

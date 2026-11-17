@@ -1,7 +1,7 @@
 import { Button } from '@/components/Button/Button';
 import { Modal } from '@/components/Modal/Modal';
 import { Textarea } from '@/components/Textarea/Textarea';
-import { REASON_MAX_LENGTH } from '@/lib/reason';
+import { REASON_MAX_LENGTH, WARNING_REASON_MAX_LENGTH } from '@/lib/reason';
 import { cn } from '@/utils/cn';
 
 import { sanctionLabels, type SanctionType, warningsLabel } from '../../users.labels';
@@ -40,6 +40,7 @@ function useSubmitSanction(target: SanctionTarget, onSaved: (kind: SanctionSaved
 
   const submit = ({ type, days, reason }: SanctionFormValues) => {
     const { id, reportId } = target;
+    [warn, suspend, block].forEach((mutation) => mutation.reset());
     if (type === 'WARN') {
       warn.mutate({ id, input: { reason, reportId } }, { onSuccess: () => onSaved('warn') });
     } else if (type === 'SUSPEND') {
@@ -180,7 +181,7 @@ function SanctionDialogFields({
       {form.type === 'SUSPEND' && <SuspensionDays days={form.days} onSelect={form.setDays} />}
       <Textarea
         label="Justificativa (obrigatória)"
-        maxLength={REASON_MAX_LENGTH}
+        maxLength={form.type === 'WARN' ? WARNING_REASON_MAX_LENGTH : REASON_MAX_LENGTH}
         error={form.errors.reason?.message}
         {...form.register('reason')}
       />
