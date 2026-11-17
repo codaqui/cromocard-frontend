@@ -269,16 +269,24 @@
   font-weight: 700;
 }
 
+/* Na imagem, nome e selo ficam numa linha e cortam com reticências nas telas estreitas. */
+.cover figcaption > span {
+  overflow: hidden;
+  min-width: 0;
+  border-radius: var(--radius-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .cover figcaption > span:first-child {
   padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-xs);
   background: var(--color-surface-shade);
-  overflow-wrap: anywhere;
 }
 
 .coverTag {
+  flex: none;
+  max-width: 50%;
   padding: 0 var(--space-2);
-  border-radius: var(--radius-xs);
   background: var(--color-warning);
   color: var(--color-surface-sunken);
 }
