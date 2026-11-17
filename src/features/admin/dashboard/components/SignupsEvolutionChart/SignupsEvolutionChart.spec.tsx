@@ -58,7 +58,7 @@ describe('SignupsEvolutionChart', () => {
     expect(screen.getByText('Novos cadastros por dia nos últimos 7 dias.')).toBeInTheDocument();
     expect(screen.getByText('Colecionadores (+1.084)')).toBeInTheDocument();
     expect(screen.getByText('Lojistas (+36)')).toBeInTheDocument();
-    expect(screen.getAllByRole('button')).toHaveLength(7);
+    expect(screen.getAllByRole('img')).toHaveLength(7);
     expect(screen.getByText('Qui (05/11)')).toBeInTheDocument();
     expect(screen.getByText('Qua (Hoje)')).toBeInTheDocument();
   });
@@ -67,7 +67,7 @@ describe('SignupsEvolutionChart', () => {
     renderChart(evolutionOf('day', week), { preset: '7d' });
 
     await userEvent.hover(
-      screen.getByRole('button', {
+      screen.getByRole('img', {
         name: 'Ter (10/11): 212 novos cadastros e 8 lojistas certificados',
       }),
     );
@@ -77,7 +77,7 @@ describe('SignupsEvolutionChart', () => {
     expect(tooltip).toHaveTextContent('212 novos cadastros');
     expect(tooltip).toHaveTextContent('8 lojistas certificados');
 
-    await userEvent.unhover(screen.getByRole('button', { name: /^Ter \(10\/11\)/ }));
+    await userEvent.unhover(screen.getByRole('img', { name: /^Ter \(10\/11\)/ }));
     expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
   });
 
@@ -152,6 +152,6 @@ describe('SignupsEvolutionChart', () => {
 
     expect(screen.getByText('Não há cadastros no período.')).toBeInTheDocument();
     expect(screen.getByText('Colecionadores (+0)')).toBeInTheDocument();
-    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: 'Pontos do gráfico' })).not.toBeInTheDocument();
   });
 });

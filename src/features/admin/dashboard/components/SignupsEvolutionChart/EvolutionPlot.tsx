@@ -98,7 +98,7 @@ function HoverBands({ points, bucket, onSelect }: HoverBandsProps) {
       height={CHART_HEIGHT}
       className={styles.band}
       tabIndex={0}
-      role="button"
+      role="img"
       aria-label={pointSummary(point, bucket)}
       onMouseEnter={() => onSelect(index)}
       onFocus={() => onSelect(index)}
@@ -137,7 +137,12 @@ export function EvolutionPlot({ points, bucket }: EvolutionPlotProps) {
 
   return (
     <div className={styles.plot}>
-      <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} className={styles.svg}>
+      <svg
+        role="group"
+        aria-label="Pontos do gráfico"
+        viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
+        className={styles.svg}
+      >
         <Gradient id={fillId} />
         <GridLines />
         <Series points={collectors} tone="collectors" fillId={fillId} />
