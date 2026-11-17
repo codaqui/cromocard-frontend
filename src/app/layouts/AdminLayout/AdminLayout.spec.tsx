@@ -28,7 +28,6 @@ const routes = [
 
 const underConstructionModules = [
   { label: 'Notificação', story: 'CCD060' },
-  { label: 'Relatórios', story: 'CCD063' },
   { label: 'Solicitações', story: 'CCD064' },
 ];
 
@@ -93,6 +92,21 @@ describe('AdminLayout', () => {
       await screen.findByRole('heading', { level: 1, name: 'Configurações Globais' }),
     ).toBeInTheDocument();
     expect(within(menu).getByRole('link', { name: 'Configurações' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+  });
+
+  it('navega para Exportar Relatórios', async () => {
+    renderBackoffice();
+    const menu = await screen.findByRole('navigation', { name: 'Módulos oficiais' });
+
+    await userEvent.click(within(menu).getByRole('link', { name: 'Relatórios' }));
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Exportar Relatórios' }),
+    ).toBeInTheDocument();
+    expect(within(menu).getByRole('link', { name: 'Relatórios' })).toHaveAttribute(
       'aria-current',
       'page',
     );
