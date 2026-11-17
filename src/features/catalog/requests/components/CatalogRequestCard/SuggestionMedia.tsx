@@ -54,14 +54,15 @@ function SuggestedImage({ title, url, name, tag, children }: SuggestedImageProps
   );
 }
 
-function AlbumCover({ request: { data, checklistSummary } }: { request: CatalogRequest }) {
+function AlbumCover({ request }: { request: CatalogRequest }) {
+  const { data, checklistSummary } = request;
   if (!data.coverImageUrl) return null;
   const tag = [data.publisher, data.year].filter(Boolean).join(' ').toUpperCase();
   return (
     <SuggestedImage
       title="Capa sugerida"
       url={data.coverImageUrl}
-      name={data.title ?? ''}
+      name={itemNameOf(request)}
       tag={tag || undefined}
     >
       {checklistSummary && (
@@ -77,13 +78,14 @@ function AlbumCover({ request: { data, checklistSummary } }: { request: CatalogR
   );
 }
 
-function CategoryLogo({ request: { data } }: { request: CatalogRequest }) {
+function CategoryLogo({ request }: { request: CatalogRequest }) {
+  const { data } = request;
   if (!data.logoUrl) return null;
   return (
     <SuggestedImage
       title="Logo enviado"
       url={data.logoUrl}
-      name={data.name ?? ''}
+      name={itemNameOf(request)}
       tag={data.publisher?.toUpperCase()}
     />
   );

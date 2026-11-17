@@ -441,6 +441,30 @@ describe('CatalogRequestsPage', () => {
       expect(categoryItem).toHaveTextContent('RAVENSBURGER');
     });
 
+    it('CA11: capa sem editora nem ano e logo sem editora aparecem sem o selo; carta sem imagens não tem a coluna', async () => {
+      const bareAlbum = {
+        ...fullAlbum,
+        data: { ...fullAlbum.data, publisher: undefined, year: undefined },
+      };
+      const bareCategory = {
+        ...fullCategory,
+        data: { ...fullCategory.data, publisher: undefined },
+      };
+      const noImages = { ...card, data: { name: 'Mewtwo', number: '010' } };
+      vi.mocked(catalogRequestsApi.list).mockResolvedValue(
+        pageOf([noImages, bareAlbum, bareCategory]),
+      );
+      renderPage();
+
+      const albumItem = await cardOf(/One Piece/);
+      expect(within(albumItem).getByRole('img', { name: /Capa sugerida/ })).toBeInTheDocument();
+      expect(albumItem).not.toHaveTextContent('BANDAI');
+      expect(screen.getByRole('article', { name: /Disney/ })).not.toHaveTextContent('RAVENSBURGER');
+      expect(screen.getByRole('article', { name: /Mewtwo/ })).not.toHaveTextContent(
+        'Imagens enviadas',
+      );
+    });
+
     it('CA11: sem imagem, a capa e o logo não aparecem', async () => {
       vi.mocked(catalogRequestsApi.list).mockResolvedValue(pageOf([album, category]));
       renderPage();

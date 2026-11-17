@@ -178,6 +178,18 @@ describe('CommunitySuggestionsPage', () => {
     expect(await screen.findByText('Sem conexão com o servidor')).toBeInTheDocument();
   });
 
+  it('enquanto o voto é enviado, os botões daquela sugestão ficam desabilitados', async () => {
+    const user = userEvent.setup();
+    vi.mocked(catalogRequestVotesApi.vote).mockReturnValue(new Promise(() => undefined));
+    renderPage();
+    const card = await cardOf(/Gundam/);
+
+    await user.click(voteButton(card, 'A favor'));
+
+    expect(voteButton(card, 'Contra')).toBeDisabled();
+    expect(voteButton(await cardOf(/Disney Lorcana/), 'Contra')).toBeEnabled();
+  });
+
   it('CA9: sem sugestões pendentes mostra "Nenhuma sugestão em votação"', async () => {
     vi.mocked(catalogRequestVotesApi.list).mockResolvedValue(pageOf([]));
 
