@@ -1,3 +1,5 @@
+import { slugify } from '@/lib/slug';
+
 import type { CategoryOption, DefaultCategory } from '../settings.types';
 
 export function defaultCategory(
@@ -9,7 +11,7 @@ export function defaultCategory(
     id,
     name,
     type: 'CARD',
-    slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+    slug: slugify(name),
     badge: null,
     isPinned: false,
     displayOrder: 0,
@@ -28,7 +30,7 @@ export function categoryOption(
     id,
     name,
     type: 'CARD',
-    slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+    slug: slugify(name),
     badge: null,
     cardsCount: 0,
     parentCategoryId,

@@ -4,6 +4,7 @@ import type { Notify } from './useSettingsNotice';
 import { errorNotice, imageFailureNotice, settingsNotices } from '../settings.labels';
 import { useUpdateDefaultCategories, useUploadSettingImage } from '../settings.queries';
 import { backImageSchema, imageErrorOf } from '../settings.schemas';
+import { moveCategory, togglePinned } from '../settings.order';
 import type { CategoryOption, DefaultCategory } from '../settings.types';
 
 function draftOf(
@@ -21,6 +22,12 @@ export function useDefaultCategoriesDraft(initial: DefaultCategory[]) {
     draft,
     add: (option: CategoryOption) =>
       setDraft((current) => [...current, draftOf(option, current.length)]),
+    moveTo: (from: number, to: number) => setDraft((current) => moveCategory(current, from, to)),
+    moveUp: (position: number) =>
+      setDraft((current) => moveCategory(current, position, position - 1)),
+    moveDown: (position: number) =>
+      setDraft((current) => moveCategory(current, position, position + 1)),
+    togglePin: (id: string) => setDraft((current) => togglePinned(current, id)),
     remove: (id: string) => setDraft((current) => current.filter((category) => category.id !== id)),
     setBack: (id: string, backImageUrl: string) =>
       setDraft((current) =>

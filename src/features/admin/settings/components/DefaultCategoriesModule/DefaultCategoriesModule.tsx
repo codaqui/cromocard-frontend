@@ -20,7 +20,7 @@ import { AddDefaultCategoryDialog } from '../AddDefaultCategoryDialog/AddDefault
 import { ModuleActions } from '../ModuleActions/ModuleActions';
 import { SettingsModule } from '../SettingsModule/SettingsModule';
 import styles from './DefaultCategoriesModule.module.css';
-import { DefaultCategoryRow } from '../DefaultCategoryRow/DefaultCategoryRow';
+import { DefaultCategoryRow, type RowDrag } from '../DefaultCategoryRow/DefaultCategoryRow';
 
 function DefaultCategoriesShell({
   actions,
@@ -43,28 +43,61 @@ function DefaultCategoriesShell({
 
 type Draft = ReturnType<typeof useDefaultCategoriesDraft>;
 
-function CategoryList({ draft, notify }: { draft: Draft; notify: Notify }) {
+function useRowDrag(draft: Draft) {
+  const [dragFrom, setDragFrom] = useState<number | null>(null);
+
+  return (position: number): RowDrag => ({
+    isDragging: dragFrom === position,
+    onStart: () => setDragFrom(position),
+    onOver: (event) => event.preventDefault(),
+    onDrop: () => {
+      if (dragFrom !== null) draft.moveTo(dragFrom, position);
+      setDragFrom(null);
+    },
+    onEnd: () => setDragFrom(null),
+  });
+}
+
+function rowActionsOf(draft: Draft, position: number) {
+  return {
+    onMoveUp: () => draft.moveUp(position),
+    onMoveDown: () => draft.moveDown(position),
+    onTogglePin: () => draft.togglePin(draft.draft[position]?.id ?? ''),
+    onRemove: () => draft.remove(draft.draft[position]?.id ?? ''),
+  };
+}
+
+function CategoryRows({ draft, notify }: { draft: Draft; notify: Notify }) {
   const back = useBackImageUpload(draft.setBack, notify);
-  if (draft.draft.length === 0) {
-    return (
-      <p className={styles.empty}>
-        Nenhuma categoria padrão. Adicione as franquias que aparecem primeiro na plataforma.
-      </p>
-    );
-  }
+  const dragOf = useRowDrag(draft);
+  const last = draft.draft.length - 1;
 
   return (
     <ul className={styles.list}>
-      {draft.draft.map((category) => (
+      {draft.draft.map((category, position) => (
         <DefaultCategoryRow
           key={category.id}
           category={category}
+          position={position + 1}
+          isFirst={position === 0}
+          isLast={position === last}
+          drag={dragOf(position)}
           isUploading={back.uploadingId === category.id}
           onChoose={(file) => back.choose(category.id, file)}
-          onRemove={() => draft.remove(category.id)}
+          {...rowActionsOf(draft, position)}
         />
       ))}
     </ul>
+  );
+}
+
+function CategoryList({ draft, notify }: { draft: Draft; notify: Notify }) {
+  if (draft.draft.length > 0) return <CategoryRows draft={draft} notify={notify} />;
+
+  return (
+    <p className={styles.empty}>
+      Nenhuma categoria padrão. Adicione as franquias que aparecem primeiro na plataforma.
+    </p>
   );
 }
 
@@ -122,7 +155,7 @@ interface DefaultCategoriesEditorProps {
 function DefaultCategoriesEditor({ categories, notify }: DefaultCategoriesEditorProps) {
   const draft = useDefaultCategoriesDraft(categories);
   const { save, isSaving } = useSaveDefaultCategories(notify);
-  const actions = { saveLabel: 'Salvar categorias', isSaving, onCancel: draft.reset };
+  const actions = { saveLabel: 'Salvar ordem', isSaving, onCancel: draft.reset };
 
   return (
     <DefaultCategoriesShell

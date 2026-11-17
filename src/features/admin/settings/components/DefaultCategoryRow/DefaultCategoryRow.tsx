@@ -1,6 +1,8 @@
-import { type ChangeEvent, useId } from 'react';
+import { type ChangeEvent, type DragEvent, useId } from 'react';
 
 import { Icon } from '@/components/Icon/Icon';
+import type { IconName } from '@/components/Icon/icon-paths';
+import { categoryBadgeLabels } from '@/features/catalog';
 
 import type { DefaultCategory } from '../../settings.types';
 import styles from './DefaultCategoryRow.module.css';
@@ -72,22 +74,133 @@ function BackImagePicker({ category, isUploading, onChoose }: BackImagePickerPro
   );
 }
 
+export interface RowDrag {
+  isDragging: boolean;
+  onStart: () => void;
+  onOver: (event: DragEvent<HTMLElement>) => void;
+  onDrop: () => void;
+  onEnd: () => void;
+}
+
 interface DefaultCategoryRowProps extends BackImagePickerProps {
+  position: number;
+  isFirst: boolean;
+  isLast: boolean;
+  drag: RowDrag;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  onTogglePin: () => void;
   onRemove: () => void;
 }
 
-export function DefaultCategoryRow({ onRemove, ...picker }: DefaultCategoryRowProps) {
-  const { name } = picker.category;
+function cardsLabelOf(count: number): string {
+  return `${count.toLocaleString('pt-BR')} ${count === 1 ? 'carta' : 'cartas'}`;
+}
+
+function CategoryIdentity({ category }: { category: DefaultCategory }) {
+  const { name, slug, badge, isPinned, cardsCount } = category;
 
   return (
-    <li className={styles.row}>
-      <p className={styles.name}>{name}</p>
+    <div className={styles.identity}>
+      <p className={styles.nameLine}>
+        <span className={styles.name}>{name}</span>
+        {isPinned && <span className={styles.pinnedBadge}>Fixado no topo</span>}
+        {badge && <span className={styles.badge}>{categoryBadgeLabels[badge]}</span>}
+      </p>
+      <p className={styles.meta}>
+        Slug: /{slug} • {cardsLabelOf(cardsCount)}
+      </p>
+    </div>
+  );
+}
+
+function RowHandle({ name, position, drag }: { name: string; position: number; drag: RowDrag }) {
+  return (
+    <>
+      <span
+        role="img"
+        aria-label={`Arrastar ${name}`}
+        className={styles.handle}
+        draggable
+        onDragStart={drag.onStart}
+        onDragEnd={drag.onEnd}
+      >
+        <Icon name="dragIndicator" size={20} />
+      </span>
+      <span className={styles.position} aria-hidden="true">
+        {position}
+      </span>
+    </>
+  );
+}
+
+interface IconControlProps {
+  icon: IconName;
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+  pressed?: boolean;
+}
+
+function IconControl({ icon, label, onClick, disabled, pressed }: IconControlProps) {
+  const active = pressed ? styles.pinned : styles.control;
+
+  return (
+    <button
+      type="button"
+      className={active}
+      aria-label={label}
+      aria-pressed={pressed}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      <Icon name={icon} size={18} />
+    </button>
+  );
+}
+
+function OrderControls(props: DefaultCategoryRowProps) {
+  const { name, isPinned } = props.category;
+
+  return (
+    <div className={styles.order}>
+      <IconControl
+        icon="pushPin"
+        label={isPinned ? `Desafixar ${name} do topo` : `Fixar ${name} no topo`}
+        pressed={isPinned}
+        onClick={props.onTogglePin}
+      />
+      <IconControl
+        icon="arrowUpward"
+        label={`Mover ${name} para cima`}
+        disabled={props.isFirst}
+        onClick={props.onMoveUp}
+      />
+      <IconControl
+        icon="arrowDownward"
+        label={`Mover ${name} para baixo`}
+        disabled={props.isLast}
+        onClick={props.onMoveDown}
+      />
+    </div>
+  );
+}
+
+export function DefaultCategoryRow(props: DefaultCategoryRowProps) {
+  const { category, position, drag, onRemove, isUploading, onChoose } = props;
+  const className = drag.isDragging ? `${styles.row} ${styles.dragging}` : styles.row;
+
+  return (
+    <li className={className} onDragOver={drag.onOver} onDrop={drag.onDrop}>
+      <RowHandle name={category.name} position={position} drag={drag} />
+      <CategoryIdentity category={category} />
       <div className={styles.rowActions}>
-        <BackImagePicker {...picker} />
+        <BackImagePicker category={category} isUploading={isUploading} onChoose={onChoose} />
+        <OrderControls {...props} />
         <button
           type="button"
           className={styles.remove}
-          aria-label={`Remover ${name} das categorias padrão`}
+          aria-label={`Remover ${category.name} das categorias padrão`}
           onClick={onRemove}
         >
           <Icon name="delete" size={18} />

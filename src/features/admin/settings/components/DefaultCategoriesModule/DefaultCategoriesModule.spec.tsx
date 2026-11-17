@@ -30,7 +30,7 @@ function renderCategories() {
   return { notify, user: userEvent.setup() };
 }
 
-const saveButton = () => screen.getByRole('button', { name: /Salvar categorias/ });
+const saveButton = () => screen.getByRole('button', { name: /Salvar ordem/ });
 
 beforeEach(() => {
   vi.mocked(settingsApi.listDefaultCategories).mockReset().mockResolvedValue([POKEMON, MAGIC]);
