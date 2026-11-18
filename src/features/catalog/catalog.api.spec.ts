@@ -45,6 +45,7 @@ const categoryInput: CategoryInput = {
   type: 'ALBUM',
   parentCategoryId: null,
   description: null,
+  badge: null,
 };
 
 function callsOf(method: keyof typeof api) {

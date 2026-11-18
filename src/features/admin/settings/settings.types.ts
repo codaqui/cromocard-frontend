@@ -1,3 +1,4 @@
+import type { CategoryBadge } from '@/features/catalog';
 import type { PaginationParams } from '@/types/api';
 
 export const SETTING_KEYS = {
@@ -34,12 +35,18 @@ export interface DefaultCategory {
   id: string;
   name: string;
   type: CategoryType;
+  slug: string | null;
+  badge: CategoryBadge | null;
+  isPinned: boolean;
+  displayOrder: number;
+  cardsCount: number;
   backImageUrl: string | null;
 }
 
 export interface DefaultCategoryInput {
   id: string;
   backImageUrl: string | null;
+  isPinned: boolean;
 }
 
 export interface SettingView {
@@ -60,6 +67,9 @@ export interface CategoryOption {
   id: string;
   name: string;
   type: CategoryType;
+  slug: string | null;
+  badge: CategoryBadge | null;
+  cardsCount: number;
   parentCategoryId: string | null;
 }
 

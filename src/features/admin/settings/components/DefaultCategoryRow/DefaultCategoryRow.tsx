@@ -1,93 +1,118 @@
-import { type ChangeEvent, useId } from 'react';
+import type { DragEvent } from 'react';
 
 import { Icon } from '@/components/Icon/Icon';
+import { type CategoryBadge, categoryBadgeLabels } from '@/features/catalog';
 
 import type { DefaultCategory } from '../../settings.types';
+import { BackImagePicker, type BackImagePickerProps } from '../BackImagePicker/BackImagePicker';
+import {
+  CategoryOrderControls,
+  type CategoryOrderControlsProps,
+} from '../CategoryOrderControls/CategoryOrderControls';
 import styles from './DefaultCategoryRow.module.css';
 
-interface BackImagePickerProps {
-  category: DefaultCategory;
-  isUploading: boolean;
-  onChoose: (file: File) => void;
+export interface RowDrag {
+  isDragging: boolean;
+  isDropTarget: boolean;
+  onStart: (event: DragEvent<HTMLElement>) => void;
+  onOver: (event: DragEvent<HTMLElement>) => void;
+  onLeave: () => void;
+  onDrop: () => void;
+  onEnd: () => void;
 }
 
-function backActionOf({ backImageUrl }: DefaultCategory, isUploading: boolean): string {
-  if (isUploading) return 'Enviando…';
-  return backImageUrl ? 'Trocar verso' : 'Enviar verso';
+interface DefaultCategoryRowProps extends BackImagePickerProps {
+  position: number;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
+  drag: RowDrag;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  onTogglePin: () => void;
+  onRemove: () => void;
 }
 
-function BackThumb({ url }: { url: string | null }) {
-  if (url) return <img className={styles.backThumb} src={url} alt="" />;
-  return <span className={styles.backEmpty} aria-hidden="true" />;
+const badgeClasses: Record<CategoryBadge, string | undefined> = {
+  STANDARD: styles.standard,
+  TRENDING: styles.trending,
+};
+
+function cardsLabelOf(count: number): string {
+  return `${count.toLocaleString('pt-BR')} ${count === 1 ? 'carta' : 'cartas'}`;
 }
 
-function chosenFile(event: ChangeEvent<HTMLInputElement>): File | undefined {
-  const file = event.target.files?.[0];
-  event.target.value = '';
-  return file;
-}
+function CategoryIdentity({ category }: { category: DefaultCategory }) {
+  const { name, slug, badge, isPinned, cardsCount } = category;
 
-interface BackFileInputProps {
-  inputId: string;
-  label: string;
-  disabled: boolean;
-  onChoose: (file: File) => void;
-}
-
-function BackFileInput({ inputId, label, disabled, onChoose }: BackFileInputProps) {
   return (
-    <input
-      id={inputId}
-      type="file"
-      accept="image/png,image/jpeg,image/webp"
-      className={styles.fileInput}
-      aria-label={label}
-      disabled={disabled}
-      onChange={(event) => {
-        const file = chosenFile(event);
-        if (file) onChoose(file);
-      }}
-    />
+    <div className={styles.identity}>
+      <p className={styles.nameLine}>
+        <span className={styles.name}>{name}</span>
+        {isPinned && <span className={styles.pinnedBadge}>Fixado no topo</span>}
+        {badge && <span className={badgeClasses[badge]}>{categoryBadgeLabels[badge]}</span>}
+      </p>
+      <p className={styles.meta}>
+        Slug: {slug ? `/${slug}` : 'sem slug'} • {cardsLabelOf(cardsCount)}
+      </p>
+    </div>
   );
 }
 
-function BackImagePicker({ category, isUploading, onChoose }: BackImagePickerProps) {
-  const inputId = useId();
-  const action = backActionOf(category, isUploading);
-  const input = {
-    inputId,
-    label: `${action} de ${category.name}`,
-    disabled: isUploading,
-    onChoose,
-  };
-
+function RowHandle({ position, drag }: { position: number; drag: RowDrag }) {
   return (
     <>
-      <label htmlFor={inputId} className={styles.back}>
-        <BackThumb url={category.backImageUrl} />
-        {action}
-      </label>
-      <BackFileInput {...input} />
+      <span
+        aria-hidden="true"
+        data-testid="drag-handle"
+        className={styles.handle}
+        draggable
+        onDragStart={drag.onStart}
+        onDragEnd={drag.onEnd}
+      >
+        <Icon name="dragIndicator" size={20} />
+      </span>
+      <span className={styles.position} aria-hidden="true">
+        {position}
+      </span>
     </>
   );
 }
 
-interface DefaultCategoryRowProps extends BackImagePickerProps {
-  onRemove: () => void;
+function orderPropsOf(props: DefaultCategoryRowProps): CategoryOrderControlsProps {
+  const { name, isPinned } = props.category;
+  const { canMoveUp, canMoveDown, onTogglePin, onMoveUp, onMoveDown } = props;
+  return { name, isPinned, canMoveUp, canMoveDown, onTogglePin, onMoveUp, onMoveDown };
 }
 
-export function DefaultCategoryRow({ onRemove, ...picker }: DefaultCategoryRowProps) {
-  const { name } = picker.category;
+function rowClassOf({ isDragging, isDropTarget }: RowDrag): string {
+  const modifier = isDragging ? styles.dragging : isDropTarget && styles.dropTarget;
+  return [styles.row, modifier].filter(Boolean).join(' ');
+}
+
+function dropZoneOf(drag: RowDrag) {
+  return {
+    className: rowClassOf(drag),
+    'data-drop-target': drag.isDropTarget || undefined,
+    onDragOver: drag.onOver,
+    onDragLeave: drag.onLeave,
+    onDrop: drag.onDrop,
+  };
+}
+
+export function DefaultCategoryRow(props: DefaultCategoryRowProps) {
+  const { category, position, drag, onRemove, isUploading, onChoose } = props;
 
   return (
-    <li className={styles.row}>
-      <p className={styles.name}>{name}</p>
+    <li {...dropZoneOf(drag)}>
+      <RowHandle position={position} drag={drag} />
+      <CategoryIdentity category={category} />
       <div className={styles.rowActions}>
-        <BackImagePicker {...picker} />
+        <BackImagePicker category={category} isUploading={isUploading} onChoose={onChoose} />
+        <CategoryOrderControls {...orderPropsOf(props)} />
         <button
           type="button"
           className={styles.remove}
-          aria-label={`Remover ${name} das categorias padrão`}
+          aria-label={`Remover ${category.name} das categorias padrão`}
           onClick={onRemove}
         >
           <Icon name="delete" size={18} />

@@ -24,6 +24,9 @@ export const cardCategory: Category = {
   id: '0190f3a4-0000-7000-8000-000000000002',
   name: 'Seleções',
   type: 'CARD',
+  slug: 'selecoes',
+  badge: null,
+  cardsCount: 0,
   description: null,
   parentCategoryId: null,
   parentCategory: null,
@@ -35,6 +38,7 @@ export const albumCategory: Category = {
   ...cardCategory,
   id: '0190f3a4-0000-7000-8000-000000000003',
   name: 'Futebol',
+  slug: 'futebol',
   type: 'ALBUM',
 };
 

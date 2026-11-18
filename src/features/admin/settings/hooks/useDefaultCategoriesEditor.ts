@@ -1,18 +1,34 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import type { Notify } from './useSettingsNotice';
 import { errorNotice, imageFailureNotice, settingsNotices } from '../settings.labels';
 import { useUpdateDefaultCategories, useUploadSettingImage } from '../settings.queries';
 import { backImageSchema, imageErrorOf } from '../settings.schemas';
+import { moveCategory, pinnedFirst, togglePinned } from '../settings.order';
 import type { CategoryOption, DefaultCategory } from '../settings.types';
 
-export function useDefaultCategoriesDraft(initial: DefaultCategory[]) {
+function draftOf(
+  { id, name, type, slug, badge, cardsCount }: CategoryOption,
+  position: number,
+): DefaultCategory {
+  const emptyBack = { backImageUrl: null, isPinned: false, displayOrder: position };
+  return { id, name, type, slug, badge, cardsCount, ...emptyBack };
+}
+
+export function useDefaultCategoriesDraft(loaded: DefaultCategory[]) {
+  const initial = useMemo(() => pinnedFirst(loaded), [loaded]);
   const [draft, setDraft] = useState(initial);
 
   return {
     draft,
-    add: ({ id, name, type }: CategoryOption) =>
-      setDraft((current) => [...current, { id, name, type, backImageUrl: null }]),
+    add: (option: CategoryOption) =>
+      setDraft((current) => [...current, draftOf(option, current.length)]),
+    moveTo: (from: number, to: number) => setDraft((current) => moveCategory(current, from, to)),
+    moveUp: (position: number) =>
+      setDraft((current) => moveCategory(current, position, position - 1)),
+    moveDown: (position: number) =>
+      setDraft((current) => moveCategory(current, position, position + 1)),
+    togglePin: (id: string) => setDraft((current) => togglePinned(current, id)),
     remove: (id: string) => setDraft((current) => current.filter((category) => category.id !== id)),
     setBack: (id: string, backImageUrl: string) =>
       setDraft((current) =>
@@ -29,7 +45,7 @@ export function useSaveDefaultCategories(notify: Notify) {
     isSaving: save.isPending,
     save: (draft: DefaultCategory[]) =>
       save.mutate(
-        draft.map(({ id, backImageUrl }) => ({ id, backImageUrl })),
+        draft.map(({ id, backImageUrl, isPinned }) => ({ id, backImageUrl, isPinned })),
         {
           onSuccess: () => notify(settingsNotices.defaultCategories),
           onError: (error) => notify(errorNotice(error)),

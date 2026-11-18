@@ -19,6 +19,7 @@ import {
   useUploadSettingImage,
 } from './settings.queries';
 import { SETTING_KEYS } from './settings.types';
+import { defaultCategory } from './test/fixtures';
 
 vi.mock('./settings.api', () => ({
   settingsApi: {
@@ -33,7 +34,7 @@ vi.mock('./settings.api', () => ({
   },
 }));
 
-const POKEMON = { id: 'c-1', name: 'Pokémon', type: 'CARD' as const, backImageUrl: null };
+const POKEMON = defaultCategory('c-1', 'Pokémon');
 
 function setup() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -134,7 +135,9 @@ describe('categorias padrão', () => {
     const { wrapper, queryClient } = setup();
     const { result } = renderHook(() => useUpdateDefaultCategories(), { wrapper });
 
-    await act(() => result.current.mutateAsync([{ id: POKEMON.id, backImageUrl: null }]));
+    await act(() =>
+      result.current.mutateAsync([{ id: POKEMON.id, backImageUrl: null, isPinned: false }]),
+    );
 
     expect(queryClient.getQueryData(settingsKeys.defaultCategories())).toEqual([POKEMON]);
   });

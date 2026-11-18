@@ -57,7 +57,9 @@ export function withFormFields(error: ApiError | null): ApiError | null {
 }
 
 export function savedSetKeyOf(categories: DefaultCategory[]): string {
-  return categories.map(({ id, backImageUrl }) => `${id}:${backImageUrl ?? ''}`).join('|');
+  return categories
+    .map(({ id, backImageUrl, isPinned }) => `${id}:${backImageUrl ?? ''}:${isPinned}`)
+    .join('|');
 }
 
 export interface TemplateRef {

@@ -13,6 +13,7 @@ import {
   withTemplate,
 } from './settings.format';
 import { SETTING_KEYS, type SettingView } from './settings.types';
+import { defaultCategory } from './test/fixtures';
 
 const BANNER = {
   enabled: false,
@@ -156,11 +157,12 @@ describe('positionOf e templateRefOf', () => {
 
 describe('savedSetKeyOf', () => {
   it('CA5: muda quando o conjunto ou um verso muda, e não muda numa nova busca igual', () => {
-    const pokemon = { id: 'c-1', name: 'Pokémon', type: 'CARD' as const, backImageUrl: null };
+    const pokemon = defaultCategory('c-1', 'Pokémon');
     const key = savedSetKeyOf([pokemon]);
 
     expect(savedSetKeyOf([{ ...pokemon }])).toBe(key);
     expect(savedSetKeyOf([{ ...pokemon, backImageUrl: 'https://cdn/v.png' }])).not.toBe(key);
+    expect(savedSetKeyOf([{ ...pokemon, isPinned: true }])).not.toBe(key);
     expect(savedSetKeyOf([])).not.toBe(key);
   });
 });
