@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -184,5 +184,30 @@ describe('DefaultCategoriesModule · ordem (CCD104)', () => {
     fireEvent.drop(rowOf('Pokémon'));
 
     expect(namesInOrder()).toEqual(['Pokémon', 'Magic: The Gathering', 'Futebol']);
+  });
+
+  it('CA4: sair da tela sem salvar descarta a ordem, e ao voltar vale a carregada', async () => {
+    const user = await renderModule();
+    await user.click(screen.getByRole('button', { name: 'Mover Pokémon para baixo' }));
+    expect(namesInOrder()).toEqual(['Magic: The Gathering', 'Pokémon', 'Futebol']);
+
+    cleanup();
+    renderSettings(<DefaultCategoriesModule notify={vi.fn()} />);
+    await screen.findByText('Pokémon');
+
+    expect(namesInOrder()).toEqual(['Pokémon', 'Magic: The Gathering', 'Futebol']);
+    expect(settingsApi.updateDefaultCategories).not.toHaveBeenCalled();
+  });
+
+  it('só aceita soltar sobre a linha enquanto uma categoria está sendo arrastada', async () => {
+    await renderModule();
+    const row = rowOf('Magic: The Gathering');
+
+    const withoutDrag = fireEvent.dragOver(row);
+    fireEvent.dragStart(within(rowOf('Futebol')).getByTestId('drag-handle'));
+    const withDrag = fireEvent.dragOver(row);
+
+    expect(withoutDrag).toBe(true);
+    expect(withDrag).toBe(false);
   });
 });

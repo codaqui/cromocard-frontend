@@ -50,7 +50,9 @@ function useRowDrag(draft: Draft) {
   return (position: number): RowDrag => ({
     isDragging: dragFrom === position,
     onStart: () => setDragFrom(position),
-    onOver: (event) => event.preventDefault(),
+    onOver: (event) => {
+      if (dragFrom !== null) event.preventDefault();
+    },
     onDrop: () => {
       if (dragFrom !== null) draft.moveTo(dragFrom, position);
       setDragFrom(null);
