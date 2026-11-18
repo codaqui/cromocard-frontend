@@ -137,6 +137,15 @@ describe('CategoryFormModal', () => {
     expect(screen.getByLabelText('Slug')).toHaveValue('selecoes-2026');
   });
 
+  it('CA12: na edição, mostra o slug gravado enquanto o nome não muda, mesmo com sufixo', async () => {
+    renderModal({ ...cardCategory, slug: 'selecoes-2' });
+
+    expect(screen.getByLabelText('Slug')).toHaveValue('selecoes-2');
+
+    await userEvent.type(screen.getByLabelText('Nome *'), ' 2026');
+    expect(screen.getByLabelText('Slug')).toHaveValue('selecoes-2026');
+  });
+
   it('CA13: mostra o 409 SLUG_TAKEN no campo Nome', async () => {
     vi.mocked(catalogApi.createCategory).mockRejectedValue(
       new ApiError({

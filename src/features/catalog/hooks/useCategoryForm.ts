@@ -30,6 +30,11 @@ function categoryFormDefaults(category?: Category): CategoryFormValues {
   };
 }
 
+function slugOf(name: string, category?: Category): string {
+  if (category?.slug && name === category.name) return category.slug;
+  return name.trim() ? slugify(name) : '';
+}
+
 export function useCategoryForm({
   item: category,
   onSubmit,
@@ -48,7 +53,7 @@ export function useCategoryForm({
 
   const type = categoryTypeOf(useWatch({ control, name: 'type' }));
   const name = useWatch({ control, name: 'name' });
-  const slug = name.trim() ? slugify(name) : '';
+  const slug = slugOf(name, category);
   // Trocar o tipo invalida a categoria pai escolhida, que precisa ser do mesmo tipo.
   const registerType = () => register('type', { onChange: () => setValue('parentCategoryId', '') });
 

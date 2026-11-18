@@ -95,7 +95,6 @@ function DisplayFields({ form }: { form: CategoryFormState }) {
   );
 }
 
-/** Nome, tipo, categoria pai, selo, slug e descrição, como no frame 833-10832. */
 export function CategoryForm({ formId, category, ...options }: CategoryFormProps) {
   const form = useCategoryForm({ item: category, ...options });
   const { register, errors } = form;

@@ -237,7 +237,7 @@ describe('CatalogAdminPage', () => {
     const row = within(table).getByRole('row', { name: /Pokémon/ });
     expect(within(row).getByText('pokemon')).toBeInTheDocument();
     expect(within(row).getByText('Em alta')).toBeInTheDocument();
-    expect(within(row).getByText('18240')).toBeInTheDocument();
+    expect(within(row).getByText('18.240')).toBeInTheDocument();
   });
 
   it('CA14: a categoria sem selo não mostra nenhum selo', async () => {

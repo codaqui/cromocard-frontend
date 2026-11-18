@@ -28,7 +28,6 @@ interface TitleCellProps {
   title: string;
   detail?: string | null;
   tags?: (string | null | undefined)[];
-  /** Selo de exibição da categoria, em âmbar como no frame 833-10832. */
   badge?: string | null;
 }
 
@@ -85,7 +84,7 @@ export function AlbumNumberCell({ number, total }: { number: string | null; tota
 }
 
 export function CountCell({ value }: { value: number }) {
-  return <span className={styles.count}>{value}</span>;
+  return <span className={styles.count}>{value.toLocaleString('pt-BR')}</span>;
 }
 
 export function AlbumStatusCell({ status }: { status: AlbumStatus }) {
