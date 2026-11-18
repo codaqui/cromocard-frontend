@@ -58,12 +58,12 @@ function useRowDrag(draft: Draft) {
   });
 }
 
-function rowActionsOf(draft: Draft, position: number) {
+function rowActionsOf(draft: Draft, { id }: DefaultCategory, position: number) {
   return {
     onMoveUp: () => draft.moveUp(position),
     onMoveDown: () => draft.moveDown(position),
-    onTogglePin: () => draft.togglePin(draft.draft[position]?.id ?? ''),
-    onRemove: () => draft.remove(draft.draft[position]?.id ?? ''),
+    onTogglePin: () => draft.togglePin(id),
+    onRemove: () => draft.remove(id),
   };
 }
 
@@ -84,7 +84,7 @@ function CategoryRows({ draft, notify }: { draft: Draft; notify: Notify }) {
           drag={dragOf(position)}
           isUploading={back.uploadingId === category.id}
           onChoose={(file) => back.choose(category.id, file)}
-          {...rowActionsOf(draft, position)}
+          {...rowActionsOf(draft, category, position)}
         />
       ))}
     </ul>

@@ -28,15 +28,18 @@ interface TitleCellProps {
   title: string;
   detail?: string | null;
   tags?: (string | null | undefined)[];
+  /** Selo de exibição da categoria, em âmbar como no frame 833-10832. */
+  badge?: string | null;
 }
 
-export function TitleCell({ title, detail, tags = [] }: TitleCellProps) {
+export function TitleCell({ title, detail, tags = [], badge }: TitleCellProps) {
   const visibleTags = tags.filter((tag): tag is string => Boolean(tag));
 
   return (
     <div className={styles.titleCell}>
       <span className={styles.title}>{title}</span>
       {detail && <span className={styles.detail}>{detail}</span>}
+      {badge && <span className={styles.badge}>{badge}</span>}
       {visibleTags.length > 0 && (
         <span className={styles.tags}>
           {visibleTags.map((tag) => (

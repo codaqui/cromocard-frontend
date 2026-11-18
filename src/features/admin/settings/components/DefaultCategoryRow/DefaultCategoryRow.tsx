@@ -105,7 +105,11 @@ function CategoryIdentity({ category }: { category: DefaultCategory }) {
       <p className={styles.nameLine}>
         <span className={styles.name}>{name}</span>
         {isPinned && <span className={styles.pinnedBadge}>Fixado no topo</span>}
-        {badge && <span className={styles.badge}>{categoryBadgeLabels[badge]}</span>}
+        {badge && (
+          <span className={styles[badge === 'TRENDING' ? 'trending' : 'standard']}>
+            {categoryBadgeLabels[badge]}
+          </span>
+        )}
       </p>
       <p className={styles.meta}>
         Slug: /{slug} • {cardsLabelOf(cardsCount)}
@@ -171,13 +175,13 @@ function OrderControls(props: DefaultCategoryRowProps) {
         onClick={props.onTogglePin}
       />
       <IconControl
-        icon="arrowUpward"
+        icon="expandLess"
         label={`Mover ${name} para cima`}
         disabled={props.isFirst}
         onClick={props.onMoveUp}
       />
       <IconControl
-        icon="arrowDownward"
+        icon="expandMore"
         label={`Mover ${name} para baixo`}
         disabled={props.isLast}
         onClick={props.onMoveDown}

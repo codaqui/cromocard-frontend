@@ -32,7 +32,7 @@ const categoriesTable: CatalogTable<Category> = {
         <TitleCell
           title={category.name}
           detail={category.slug}
-          tags={[category.badge && categoryBadgeLabels[category.badge]]}
+          badge={category.badge && categoryBadgeLabels[category.badge]}
         />
       ),
     },
