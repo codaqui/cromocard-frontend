@@ -2,11 +2,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import type { FormEvent } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { reasonSchema } from '@/lib/reason';
+import { REASON_MAX_LENGTH, reasonSchemaUpTo } from '@/lib/reason';
 import { z } from '@/lib/zod';
 
 interface ConfirmDialogFormOptions {
   requireReason: boolean;
+  reasonMaxLength?: number;
   confirmationText?: string;
   onConfirm: (reason?: string) => void;
 }
@@ -19,9 +20,13 @@ function matches(expected: string) {
   });
 }
 
-function buildSchema({ requireReason, confirmationText }: ConfirmDialogFormOptions) {
+function buildSchema({
+  requireReason,
+  reasonMaxLength = REASON_MAX_LENGTH,
+  confirmationText,
+}: ConfirmDialogFormOptions) {
   return z.object({
-    reason: requireReason ? reasonSchema : optionalText,
+    reason: requireReason ? reasonSchemaUpTo(reasonMaxLength) : optionalText,
     confirmation: confirmationText ? matches(confirmationText) : optionalText,
   });
 }
