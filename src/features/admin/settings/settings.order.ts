@@ -4,15 +4,27 @@ function inOrder(categories: DefaultCategory[]): DefaultCategory[] {
   return categories.map((category, position) => ({ ...category, displayOrder: position }));
 }
 
+const PINNED_SLOT = 1;
+
+export function canMoveCategory(categories: DefaultCategory[], from: number, to: number): boolean {
+  const moved = categories[from];
+  if (!moved || to < 0 || to >= categories.length || from === to) return false;
+  const pinnedSlots = categories.some(({ isPinned }) => isPinned) ? PINNED_SLOT : 0;
+  return !moved.isPinned && to >= pinnedSlots;
+}
+
+function relocate(categories: DefaultCategory[], from: number, to: number): DefaultCategory[] {
+  const moved = categories.slice(from, from + 1);
+  const rest = categories.filter((_, position) => position !== from);
+  return inOrder([...rest.slice(0, to), ...moved, ...rest.slice(to)]);
+}
+
 export function moveCategory(
   categories: DefaultCategory[],
   from: number,
   to: number,
 ): DefaultCategory[] {
-  const moved = categories[from];
-  if (!moved || to < 0 || to >= categories.length || from === to) return categories;
-  const rest = categories.filter((_, position) => position !== from);
-  return inOrder([...rest.slice(0, to), moved, ...rest.slice(to)]);
+  return canMoveCategory(categories, from, to) ? relocate(categories, from, to) : categories;
 }
 
 export function togglePinned(categories: DefaultCategory[], id: string): DefaultCategory[] {
@@ -24,5 +36,5 @@ export function togglePinned(categories: DefaultCategory[], id: string): Default
     );
   }
   const unpinned = categories.map((category) => ({ ...category, isPinned: category.id === id }));
-  return moveCategory(unpinned, categories.indexOf(target), 0);
+  return relocate(unpinned, categories.indexOf(target), 0);
 }

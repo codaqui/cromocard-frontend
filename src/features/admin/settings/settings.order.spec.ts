@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { moveCategory, togglePinned } from './settings.order';
+import { canMoveCategory, moveCategory, togglePinned } from './settings.order';
 import { defaultCategory } from './test/fixtures';
 
 const pokemon = defaultCategory('c-pokemon', 'Pokémon');
@@ -52,13 +52,41 @@ describe('togglePinned', () => {
     expect(unpinned.every(({ isPinned }) => !isPinned)).toBe(true);
   });
 
-  it('CA9: desafixar uma categoria que foi movida não a leva de volta ao topo', () => {
-    const moved = moveCategory(togglePinned(list, 'c-pokemon'), 0, 2);
+  it('CA9: desafixada, a categoria pode ser movida e continua onde foi deixada', () => {
+    const free = togglePinned(togglePinned(list, 'c-pokemon'), 'c-pokemon');
+    const moved = moveCategory(free, 0, 2);
 
-    expect(idsOf(togglePinned(moved, 'c-pokemon'))).toEqual(['c-magic', 'c-futebol', 'c-pokemon']);
+    expect(idsOf(moved)).toEqual(['c-magic', 'c-futebol', 'c-pokemon']);
+    expect(moved.some(({ isPinned }) => isPinned)).toBe(false);
   });
 
   it('ignora um id que não está na lista', () => {
     expect(togglePinned(list, 'c-nao-existe')).toBe(list);
+  });
+});
+
+describe('categoria fixada no topo (L21)', () => {
+  const pinned = togglePinned(list, 'c-pokemon');
+
+  it('CA17: a fixada não desce', () => {
+    expect(moveCategory(pinned, 0, 1)).toBe(pinned);
+    expect(canMoveCategory(pinned, 0, 1)).toBe(false);
+  });
+
+  it('CA17: nenhuma outra passa por cima da fixada, subindo ou arrastando', () => {
+    expect(moveCategory(pinned, 1, 0)).toBe(pinned);
+    expect(moveCategory(pinned, 2, 0)).toBe(pinned);
+    expect(canMoveCategory(pinned, 1, 0)).toBe(false);
+  });
+
+  it('CA17: as outras continuam se movendo entre si abaixo da fixada', () => {
+    expect(idsOf(moveCategory(pinned, 2, 1))).toEqual(['c-pokemon', 'c-futebol', 'c-magic']);
+    expect(canMoveCategory(pinned, 2, 1)).toBe(true);
+  });
+
+  it('CA17: ao desafixar, a categoria volta a poder se mover', () => {
+    const free = togglePinned(pinned, 'c-pokemon');
+
+    expect(canMoveCategory(free, 0, 1)).toBe(true);
   });
 });

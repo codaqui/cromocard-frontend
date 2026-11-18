@@ -13,6 +13,7 @@ import {
 } from '../../hooks/useDefaultCategoriesEditor';
 import type { Notify } from '../../hooks/useSettingsNotice';
 import { savedSetKeyOf } from '../../settings.format';
+import { canMoveCategory } from '../../settings.order';
 import { useDefaultCategories } from '../../settings.queries';
 import { DEFAULT_CATEGORIES_MAX } from '../../settings.schemas';
 import type { CategoryOption, DefaultCategory } from '../../settings.types';
@@ -70,7 +71,6 @@ function rowActionsOf(draft: Draft, { id }: DefaultCategory, position: number) {
 function CategoryRows({ draft, notify }: { draft: Draft; notify: Notify }) {
   const back = useBackImageUpload(draft.setBack, notify);
   const dragOf = useRowDrag(draft);
-  const last = draft.draft.length - 1;
 
   return (
     <ul className={styles.list}>
@@ -79,8 +79,8 @@ function CategoryRows({ draft, notify }: { draft: Draft; notify: Notify }) {
           key={category.id}
           category={category}
           position={position + 1}
-          isFirst={position === 0}
-          isLast={position === last}
+          canMoveUp={canMoveCategory(draft.draft, position, position - 1)}
+          canMoveDown={canMoveCategory(draft.draft, position, position + 1)}
           drag={dragOf(position)}
           isUploading={back.uploadingId === category.id}
           onChoose={(file) => back.choose(category.id, file)}

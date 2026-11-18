@@ -165,4 +165,24 @@ describe('DefaultCategoriesModule · ordem (CCD104)', () => {
     expect(screen.queryByText('Fixado no topo')).not.toBeInTheDocument();
     expect(settingsApi.updateDefaultCategories).not.toHaveBeenCalled();
   });
+
+  it('CA17: com Pokémon fixada, a seta para baixo dela e a para cima da segunda linha ficam desabilitadas', async () => {
+    await renderModule([{ ...POKEMON, isPinned: true }, MAGIC, FUTEBOL]);
+
+    expect(screen.getByRole('button', { name: 'Mover Pokémon para baixo' })).toBeDisabled();
+    expect(
+      screen.getByRole('button', { name: 'Mover Magic: The Gathering para cima' }),
+    ).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Mover Futebol para cima' })).toBeEnabled();
+  });
+
+  it('CA17: arrastar outra categoria para cima da fixada não muda a ordem', async () => {
+    await renderModule([{ ...POKEMON, isPinned: true }, MAGIC, FUTEBOL]);
+    const handle = within(rowOf('Futebol')).getByTestId('drag-handle');
+
+    fireEvent.dragStart(handle);
+    fireEvent.drop(rowOf('Pokémon'));
+
+    expect(namesInOrder()).toEqual(['Pokémon', 'Magic: The Gathering', 'Futebol']);
+  });
 });

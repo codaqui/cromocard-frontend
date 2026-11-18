@@ -84,8 +84,8 @@ export interface RowDrag {
 
 interface DefaultCategoryRowProps extends BackImagePickerProps {
   position: number;
-  isFirst: boolean;
-  isLast: boolean;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
   drag: RowDrag;
   onMoveUp: () => void;
   onMoveDown: () => void;
@@ -177,13 +177,13 @@ function OrderControls(props: DefaultCategoryRowProps) {
       <IconControl
         icon="expandLess"
         label={`Mover ${name} para cima`}
-        disabled={props.isFirst}
+        disabled={!props.canMoveUp}
         onClick={props.onMoveUp}
       />
       <IconControl
         icon="expandMore"
         label={`Mover ${name} para baixo`}
-        disabled={props.isLast}
+        disabled={!props.canMoveDown}
         onClick={props.onMoveDown}
       />
     </div>
