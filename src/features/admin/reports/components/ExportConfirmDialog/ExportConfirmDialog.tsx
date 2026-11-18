@@ -2,7 +2,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog/ConfirmDialog';
 import type { Period } from '@/components/PeriodFilter/PeriodFilter';
 import { formatCount, formatPeriodRange } from '../../reports.period';
 
-import { FORMAT_LABELS, periodLabel } from '../../reports.labels';
+import { FORMAT_LABELS, periodLabel, reportsMessages } from '../../reports.labels';
 import type { ExportFormat, ReportPreview } from '../../reports.types';
 
 interface ExportConfirmDialogProps {
@@ -19,7 +19,8 @@ function summaryOf(preview: ReportPreview, period: Period): string {
   const range = formatPeriodRange(preview.period.from, preview.period.to);
   const label = periodLabel(period, range);
   const when = label === range ? range : `${label} (${range})`;
-  return `${preview.title} • ${when} • ${formatCount(preview.total)} registros.`;
+  const summary = `${preview.title} • ${when} • ${formatCount(preview.total)} registros.`;
+  return `${summary} ${reportsMessages.keptInHistory}`;
 }
 
 export function ExportConfirmDialog({

@@ -43,3 +43,68 @@
 .retention {
   font-size: var(--font-size-xs);
 }
+
+.scroll {
+  overflow-x: auto;
+}
+
+.empty {
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.error {
+  font-size: var(--font-size-sm);
+  color: var(--color-danger);
+}
+
+.report {
+  display: flex;
+  flex-direction: column;
+}
+
+.reportTitle {
+  color: var(--color-text);
+}
+
+.reportPeriod {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.requester {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+}
+
+.download {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+}
+
+.download:hover,
+.download:focus-visible {
+  color: var(--color-primary);
+}
