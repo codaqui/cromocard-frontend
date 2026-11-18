@@ -38,7 +38,7 @@ function EditionFields({ register, errors, album }: AlbumFieldsProps & { album?:
       <IconSelect
         label="Franquia"
         placeholder="Selecione"
-        options={useCategoryOptions('ALBUM', optionOfReference(album?.category))}
+        options={useCategoryOptions(optionOfReference(album?.category))}
         error={errors.categoryId?.message}
         {...register('categoryId')}
       />

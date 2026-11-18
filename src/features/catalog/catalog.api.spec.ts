@@ -42,7 +42,6 @@ const cardInput: CardInput = {
 
 const categoryInput: CategoryInput = {
   name: 'Futebol',
-  type: 'ALBUM',
   parentCategoryId: null,
   description: null,
   badge: null,
@@ -108,11 +107,11 @@ describe('catalogApi: cartas', () => {
 
 describe('catalogApi: categorias e referências', () => {
   it('R15: lista, cadastra e edita a categoria', () => {
-    void catalogApi.listCategories({ ...PAGE, type: 'CARD' });
+    void catalogApi.listCategories(PAGE);
     void catalogApi.createCategory(categoryInput);
     void catalogApi.updateCategory('categoria-1', categoryInput);
 
-    expect(callsOf('getPage')[0]).toEqual(['/admin/catalog/categories', { ...PAGE, type: 'CARD' }]);
+    expect(callsOf('getPage')[0]).toEqual(['/admin/catalog/categories', PAGE]);
     expect(callsOf('post')[0]).toEqual(['/admin/catalog/categories', categoryInput]);
     expect(callsOf('patch')[0]).toEqual(['/admin/catalog/categories/categoria-1', categoryInput]);
   });

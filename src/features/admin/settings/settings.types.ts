@@ -8,8 +8,6 @@ export const SETTING_KEYS = {
   votingGoal: 'catalog.voting_goal',
 } as const;
 
-export type CategoryType = 'ALBUM' | 'CARD';
-
 export interface HomeBanner {
   enabled: boolean;
   title: string;
@@ -34,7 +32,6 @@ export interface Goals {
 export interface DefaultCategory {
   id: string;
   name: string;
-  type: CategoryType;
   slug: string | null;
   badge: CategoryBadge | null;
   isPinned: boolean;
@@ -66,7 +63,6 @@ export interface GlobalSettings {
 export interface CategoryOption {
   id: string;
   name: string;
-  type: CategoryType;
   slug: string | null;
   badge: CategoryBadge | null;
   cardsCount: number;

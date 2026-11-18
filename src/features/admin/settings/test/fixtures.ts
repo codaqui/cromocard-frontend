@@ -10,7 +10,6 @@ export function defaultCategory(
   return {
     id,
     name,
-    type: 'CARD',
     slug: slugify(name),
     badge: null,
     isPinned: false,
@@ -29,7 +28,6 @@ export function categoryOption(
   return {
     id,
     name,
-    type: 'CARD',
     slug: slugify(name),
     badge: null,
     cardsCount: 0,
