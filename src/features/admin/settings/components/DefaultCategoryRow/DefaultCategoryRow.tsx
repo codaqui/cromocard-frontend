@@ -112,18 +112,18 @@ function CategoryIdentity({ category }: { category: DefaultCategory }) {
         )}
       </p>
       <p className={styles.meta}>
-        Slug: /{slug} • {cardsLabelOf(cardsCount)}
+        Slug: {slug ? `/${slug}` : 'sem slug'} • {cardsLabelOf(cardsCount)}
       </p>
     </div>
   );
 }
 
-function RowHandle({ name, position, drag }: { name: string; position: number; drag: RowDrag }) {
+function RowHandle({ position, drag }: { position: number; drag: RowDrag }) {
   return (
     <>
       <span
-        role="img"
-        aria-label={`Arrastar ${name}`}
+        aria-hidden="true"
+        data-testid="drag-handle"
         className={styles.handle}
         draggable
         onDragStart={drag.onStart}
@@ -170,7 +170,7 @@ function OrderControls(props: DefaultCategoryRowProps) {
     <div className={styles.order}>
       <IconControl
         icon="pushPin"
-        label={isPinned ? `Desafixar ${name} do topo` : `Fixar ${name} no topo`}
+        label={`Fixar ${name} no topo`}
         pressed={isPinned}
         onClick={props.onTogglePin}
       />
@@ -196,7 +196,7 @@ export function DefaultCategoryRow(props: DefaultCategoryRowProps) {
 
   return (
     <li className={className} onDragOver={drag.onOver} onDrop={drag.onDrop}>
-      <RowHandle name={category.name} position={position} drag={drag} />
+      <RowHandle position={position} drag={drag} />
       <CategoryIdentity category={category} />
       <div className={styles.rowActions}>
         <BackImagePicker category={category} isUploading={isUploading} onChoose={onChoose} />

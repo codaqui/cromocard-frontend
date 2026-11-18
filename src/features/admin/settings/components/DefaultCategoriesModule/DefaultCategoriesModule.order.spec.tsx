@@ -57,6 +57,14 @@ describe('DefaultCategoriesModule · ordem (CCD104)', () => {
     expect(namesInOrder()).toEqual(['Pokémon', 'Magic: The Gathering', 'Futebol']);
   });
 
+  it('CA1: a categoria sem slug mostra "sem slug" em vez de uma barra solta', async () => {
+    await renderModule([{ ...POKEMON, slug: null }]);
+
+    expect(
+      within(rowOf('Pokémon')).getByText('Slug: sem slug • 18.240 cartas'),
+    ).toBeInTheDocument();
+  });
+
   it('CA2: mover pelas setas e salvar envia a lista na nova ordem', async () => {
     const user = await renderModule();
 
@@ -72,7 +80,7 @@ describe('DefaultCategoriesModule · ordem (CCD104)', () => {
 
   it('CA2: arrastar pela alça leva a categoria para onde ela foi solta', async () => {
     const user = await renderModule();
-    const handle = within(rowOf('Futebol')).getByRole('img', { name: 'Arrastar Futebol' });
+    const handle = within(rowOf('Futebol')).getByTestId('drag-handle');
 
     fireEvent.dragStart(handle);
     fireEvent.dragOver(rowOf('Pokémon'));
@@ -125,7 +133,9 @@ describe('DefaultCategoriesModule · ordem (CCD104)', () => {
   it('CA9: o alfinete da fixada a desafixa e ela continua na primeira posição', async () => {
     const user = await renderModule([{ ...POKEMON, isPinned: true }, MAGIC, FUTEBOL]);
 
-    await user.click(screen.getByRole('button', { name: 'Desafixar Pokémon do topo' }));
+    const pin = screen.getByRole('button', { name: 'Fixar Pokémon no topo' });
+    expect(pin).toHaveAttribute('aria-pressed', 'true');
+    await user.click(pin);
 
     expect(namesInOrder()).toEqual(['Pokémon', 'Magic: The Gathering', 'Futebol']);
     expect(screen.queryByText('Fixado no topo')).not.toBeInTheDocument();
