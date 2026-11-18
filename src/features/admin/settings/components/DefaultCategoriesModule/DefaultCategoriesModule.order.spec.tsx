@@ -257,6 +257,37 @@ describe('DefaultCategoriesModule · ordem (CCD104)', () => {
     expect(overFree).toBe(false);
   });
 
+  it('CA2: destaca só a linha livre sob o arraste e tira o destaque ao sair dela', async () => {
+    await renderModule([{ ...POKEMON, isPinned: true }, MAGIC, FUTEBOL]);
+    fireEvent.dragStart(within(rowOf('Futebol')).getByTestId('drag-handle'), {
+      dataTransfer: dragData(),
+    });
+
+    fireEvent.dragOver(rowOf('Magic: The Gathering'), { dataTransfer: dragData() });
+    expect(rowOf('Magic: The Gathering')).toHaveAttribute('data-drop-target', 'true');
+
+    fireEvent.dragOver(rowOf('Pokémon'), { dataTransfer: dragData() });
+    expect(rowOf('Magic: The Gathering')).not.toHaveAttribute('data-drop-target');
+    expect(rowOf('Pokémon')).not.toHaveAttribute('data-drop-target');
+
+    fireEvent.dragOver(rowOf('Magic: The Gathering'), { dataTransfer: dragData() });
+    fireEvent.dragLeave(rowOf('Futebol'));
+    expect(rowOf('Magic: The Gathering')).toHaveAttribute('data-drop-target', 'true');
+    fireEvent.dragLeave(rowOf('Magic: The Gathering'));
+    expect(rowOf('Magic: The Gathering')).not.toHaveAttribute('data-drop-target');
+  });
+
+  it('CA2: o destaque some quando o arraste termina', async () => {
+    await renderModule();
+    const handle = within(rowOf('Futebol')).getByTestId('drag-handle');
+    fireEvent.dragStart(handle, { dataTransfer: dragData() });
+    fireEvent.dragOver(rowOf('Pokémon'), { dataTransfer: dragData() });
+
+    fireEvent.dragEnd(handle);
+
+    expect(rowOf('Pokémon')).not.toHaveAttribute('data-drop-target');
+  });
+
   it('CA2: a seta que chega ao limite mantém o foco no botão, que passa a aria-disabled', async () => {
     const user = await renderModule();
     const up = screen.getByRole('button', { name: 'Mover Magic: The Gathering para cima' });

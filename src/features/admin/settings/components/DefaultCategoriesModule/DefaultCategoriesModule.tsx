@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from 'react';
+import { type DragEvent, type ReactNode, useState } from 'react';
 import { Link } from 'react-router';
 
 import { ErrorState } from '@/components/ErrorState/ErrorState';
@@ -44,29 +44,59 @@ function DefaultCategoriesShell({
 
 type Draft = ReturnType<typeof useDefaultCategoriesDraft>;
 
+function startDrag(event: DragEvent<HTMLElement>, position: number) {
+  event.dataTransfer.setData('text/plain', String(position));
+  event.dataTransfer.effectAllowed = 'move';
+}
+
+function acceptDrop(event: DragEvent<HTMLElement>) {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+}
+
+function useDragPositions(draft: Draft) {
+  const [from, setFrom] = useState<number | null>(null);
+  const [over, setOver] = useState<number | null>(null);
+  const canDrop = (position: number) =>
+    from !== null && canMoveCategory(draft.draft, from, position);
+
+  return {
+    from,
+    over,
+    start: (event: DragEvent<HTMLElement>, position: number) => {
+      startDrag(event, position);
+      setFrom(position);
+    },
+    hover: (event: DragEvent<HTMLElement>, position: number) => {
+      setOver(canDrop(position) ? position : null);
+      if (canDrop(position)) acceptDrop(event);
+    },
+    leave: (position: number) => setOver((current) => (current === position ? null : current)),
+    stop: () => {
+      setFrom(null);
+      setOver(null);
+    },
+  };
+}
+
 function useRowDrag(draft: Draft, announce: (message: string) => void) {
-  const [dragFrom, setDragFrom] = useState<number | null>(null);
+  const { from, over, start, hover, leave, stop } = useDragPositions(draft);
+  const drop = (position: number) => {
+    if (from !== null && canMoveCategory(draft.draft, from, position)) {
+      draft.moveTo(from, position);
+      announce(movedMessage(draft.draft[from], position, draft.draft.length));
+    }
+    stop();
+  };
 
   return (position: number): RowDrag => ({
-    isDragging: dragFrom === position,
-    onStart: (event) => {
-      event.dataTransfer.setData('text/plain', String(position));
-      event.dataTransfer.effectAllowed = 'move';
-      setDragFrom(position);
-    },
-    onOver: (event) => {
-      if (dragFrom === null || !canMoveCategory(draft.draft, dragFrom, position)) return;
-      event.preventDefault();
-      event.dataTransfer.dropEffect = 'move';
-    },
-    onDrop: () => {
-      if (dragFrom !== null && canMoveCategory(draft.draft, dragFrom, position)) {
-        draft.moveTo(dragFrom, position);
-        announce(movedMessage(draft.draft[dragFrom], position, draft.draft.length));
-      }
-      setDragFrom(null);
-    },
-    onEnd: () => setDragFrom(null),
+    isDragging: from === position,
+    isDropTarget: over === position,
+    onStart: (event) => start(event, position),
+    onOver: (event) => hover(event, position),
+    onLeave: () => leave(position),
+    onDrop: () => drop(position),
+    onEnd: stop,
   });
 }
 

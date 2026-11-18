@@ -11,6 +11,11 @@
   opacity: 0.5;
 }
 
+.dropTarget {
+  outline: 2px dashed var(--color-primary);
+  outline-offset: -2px;
+}
+
 .handle {
   display: inline-flex;
   flex-shrink: 0;
@@ -93,53 +98,6 @@
   gap: var(--space-3);
 }
 
-.back {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  color: var(--color-success);
-  cursor: pointer;
-}
-
-.back:has(+ .fileInput:focus-visible) {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
-
-.backThumb,
-.backEmpty {
-  width: 1.375rem;
-  height: 1.875rem;
-  border-radius: var(--radius-xs);
-}
-
-.backThumb {
-  object-fit: cover;
-}
-
-.backEmpty {
-  border: 1px dashed var(--color-text-muted);
-}
-
-.fileInput {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
-.order {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-}
-
-.control,
-.pinned,
 .remove {
   display: inline-flex;
   align-items: center;
@@ -148,39 +106,14 @@
   border: 0;
   border-radius: var(--radius-sm);
   background: none;
-  cursor: pointer;
-}
-
-.control {
-  background: var(--color-surface-high);
-  color: var(--color-text);
-}
-
-.pinned {
-  background: var(--color-warning);
-  color: var(--color-warning-soft);
-}
-
-.control:hover:not([aria-disabled='true']) {
-  background: var(--color-neutral-soft);
-}
-
-.control[aria-disabled='true'] {
-  color: var(--color-text-muted);
-  cursor: not-allowed;
-  opacity: 0.4;
-}
-
-.remove {
   color: var(--color-danger);
+  cursor: pointer;
 }
 
 .remove:hover {
   background: var(--color-danger-soft);
 }
 
-.control:focus-visible,
-.pinned:focus-visible,
 .remove:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
@@ -200,16 +133,8 @@
 
 /* Área de toque de 40 px no celular e no tablet (revisão do PR #21, B1). */
 @media (max-width: 64rem) {
-  .control,
-  .pinned,
-  .remove,
-  .back {
-    min-height: var(--size-control);
-  }
-
-  .control,
-  .pinned,
   .remove {
     min-width: var(--size-control);
+    min-height: var(--size-control);
   }
 }
