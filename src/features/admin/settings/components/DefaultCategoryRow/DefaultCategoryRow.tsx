@@ -2,7 +2,7 @@ import { type ChangeEvent, type DragEvent, useId } from 'react';
 
 import { Icon } from '@/components/Icon/Icon';
 import type { IconName } from '@/components/Icon/icon-paths';
-import { categoryBadgeLabels } from '@/features/catalog';
+import { type CategoryBadge, categoryBadgeLabels } from '@/features/catalog';
 
 import type { DefaultCategory } from '../../settings.types';
 import styles from './DefaultCategoryRow.module.css';
@@ -76,7 +76,7 @@ function BackImagePicker({ category, isUploading, onChoose }: BackImagePickerPro
 
 export interface RowDrag {
   isDragging: boolean;
-  onStart: () => void;
+  onStart: (event: DragEvent<HTMLElement>) => void;
   onOver: (event: DragEvent<HTMLElement>) => void;
   onDrop: () => void;
   onEnd: () => void;
@@ -93,6 +93,11 @@ interface DefaultCategoryRowProps extends BackImagePickerProps {
   onRemove: () => void;
 }
 
+const badgeClasses: Record<CategoryBadge, string | undefined> = {
+  STANDARD: styles.standard,
+  TRENDING: styles.trending,
+};
+
 function cardsLabelOf(count: number): string {
   return `${count.toLocaleString('pt-BR')} ${count === 1 ? 'carta' : 'cartas'}`;
 }
@@ -105,11 +110,7 @@ function CategoryIdentity({ category }: { category: DefaultCategory }) {
       <p className={styles.nameLine}>
         <span className={styles.name}>{name}</span>
         {isPinned && <span className={styles.pinnedBadge}>Fixado no topo</span>}
-        {badge && (
-          <span className={styles[badge === 'TRENDING' ? 'trending' : 'standard']}>
-            {categoryBadgeLabels[badge]}
-          </span>
-        )}
+        {badge && <span className={badgeClasses[badge]}>{categoryBadgeLabels[badge]}</span>}
       </p>
       <p className={styles.meta}>
         Slug: {slug ? `/${slug}` : 'sem slug'} • {cardsLabelOf(cardsCount)}
@@ -155,23 +156,33 @@ function IconControl({ icon, label, onClick, disabled, pressed }: IconControlPro
       className={active}
       aria-label={label}
       aria-pressed={pressed}
-      disabled={disabled}
-      onClick={onClick}
+      aria-disabled={disabled}
+      onClick={() => !disabled && onClick()}
     >
       <Icon name={icon} size={18} />
     </button>
   );
 }
 
-function OrderControls(props: DefaultCategoryRowProps) {
-  const { name, isPinned } = props.category;
+interface OrderControlsProps {
+  name: string;
+  isPinned: boolean;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
+  onTogglePin: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+}
+
+function OrderControls(props: OrderControlsProps) {
+  const { name } = props;
 
   return (
     <div className={styles.order}>
       <IconControl
         icon="pushPin"
         label={`Fixar ${name} no topo`}
-        pressed={isPinned}
+        pressed={props.isPinned}
         onClick={props.onTogglePin}
       />
       <IconControl
@@ -190,6 +201,12 @@ function OrderControls(props: DefaultCategoryRowProps) {
   );
 }
 
+function orderPropsOf(props: DefaultCategoryRowProps): OrderControlsProps {
+  const { name, isPinned } = props.category;
+  const { canMoveUp, canMoveDown, onTogglePin, onMoveUp, onMoveDown } = props;
+  return { name, isPinned, canMoveUp, canMoveDown, onTogglePin, onMoveUp, onMoveDown };
+}
+
 export function DefaultCategoryRow(props: DefaultCategoryRowProps) {
   const { category, position, drag, onRemove, isUploading, onChoose } = props;
   const className = drag.isDragging ? `${styles.row} ${styles.dragging}` : styles.row;
@@ -200,7 +217,7 @@ export function DefaultCategoryRow(props: DefaultCategoryRowProps) {
       <CategoryIdentity category={category} />
       <div className={styles.rowActions}>
         <BackImagePicker category={category} isUploading={isUploading} onChoose={onChoose} />
-        <OrderControls {...props} />
+        <OrderControls {...orderPropsOf(props)} />
         <button
           type="button"
           className={styles.remove}

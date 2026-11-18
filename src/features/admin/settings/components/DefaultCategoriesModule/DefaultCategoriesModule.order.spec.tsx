@@ -23,6 +23,7 @@ const MAGIC = defaultCategory('c-magic', 'Magic: The Gathering', {
 });
 const FUTEBOL = defaultCategory('c-futebol', 'Futebol', { cardsCount: 0 });
 
+const dragData = () => ({ setData: vi.fn(), effectAllowed: '', dropEffect: '' });
 const saveButton = () => screen.getByRole('button', { name: 'Salvar ordem' });
 const rowOf = (name: string) => screen.getByText(name).closest('li') as HTMLElement;
 const namesInOrder = () =>
@@ -82,8 +83,8 @@ describe('DefaultCategoriesModule · ordem (CCD104)', () => {
     const user = await renderModule();
     const handle = within(rowOf('Futebol')).getByTestId('drag-handle');
 
-    fireEvent.dragStart(handle);
-    fireEvent.dragOver(rowOf('Pokémon'));
+    fireEvent.dragStart(handle, { dataTransfer: dragData() });
+    fireEvent.dragOver(rowOf('Pokémon'), { dataTransfer: dragData() });
     fireEvent.drop(rowOf('Pokémon'));
     fireEvent.dragEnd(handle);
     await user.click(saveButton());
@@ -148,10 +149,22 @@ describe('DefaultCategoriesModule · ordem (CCD104)', () => {
   it('CA10: a seta para cima da primeira e a para baixo da última linha ficam desabilitadas', async () => {
     await renderModule();
 
-    expect(screen.getByRole('button', { name: 'Mover Pokémon para cima' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Mover Futebol para baixo' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Mover Pokémon para baixo' })).toBeEnabled();
-    expect(screen.getByRole('button', { name: 'Mover Futebol para cima' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Mover Pokémon para cima' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    expect(screen.getByRole('button', { name: 'Mover Futebol para baixo' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    expect(screen.getByRole('button', { name: 'Mover Pokémon para baixo' })).toHaveAttribute(
+      'aria-disabled',
+      'false',
+    );
+    expect(screen.getByRole('button', { name: 'Mover Futebol para cima' })).toHaveAttribute(
+      'aria-disabled',
+      'false',
+    );
   });
 
   it('CA4: "Cancelar" volta a ordem e o fixado carregados', async () => {
@@ -169,18 +182,24 @@ describe('DefaultCategoriesModule · ordem (CCD104)', () => {
   it('CA17: com Pokémon fixada, a seta para baixo dela e a para cima da segunda linha ficam desabilitadas', async () => {
     await renderModule([{ ...POKEMON, isPinned: true }, MAGIC, FUTEBOL]);
 
-    expect(screen.getByRole('button', { name: 'Mover Pokémon para baixo' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Mover Pokémon para baixo' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
     expect(
       screen.getByRole('button', { name: 'Mover Magic: The Gathering para cima' }),
-    ).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Mover Futebol para cima' })).toBeEnabled();
+    ).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('button', { name: 'Mover Futebol para cima' })).toHaveAttribute(
+      'aria-disabled',
+      'false',
+    );
   });
 
   it('CA17: arrastar outra categoria para cima da fixada não muda a ordem', async () => {
     await renderModule([{ ...POKEMON, isPinned: true }, MAGIC, FUTEBOL]);
     const handle = within(rowOf('Futebol')).getByTestId('drag-handle');
 
-    fireEvent.dragStart(handle);
+    fireEvent.dragStart(handle, { dataTransfer: dragData() });
     fireEvent.drop(rowOf('Pokémon'));
 
     expect(namesInOrder()).toEqual(['Pokémon', 'Magic: The Gathering', 'Futebol']);
@@ -204,10 +223,78 @@ describe('DefaultCategoriesModule · ordem (CCD104)', () => {
     const row = rowOf('Magic: The Gathering');
 
     const withoutDrag = fireEvent.dragOver(row);
-    fireEvent.dragStart(within(rowOf('Futebol')).getByTestId('drag-handle'));
-    const withDrag = fireEvent.dragOver(row);
+    fireEvent.dragStart(within(rowOf('Futebol')).getByTestId('drag-handle'), {
+      dataTransfer: dragData(),
+    });
+    const withDrag = fireEvent.dragOver(row, { dataTransfer: dragData() });
 
     expect(withoutDrag).toBe(true);
     expect(withDrag).toBe(false);
+  });
+
+  it('R3: o arraste começa com setData e effectAllowed move, como o Firefox exige', async () => {
+    await renderModule();
+    const dataTransfer = dragData();
+
+    fireEvent.dragStart(within(rowOf('Futebol')).getByTestId('drag-handle'), { dataTransfer });
+
+    expect(dataTransfer.setData).toHaveBeenCalledWith('text/plain', '2');
+    expect(dataTransfer.effectAllowed).toBe('move');
+  });
+
+  it('CA17: soltar sobre a fixada não é aceito, e sobre uma linha livre é', async () => {
+    await renderModule([{ ...POKEMON, isPinned: true }, MAGIC, FUTEBOL]);
+    fireEvent.dragStart(within(rowOf('Futebol')).getByTestId('drag-handle'), {
+      dataTransfer: dragData(),
+    });
+
+    const overPinned = fireEvent.dragOver(rowOf('Pokémon'), { dataTransfer: dragData() });
+    const overFree = fireEvent.dragOver(rowOf('Magic: The Gathering'), {
+      dataTransfer: dragData(),
+    });
+
+    expect(overPinned).toBe(true);
+    expect(overFree).toBe(false);
+  });
+
+  it('CA2: a seta que chega ao limite mantém o foco no botão, que passa a aria-disabled', async () => {
+    const user = await renderModule();
+    const up = screen.getByRole('button', { name: 'Mover Magic: The Gathering para cima' });
+
+    await user.click(up);
+
+    expect(up).toHaveFocus();
+    expect(up).toHaveAttribute('aria-disabled', 'true');
+    await user.click(up);
+    expect(namesInOrder()).toEqual(['Magic: The Gathering', 'Pokémon', 'Futebol']);
+  });
+
+  it('CA2: avisa o leitor de tela onde a categoria ficou', async () => {
+    const user = await renderModule();
+
+    await user.click(screen.getByRole('button', { name: 'Mover Pokémon para baixo' }));
+    expect(screen.getByRole('status')).toHaveTextContent('Pokémon agora na posição 2 de 3');
+
+    await user.click(screen.getByRole('button', { name: 'Fixar Futebol no topo' }));
+    expect(screen.getByRole('status')).toHaveTextContent('Futebol fixada no topo');
+  });
+
+  it('CA9: a lista que chega com a fixada no meio começa com ela no topo', async () => {
+    await renderModule([MAGIC, { ...POKEMON, isPinned: true }, FUTEBOL]);
+
+    expect(namesInOrder()).toEqual(['Pokémon', 'Magic: The Gathering', 'Futebol']);
+    expect(
+      screen.getByRole('button', { name: 'Mover Magic: The Gathering para cima' }),
+    ).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('R12: sem nenhuma categoria padrão, mostra só "Adicionar categoria padrão"', async () => {
+    vi.mocked(settingsApi.listDefaultCategories).mockReset().mockResolvedValue([]);
+    renderSettings(<DefaultCategoriesModule notify={vi.fn()} />);
+
+    expect(await screen.findByText(/Nenhuma categoria padrão/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Adicionar categoria padrão/ })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Salvar ordem' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Cancelar' })).not.toBeInTheDocument();
   });
 });

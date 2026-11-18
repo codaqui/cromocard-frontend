@@ -161,11 +161,11 @@
   color: var(--color-warning-soft);
 }
 
-.control:hover:not(:disabled) {
+.control:hover:not([aria-disabled='true']) {
   background: var(--color-neutral-soft);
 }
 
-.control:disabled {
+.control[aria-disabled='true'] {
   color: var(--color-text-muted);
   cursor: not-allowed;
   opacity: 0.4;

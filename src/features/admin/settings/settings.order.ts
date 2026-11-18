@@ -4,12 +4,17 @@ function inOrder(categories: DefaultCategory[]): DefaultCategory[] {
   return categories.map((category, position) => ({ ...category, displayOrder: position }));
 }
 
-const PINNED_SLOT = 1;
+export function pinnedFirst(categories: DefaultCategory[]): DefaultCategory[] {
+  return inOrder([
+    ...categories.filter(({ isPinned }) => isPinned),
+    ...categories.filter(({ isPinned }) => !isPinned),
+  ]);
+}
 
 export function canMoveCategory(categories: DefaultCategory[], from: number, to: number): boolean {
   const moved = categories[from];
   if (!moved || to < 0 || to >= categories.length || from === to) return false;
-  const pinnedSlots = categories.some(({ isPinned }) => isPinned) ? PINNED_SLOT : 0;
+  const pinnedSlots = categories.filter(({ isPinned }) => isPinned).length;
   return !moved.isPinned && to >= pinnedSlots;
 }
 

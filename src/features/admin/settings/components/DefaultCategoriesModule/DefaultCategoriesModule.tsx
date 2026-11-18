@@ -44,52 +44,91 @@ function DefaultCategoriesShell({
 
 type Draft = ReturnType<typeof useDefaultCategoriesDraft>;
 
-function useRowDrag(draft: Draft) {
+function useRowDrag(draft: Draft, announce: (message: string) => void) {
   const [dragFrom, setDragFrom] = useState<number | null>(null);
 
   return (position: number): RowDrag => ({
     isDragging: dragFrom === position,
-    onStart: () => setDragFrom(position),
+    onStart: (event) => {
+      event.dataTransfer.setData('text/plain', String(position));
+      event.dataTransfer.effectAllowed = 'move';
+      setDragFrom(position);
+    },
     onOver: (event) => {
-      if (dragFrom !== null) event.preventDefault();
+      if (dragFrom === null || !canMoveCategory(draft.draft, dragFrom, position)) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
     },
     onDrop: () => {
-      if (dragFrom !== null) draft.moveTo(dragFrom, position);
+      if (dragFrom !== null && canMoveCategory(draft.draft, dragFrom, position)) {
+        draft.moveTo(dragFrom, position);
+        announce(movedMessage(draft.draft[dragFrom], position, draft.draft.length));
+      }
       setDragFrom(null);
     },
     onEnd: () => setDragFrom(null),
   });
 }
 
-function rowActionsOf(draft: Draft, { id }: DefaultCategory, position: number) {
+function movedMessage(category: DefaultCategory | undefined, position: number, total: number) {
+  return `${category?.name ?? 'Categoria'} agora na posição ${position + 1} de ${total}`;
+}
+
+function rowActionsOf(draft: Draft, announce: (message: string) => void) {
+  const total = draft.draft.length;
+
+  return (category: DefaultCategory, position: number) => ({
+    onMoveUp: () => {
+      draft.moveUp(position);
+      announce(movedMessage(category, position - 1, total));
+    },
+    onMoveDown: () => {
+      draft.moveDown(position);
+      announce(movedMessage(category, position + 1, total));
+    },
+    onTogglePin: () => {
+      draft.togglePin(category.id);
+      announce(`${category.name} ${category.isPinned ? 'desafixada' : 'fixada no topo'}`);
+    },
+    onRemove: () => draft.remove(category.id),
+  });
+}
+
+function useRowControls(draft: Draft, notify: Notify) {
+  const back = useBackImageUpload(draft.setBack, notify);
+  const [message, announce] = useState('');
+
   return {
-    onMoveUp: () => draft.moveUp(position),
-    onMoveDown: () => draft.moveDown(position),
-    onTogglePin: () => draft.togglePin(id),
-    onRemove: () => draft.remove(id),
+    back,
+    message,
+    dragOf: useRowDrag(draft, announce),
+    actionsOf: rowActionsOf(draft, announce),
   };
 }
 
 function CategoryRows({ draft, notify }: { draft: Draft; notify: Notify }) {
-  const back = useBackImageUpload(draft.setBack, notify);
-  const dragOf = useRowDrag(draft);
-
+  const { back, message, dragOf, actionsOf } = useRowControls(draft, notify);
   return (
-    <ul className={styles.list}>
-      {draft.draft.map((category, position) => (
-        <DefaultCategoryRow
-          key={category.id}
-          category={category}
-          position={position + 1}
-          canMoveUp={canMoveCategory(draft.draft, position, position - 1)}
-          canMoveDown={canMoveCategory(draft.draft, position, position + 1)}
-          drag={dragOf(position)}
-          isUploading={back.uploadingId === category.id}
-          onChoose={(file) => back.choose(category.id, file)}
-          {...rowActionsOf(draft, category, position)}
-        />
-      ))}
-    </ul>
+    <>
+      <ul className={styles.list}>
+        {draft.draft.map((category, position) => (
+          <DefaultCategoryRow
+            key={category.id}
+            category={category}
+            position={position + 1}
+            canMoveUp={canMoveCategory(draft.draft, position, position - 1)}
+            canMoveDown={canMoveCategory(draft.draft, position, position + 1)}
+            drag={dragOf(position)}
+            isUploading={back.uploadingId === category.id}
+            onChoose={(file) => back.choose(category.id, file)}
+            {...actionsOf(category, position)}
+          />
+        ))}
+      </ul>
+      <p role="status" className={styles.srOnly}>
+        {message}
+      </p>
+    </>
   );
 }
 
@@ -158,10 +197,15 @@ function DefaultCategoriesEditor({ categories, notify }: DefaultCategoriesEditor
   const draft = useDefaultCategoriesDraft(categories);
   const { save, isSaving } = useSaveDefaultCategories(notify);
   const actions = { saveLabel: 'Salvar ordem', isSaving, onCancel: draft.reset };
+  const isUntouchedEmpty = categories.length === 0 && draft.draft.length === 0;
 
   return (
     <DefaultCategoriesShell
-      actions={<ModuleActions {...actions} onSave={() => save(draft.draft)} />}
+      actions={
+        isUntouchedEmpty ? undefined : (
+          <ModuleActions {...actions} onSave={() => save(draft.draft)} />
+        )
+      }
     >
       <CategoryList draft={draft} notify={notify} />
       <CategoryAdder draft={draft} />

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { canMoveCategory, moveCategory, togglePinned } from './settings.order';
+import { canMoveCategory, moveCategory, pinnedFirst, togglePinned } from './settings.order';
 import { defaultCategory } from './test/fixtures';
 
 const pokemon = defaultCategory('c-pokemon', 'Pokémon');
@@ -88,5 +88,24 @@ describe('categoria fixada no topo (L21)', () => {
     const free = togglePinned(pinned, 'c-pokemon');
 
     expect(canMoveCategory(free, 0, 1)).toBe(true);
+  });
+});
+
+describe('pinnedFirst e as bordas da fixada', () => {
+  it('leva a fixada que veio no meio da lista para a primeira posição e renumera', () => {
+    const middle = [pokemon, { ...magic, isPinned: true }, futebol];
+
+    const normalized = pinnedFirst(middle);
+
+    expect(idsOf(normalized)).toEqual(['c-magic', 'c-pokemon', 'c-futebol']);
+    expect(normalized.map(({ displayOrder }) => displayOrder)).toEqual([0, 1, 2]);
+  });
+
+  it('uma lista de um item não se move para lugar nenhum, fixada ou não', () => {
+    const single = [pokemon];
+
+    expect(canMoveCategory(single, 0, 1)).toBe(false);
+    expect(canMoveCategory(single, 0, -1)).toBe(false);
+    expect(canMoveCategory(togglePinned(single, 'c-pokemon'), 0, 0)).toBe(false);
   });
 });

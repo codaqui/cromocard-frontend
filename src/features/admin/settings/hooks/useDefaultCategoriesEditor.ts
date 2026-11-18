@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import type { Notify } from './useSettingsNotice';
 import { errorNotice, imageFailureNotice, settingsNotices } from '../settings.labels';
 import { useUpdateDefaultCategories, useUploadSettingImage } from '../settings.queries';
 import { backImageSchema, imageErrorOf } from '../settings.schemas';
-import { moveCategory, togglePinned } from '../settings.order';
+import { moveCategory, pinnedFirst, togglePinned } from '../settings.order';
 import type { CategoryOption, DefaultCategory } from '../settings.types';
 
 function draftOf(
@@ -15,7 +15,8 @@ function draftOf(
   return { id, name, type, slug, badge, cardsCount, ...emptyBack };
 }
 
-export function useDefaultCategoriesDraft(initial: DefaultCategory[]) {
+export function useDefaultCategoriesDraft(loaded: DefaultCategory[]) {
+  const initial = useMemo(() => pinnedFirst(loaded), [loaded]);
   const [draft, setDraft] = useState(initial);
 
   return {
