@@ -1,9 +1,5 @@
 import type { PaginationParams } from '@/types/api';
 
-export const CATEGORY_TYPES = ['ALBUM', 'CARD'] as const;
-
-export type CategoryType = (typeof CATEGORY_TYPES)[number];
-
 export const CATEGORY_BADGES = ['STANDARD', 'TRENDING'] as const;
 
 export type CategoryBadge = (typeof CATEGORY_BADGES)[number];
@@ -65,7 +61,6 @@ export interface Card {
 export interface Category {
   id: string;
   name: string;
-  type: CategoryType;
   slug: string | null;
   badge: CategoryBadge | null;
   cardsCount: number;
@@ -91,9 +86,7 @@ export interface ListCardsParams extends SearchParams {
   rarityId?: string;
 }
 
-export interface ListCategoriesParams extends SearchParams {
-  type?: CategoryType;
-}
+export type ListCategoriesParams = SearchParams;
 
 /** Aviso de sucesso: o título e a linha de detalhe, como no frame 832-1149. */
 export interface CatalogNotice {
