@@ -88,9 +88,11 @@ export interface PendingTemplate {
   body: string;
 }
 
+export type PendingNoticeChannel = 'SITE' | 'EMAIL';
+
 export interface PendingNoticeResult {
   sentAt: string;
-  channels: ('SITE' | 'EMAIL')[];
+  channels: PendingNoticeChannel[];
   emailDelivered: boolean;
 }
 

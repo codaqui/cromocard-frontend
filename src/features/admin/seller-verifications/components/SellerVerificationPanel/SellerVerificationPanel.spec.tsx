@@ -17,6 +17,8 @@ vi.mock('../../seller-verifications.api', () => ({
     addNote: vi.fn(),
     approve: vi.fn(),
     reject: vi.fn(),
+    getPendingTemplates: vi.fn(),
+    sendPendingNotice: vi.fn(),
   },
 }));
 
@@ -132,6 +134,29 @@ describe('SellerVerificationPanel', () => {
     await userEvent.click(await screen.findByRole('tab', { name: 'Docs 0' }));
 
     expect(screen.getByText('Nenhum documento enviado.')).toBeInTheDocument();
+  });
+
+  it('CCD095 CA1: "Notificar Pendência" no dossiê abre o formulário com o destinatário', async () => {
+    vi.mocked(sellerVerificationsApi.getById).mockResolvedValue(buildDetail());
+    vi.mocked(sellerVerificationsApi.getPendingTemplates).mockResolvedValue([]);
+    renderPanel();
+    await screen.findByText('Cards Kanto LTDA');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Notificar Pendência' }));
+
+    const dialog = screen.getByRole('dialog', { name: 'Notificar Lojista — Pendência Cadastral' });
+    expect(dialog).toHaveTextContent('Destinatário: Fábio TCG Store (fabio@cromocard.dev)');
+    expect(dialog).toHaveTextContent('Notificação no Site');
+  });
+
+  it('CCD095 R2: cadastro já decidido não oferece "Notificar Pendência"', async () => {
+    vi.mocked(sellerVerificationsApi.getById).mockResolvedValue(
+      buildDetail({ status: 'APPROVED', reviewedAt: '2026-11-13T12:00:00Z' }),
+    );
+    renderPanel();
+    await screen.findByText('Cards Kanto LTDA');
+
+    expect(screen.queryByRole('button', { name: 'Notificar Pendência' })).not.toBeInTheDocument();
   });
 
   it('CA2: endereço sem complemento sai sem o separador a mais', async () => {
