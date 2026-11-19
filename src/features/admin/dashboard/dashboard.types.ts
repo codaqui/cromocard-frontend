@@ -1,3 +1,4 @@
+import type { SellerVerificationSummary } from '@/features/admin';
 import type { PeriodPreset } from '@/components/PeriodFilter/PeriodFilter';
 
 export interface DashboardKpis {
@@ -21,3 +22,8 @@ export interface DashboardSummary {
 }
 
 export type DashboardPeriodParams = { period: PeriodPreset } | { from: string; to: string };
+
+export interface SellerCredentialing {
+  summary: SellerVerificationSummary;
+  onAnalyzeQueue: () => void;
+}

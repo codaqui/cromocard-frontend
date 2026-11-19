@@ -6,6 +6,7 @@ import { Drawer } from '@/components/Drawer/Drawer';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { FormError } from '@/components/FormError/FormError';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
+import { Tabs } from '@/components/Tabs/Tabs';
 import { Toast } from '@/components/Toast/Toast';
 import { formatDate } from '@/utils/formatDate';
 
@@ -22,93 +23,16 @@ import {
   useSellerVerification,
   useValidateSellerDocument,
 } from '../../seller-verifications.queries';
-import type { SellerAddress, SellerVerificationDetail } from '../../seller-verifications.types';
+import type { SellerVerificationDetail } from '../../seller-verifications.types';
 import { DocumentList } from './DocumentList';
 import { InternalNotes } from './InternalNotes';
+import { RegistrationTab } from './RegistrationTab';
 import { RejectDialog } from './RejectDialog';
 import styles from './SellerVerificationPanel.module.css';
 
 interface SellerVerificationPanelProps {
   id: string | null;
   onClose: () => void;
-}
-
-function Field({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className={styles.fieldLabel}>{label}</p>
-      <p className={styles.fieldValue}>{value}</p>
-    </div>
-  );
-}
-
-function CompanySection({ detail }: { detail: SellerVerificationDetail }) {
-  return (
-    <section className={styles.section} aria-label="Dados da empresa">
-      <h3 className={styles.sectionTitle}>Empresa</h3>
-      <div className={styles.fields}>
-        <Field label="Razão social" value={detail.legalName} />
-        <Field label="Nome fantasia" value={detail.tradeName ?? '—'} />
-        <Field label="CNPJ" value={detail.cnpj} />
-        <Field label="Inscrição estadual" value={detail.stateRegistration ?? '—'} />
-        <Field
-          label="Data de abertura"
-          value={detail.openingDate ? formatDate(detail.openingDate) : '—'}
-        />
-        <Field label="Porte" value={detail.companySize ?? '—'} />
-        <Field label="CNAE" value={detail.cnae ?? '—'} />
-      </div>
-    </section>
-  );
-}
-
-function ResponsibleSection({ detail }: { detail: SellerVerificationDetail }) {
-  return (
-    <section className={styles.section} aria-label="Responsável legal">
-      <h3 className={styles.sectionTitle}>Responsável legal</h3>
-      <div className={styles.fields}>
-        <Field label="Nome" value={detail.responsibleName} />
-        <Field label="CPF" value={detail.responsibleCpf} />
-        <Field label="Telefone" value={detail.responsiblePhone ?? '—'} />
-      </div>
-    </section>
-  );
-}
-
-function BankSection({ detail }: { detail: SellerVerificationDetail }) {
-  return (
-    <section className={styles.section} aria-label="Dados bancários e Pix">
-      <h3 className={styles.sectionTitle}>Dados bancários e Pix</h3>
-      <div className={styles.fields}>
-        <Field label="Banco" value={detail.bankName ?? '—'} />
-        <Field label="Agência" value={detail.bankBranch ?? '—'} />
-        <Field label="Conta" value={detail.bankAccount ?? '—'} />
-        <Field label="Chave Pix" value={detail.pixKey ?? '—'} />
-      </div>
-    </section>
-  );
-}
-
-function formatAddress(address: SellerAddress): string {
-  const streetLine = [
-    `${address.street}, ${address.number}`,
-    address.complement,
-    address.neighborhood,
-  ]
-    .filter(Boolean)
-    .join(' - ');
-  return `${streetLine}, ${address.city} - ${address.state}, CEP ${address.zipCode}`;
-}
-
-function AddressSection({ address }: { address: SellerAddress | null }) {
-  return (
-    <section className={styles.section} aria-label="Endereço do estabelecimento">
-      <h3 className={styles.sectionTitle}>Endereço do estabelecimento</h3>
-      <p className={address ? styles.fieldValue : styles.emptyHint}>
-        {address ? formatAddress(address) : 'Endereço não informado.'}
-      </p>
-    </section>
-  );
 }
 
 function DecidedInfo({ detail }: { detail: SellerVerificationDetail }) {
@@ -259,7 +183,7 @@ function DocumentsSection({
   actions: SellerVerificationActions;
 }) {
   return (
-    <section className={styles.section} aria-label="Documentos">
+    <section className={styles.sectionCard} aria-label="Documentos">
       <h3 className={styles.sectionTitle}>Documentos</h3>
       <DocumentList
         documents={detail.documents}
@@ -279,7 +203,7 @@ function NotesSection({
   actions: SellerVerificationActions;
 }) {
   return (
-    <section className={styles.section} aria-label="Anotações internas">
+    <section className={styles.sectionCard} aria-label="Anotações internas">
       <h3 className={styles.sectionTitle}>Anotações internas</h3>
       <InternalNotes
         notes={detail.notes}
@@ -318,6 +242,35 @@ function PanelDecisionFooter({ detail, actions }: PanelDecisionFooterProps) {
   );
 }
 
+type PanelTabId = 'registration' | 'documents';
+
+function PanelTabs({
+  detail,
+  actions,
+}: {
+  detail: SellerVerificationDetail;
+  actions: SellerVerificationActions;
+}) {
+  const [activeTab, setActiveTab] = useState<PanelTabId>('registration');
+  const items = [
+    { id: 'registration' as const, label: 'Dados Cadastrais & Fiscais' },
+    { id: 'documents' as const, label: 'Docs', count: detail.documents.length },
+  ];
+
+  return (
+    <Tabs label="Dossiê do lojista" items={items} activeId={activeTab} onChange={setActiveTab}>
+      {activeTab === 'registration' ? (
+        <RegistrationTab detail={detail} />
+      ) : (
+        <div className={styles.tabContent}>
+          <DocumentsSection detail={detail} actions={actions} />
+          <NotesSection detail={detail} actions={actions} />
+        </div>
+      )}
+    </Tabs>
+  );
+}
+
 function PanelBody({
   detail,
   actions,
@@ -328,12 +281,7 @@ function PanelBody({
   return (
     <div className={styles.body}>
       <PanelHeading detail={detail} />
-      <CompanySection detail={detail} />
-      <ResponsibleSection detail={detail} />
-      <BankSection detail={detail} />
-      <AddressSection address={detail.address} />
-      <DocumentsSection detail={detail} actions={actions} />
-      <NotesSection detail={detail} actions={actions} />
+      <PanelTabs detail={detail} actions={actions} />
       <PanelDecisionFooter detail={detail} actions={actions} />
     </div>
   );
@@ -344,7 +292,7 @@ function SellerVerificationPanelContent({ id, onClose }: { id: string; onClose: 
   const actions = useSellerVerificationActions(id);
 
   return (
-    <Drawer open title="Validar Cadastro" onClose={onClose}>
+    <Drawer open title="Validar Cadastro" size="wide" onClose={onClose}>
       {detailQuery.isPending && <LoadingState message="Carregando o dossiê…" />}
       {detailQuery.isError && <ErrorState message={detailQuery.error.message} />}
       {detailQuery.data && <PanelBody detail={detailQuery.data} actions={actions} />}

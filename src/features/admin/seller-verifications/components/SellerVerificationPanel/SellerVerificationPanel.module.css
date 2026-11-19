@@ -22,36 +22,84 @@
   color: var(--color-label);
 }
 
-.section {
+.tabContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.sectionCard {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
 }
 
 .sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   font-size: var(--font-size-sm);
   font-weight: 700;
   color: var(--color-text);
 }
 
+.sectionIcon {
+  display: inline-flex;
+  color: var(--color-primary);
+}
+
 .fields {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  gap: var(--space-3);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.bankFields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.field {
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-sunken);
+}
+
+.fieldWide {
+  grid-column: 1 / -1;
 }
 
 .fieldLabel {
   font-size: var(--font-size-xs);
-  font-weight: 700;
-  letter-spacing: var(--letter-spacing-caps);
-  text-transform: uppercase;
   color: var(--color-label);
 }
 
 .fieldValue {
   margin-top: var(--space-1);
+  font-size: var(--font-size-sm);
   font-weight: 600;
   overflow-wrap: anywhere;
+}
+
+.fieldMono {
+  font-family: var(--font-family-mono);
+}
+
+.addressText {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 30rem) {
+  .fields,
+  .bankFields {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .emptyHint {

@@ -1,4 +1,3 @@
-export { SellerCredentialingCard } from './components/SellerCredentialingCard/SellerCredentialingCard';
 export {
   SellerRegistrationsTable,
   SELLER_REGISTRATIONS_ANCHOR,

@@ -81,6 +81,10 @@ function renderPanel(onClose = vi.fn()) {
   return { invalidateQueries };
 }
 
+async function openDocsTab() {
+  await userEvent.click(await screen.findByRole('tab', { name: /Docs/ }));
+}
+
 const alreadyDecided = new ApiError({
   status: 409,
   code: 'VERIFICATION_ALREADY_DECIDED',
@@ -96,13 +100,29 @@ describe('SellerVerificationPanel', () => {
     expect(screen.getByText('Victor Hugo Menezes')).toBeInTheDocument();
     expect(screen.getByText('Banco do Brasil')).toBeInTheDocument();
     expect(screen.getByText('victor@cromocard.dev')).toBeInTheDocument();
-    const address = screen.getByRole('region', { name: 'Endereço do estabelecimento' });
+    const address = screen.getByRole('region', { name: 'Endereço do Estabelecimento' });
     expect(
       within(address).getByText(
         'Rua Vergueiro, 1200 - Conjunto 42 - Liberdade, São Paulo - SP, CEP 01504-000',
       ),
     ).toBeInTheDocument();
+    await openDocsTab();
     expect(screen.getByText('Cartão CNPJ')).toBeInTheDocument();
+  });
+
+  it('CA2: separa o dossiê nas abas do Figma, com a contagem de documentos', async () => {
+    vi.mocked(sellerVerificationsApi.getById).mockResolvedValue(buildDetail());
+    renderPanel();
+
+    const registrationTab = await screen.findByRole('tab', { name: 'Dados Cadastrais & Fiscais' });
+    expect(registrationTab).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'Docs 1' })).toBeInTheDocument();
+    expect(screen.queryByText('Cartão CNPJ')).not.toBeInTheDocument();
+
+    await openDocsTab();
+
+    expect(screen.getByText('Cartão CNPJ')).toBeInTheDocument();
+    expect(screen.queryByText('Cards Kanto LTDA')).not.toBeInTheDocument();
   });
 
   it('CA2: endereço sem complemento sai sem o separador a mais', async () => {
@@ -135,7 +155,7 @@ describe('SellerVerificationPanel', () => {
       ],
     });
     renderPanel();
-    await screen.findByText('Cards Kanto LTDA');
+    await openDocsTab();
 
     await userEvent.click(screen.getByRole('button', { name: 'Validar' }));
 
@@ -149,7 +169,7 @@ describe('SellerVerificationPanel', () => {
       new Error('Não foi possível validar o documento.'),
     );
     renderPanel();
-    await screen.findByText('Cards Kanto LTDA');
+    await openDocsTab();
 
     await userEvent.click(screen.getByRole('button', { name: 'Validar' }));
 
@@ -176,8 +196,9 @@ describe('SellerVerificationPanel', () => {
       }),
     );
     renderPanel();
+    await openDocsTab();
 
-    expect(await screen.findByText('OUTRO_DOCUMENTO')).toBeInTheDocument();
+    expect(screen.getByText('OUTRO_DOCUMENTO')).toBeInTheDocument();
   });
 
   it('documento validado sem a data mostra só "Validado"', async () => {
@@ -198,8 +219,9 @@ describe('SellerVerificationPanel', () => {
       }),
     );
     renderPanel();
+    await openDocsTab();
 
-    expect(await screen.findByText('Validado')).toBeInTheDocument();
+    expect(screen.getByText('Validado')).toBeInTheDocument();
   });
 
   it('CA4: aprova o credenciamento', async () => {
@@ -275,7 +297,7 @@ describe('SellerVerificationPanel', () => {
       ],
     });
     renderPanel();
-    await screen.findByText('Cards Kanto LTDA');
+    await openDocsTab();
 
     await userEvent.type(
       screen.getByLabelText('Nova anotação interna'),
@@ -292,7 +314,7 @@ describe('SellerVerificationPanel', () => {
   it('R7: não registra uma anotação vazia', async () => {
     vi.mocked(sellerVerificationsApi.getById).mockResolvedValue(buildDetail());
     renderPanel();
-    await screen.findByText('Cards Kanto LTDA');
+    await openDocsTab();
 
     await userEvent.click(screen.getByRole('button', { name: 'Adicionar anotação' }));
 
@@ -337,7 +359,7 @@ describe('SellerVerificationPanel', () => {
       ],
     });
     renderPanel();
-    await screen.findByText('Cards Kanto LTDA');
+    await openDocsTab();
     await userEvent.click(screen.getByRole('button', { name: 'Validar' }));
     await screen.findByText('Documento validado com sucesso.');
 

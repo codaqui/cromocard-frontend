@@ -6,7 +6,6 @@ import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
 import type { Period } from '@/components/PeriodFilter/PeriodFilter';
 import {
-  SellerCredentialingCard,
   SellerRegistrationsTable,
   SellerVerificationPanel,
   useSellerVerificationDrawer,
@@ -22,7 +21,11 @@ import { SignupsChart } from '../../components/SignupsChart/SignupsChart';
 import { SignupsMix } from '../../components/SignupsMix/SignupsMix';
 import { DEFAULT_DASHBOARD_PERIOD, toPeriodParams } from '../../dashboard.period';
 import { useDashboardSummary } from '../../dashboard.queries';
-import type { DashboardPeriodParams, DashboardSummary } from '../../dashboard.types';
+import type {
+  DashboardPeriodParams,
+  DashboardSummary,
+  SellerCredentialing,
+} from '../../dashboard.types';
 import styles from './DashboardPage.module.css';
 
 const NO_DATA_FOR_FILTERS = 'Não foram encontrados dados para os filtros selecionados';
@@ -41,17 +44,6 @@ function LoadError({ message, onRetry }: LoadErrorProps) {
       </Button>
     </div>
   );
-}
-
-interface SellerCredentialingProps {
-  params: DashboardPeriodParams;
-}
-
-function SellerCredentialing({ params }: SellerCredentialingProps) {
-  const query = useSellerVerificationsSummary(params);
-
-  if (query.isPending || query.isError) return null;
-  return <SellerCredentialingCard {...query.data} />;
 }
 
 interface SellerRegistrationsProps {
@@ -85,18 +77,25 @@ function SellerRegistrations({ statusFilter, onValidate, ...props }: SellerRegis
   );
 }
 
-interface DashboardDataProps {
-  summary: DashboardSummary;
-  params: DashboardPeriodParams;
+interface DashboardSections {
+  credentialing?: SellerCredentialing;
   sellerVerifications: SellerRegistrationsProps;
 }
 
-function DashboardData({ summary, params, sellerVerifications }: DashboardDataProps) {
+interface DashboardDataProps extends DashboardSections {
+  summary: DashboardSummary;
+}
+
+function DashboardData({ summary, credentialing, sellerVerifications }: DashboardDataProps) {
   if (summary.isEmpty) return <EmptyState title="Não existem dados para apresentação" />;
 
   return (
     <>
-      <DashboardKpis kpis={summary.kpis} signups={summary.signupsByMonth} />
+      <DashboardKpis
+        kpis={summary.kpis}
+        signups={summary.signupsByMonth}
+        credentialing={credentialing}
+      />
       {summary.kpis.newUsers === 0 ? (
         <EmptyState title={NO_DATA_FOR_FILTERS} />
       ) : (
@@ -105,19 +104,16 @@ function DashboardData({ summary, params, sellerVerifications }: DashboardDataPr
           <SignupsMix kpis={summary.kpis} />
         </div>
       )}
-      <SellerCredentialing params={params} />
       <SellerRegistrations {...sellerVerifications} />
     </>
   );
 }
 
-function DashboardContent({
-  params,
-  sellerVerifications,
-}: {
+interface DashboardContentProps extends DashboardSections {
   params: DashboardPeriodParams;
-  sellerVerifications: SellerRegistrationsProps;
-}) {
+}
+
+function DashboardContent({ params, ...sections }: DashboardContentProps) {
   const query = useDashboardSummary(params);
 
   if (query.isPending) return <LoadingState message="Carregando o dashboard…" />;
@@ -125,9 +121,15 @@ function DashboardContent({
     return <LoadError message={query.error.message} onRetry={() => void query.refetch()} />;
   }
 
-  return (
-    <DashboardData summary={query.data} params={params} sellerVerifications={sellerVerifications} />
-  );
+  return <DashboardData summary={query.data} {...sections} />;
+}
+
+function useSellerCredentialing(
+  params: DashboardPeriodParams,
+  onAnalyzeQueue: () => void,
+): SellerCredentialing | undefined {
+  const summary = useSellerVerificationsSummary(params).data;
+  return summary && { summary, onAnalyzeQueue };
 }
 
 export function DashboardPage() {
@@ -136,14 +138,15 @@ export function DashboardPage() {
   const drawer = useSellerVerificationDrawer();
   const params = toPeriodParams(period);
 
-  const summaryQuery = useSellerVerificationsSummary(params);
-  const pendingCount = summaryQuery.data?.pending ?? 0;
+  const credentialing = useSellerCredentialing(params, () => setStatusFilter('PENDING'));
+  const pendingCount = credentialing?.summary.pending ?? 0;
 
   return (
     <section className={styles.page}>
       <DashboardHeader period={period} params={params} onPeriodChange={setPeriod} />
       <DashboardContent
         params={params}
+        credentialing={credentialing}
         sellerVerifications={{
           statusFilter,
           onStatusFilterChange: setStatusFilter,

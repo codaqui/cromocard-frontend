@@ -27,8 +27,10 @@ const percentFormatter = new Intl.NumberFormat('pt-BR', {
   maximumFractionDigits: 0,
 });
 
+export const formatPercent = (ratio: number) => percentFormatter.format(ratio);
+
 export const formatShare = (part: number, whole: number) =>
-  percentFormatter.format(whole === 0 ? 0 : part / whole);
+  formatPercent(whole === 0 ? 0 : part / whole);
 
 function dateParts(iso: string) {
   const parts = dayMonthFormatter.formatToParts(new Date(iso));

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -93,12 +93,67 @@ describe('DashboardPage', () => {
     expect(dashboardApi.getSummary).toHaveBeenCalledWith({ period: '30d' });
   });
 
-  it('CA8: mostra o card de credenciamento com aprovados e conversão', async () => {
+  it('CA8: mostra o card de credenciamento com aprovados, pendentes e conversão', async () => {
     renderPage();
 
     const card = await screen.findByRole('region', { name: 'Lojistas & Credenciamento' });
-    expect(card).toHaveTextContent('75%');
-    expect(card).toHaveTextContent('3');
+    expect(card).toHaveTextContent('3 aprovados');
+    expect(card).toHaveTextContent('1 Pendente');
+    expect(card).not.toHaveTextContent('1 Pendentes');
+    expect(card).toHaveTextContent('Conversão de 75% (aprovados ÷ analisados).');
+  });
+
+  it('CA8: usa o singular para 1 aprovado e o plural para vários pendentes', async () => {
+    vi.mocked(sellerVerificationsApi.getSummary).mockResolvedValue({
+      approved: 1,
+      pending: 4,
+      conversionRate: 0.5,
+    });
+
+    renderPage();
+
+    const card = await screen.findByRole('region', { name: 'Lojistas & Credenciamento' });
+    expect(card).toHaveTextContent('1 aprovado');
+    expect(card).not.toHaveTextContent('1 aprovados');
+    expect(card).toHaveTextContent('4 Pendentes');
+  });
+
+  it('R4: o card de credenciamento é o 4º da linha de indicadores, no lugar de "Novos vendedores"', async () => {
+    renderPage();
+
+    const card = await screen.findByRole('region', { name: 'Lojistas & Credenciamento' });
+    const kpiRow = card.parentElement!;
+    expect(within(kpiRow).getAllByRole('region')).toHaveLength(4);
+    expect(kpiRow.lastElementChild).toBe(card);
+    expect(screen.queryByRole('region', { name: 'Novos vendedores' })).not.toBeInTheDocument();
+  });
+
+  it('mostra "Novos vendedores" no 4º card enquanto o credenciamento não carrega', async () => {
+    vi.mocked(sellerVerificationsApi.getSummary).mockReturnValue(new Promise(() => undefined));
+
+    renderPage();
+
+    expect(await screen.findByRole('region', { name: 'Novos vendedores' })).toHaveTextContent('2');
+  });
+
+  it('L5: "Analisar Fila" filtra a lista de cadastros em Pendente', async () => {
+    renderPage();
+    await screen.findByRole('row', { name: /Fábio TCG Store/ });
+
+    await userEvent.click(await screen.findByRole('link', { name: 'Analisar Fila' }));
+
+    expect(screen.getByRole('link', { name: 'Analisar Fila' })).toHaveAttribute(
+      'href',
+      '#vendedores-recentes',
+    );
+    await vi.waitFor(() =>
+      expect(sellerVerificationsApi.list).toHaveBeenLastCalledWith({
+        status: 'PENDING',
+        page: 1,
+        pageSize: 20,
+      }),
+    );
+    expect(screen.getByLabelText('Filtrar por status')).toHaveValue('PENDING');
   });
 
   it('CA2: recalcula o dashboard ao escolher 7 dias', async () => {

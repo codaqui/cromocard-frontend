@@ -1,7 +1,6 @@
 export { adminBackofficeRoutes } from './admin.routes';
 export {
   SELLER_REGISTRATIONS_ANCHOR,
-  SellerCredentialingCard,
   SellerRegistrationsTable,
   SellerVerificationPanel,
   sellerVerificationsApi,
