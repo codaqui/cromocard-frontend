@@ -23,23 +23,24 @@ function withCards(current: Map<string, Card>, cards: Card[]) {
   return next;
 }
 
-/** Cartas marcadas na lista para a exclusão em lote (CCD105, R10), mesmo trocando de página. */
+function allSelected(selection: Map<string, Card>, cards: Card[]) {
+  return cards.length > 0 && cards.every(({ id }) => selection.has(id));
+}
+
 export function useCardSelection(): CardSelection {
   const [selection, setSelection] = useState(new Map<string, Card>());
-  const areAllSelected = (cards: Card[]) =>
-    cards.length > 0 && cards.every(({ id }) => selection.has(id));
 
   return {
     selected: [...selection.values()],
     isSelected: (id) => selection.has(id),
-    areAllSelected,
+    areAllSelected: (cards) => allSelected(selection, cards),
     toggle: (card) =>
       setSelection((current) =>
         current.has(card.id) ? withoutCards(current, [card]) : withCards(current, [card]),
       ),
     togglePage: (cards) =>
       setSelection((current) =>
-        areAllSelected(cards) ? withoutCards(current, cards) : withCards(current, cards),
+        allSelected(current, cards) ? withoutCards(current, cards) : withCards(current, cards),
       ),
     clear: () => setSelection(new Map()),
   };

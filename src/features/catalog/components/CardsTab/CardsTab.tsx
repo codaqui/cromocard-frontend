@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 import type { DataTableColumn } from '@/components/DataTable/DataTable';
 import type { SelectOption } from '@/components/Select/Select';
 
@@ -7,7 +5,7 @@ import { filtersStateOf, listSummary, selectChips } from '../../catalog.filter-c
 import { formatEdition } from '../../catalog.format';
 import { useCardsList } from '../../catalog.queries';
 import { variantLabelsOf } from '../../catalog.schemas';
-import type { Card, CatalogNotice, CatalogTabProps } from '../../catalog.types';
+import type { Card, CatalogTabProps } from '../../catalog.types';
 import {
   useAlbumOptions,
   useAlbumYearOptions,
@@ -16,9 +14,11 @@ import {
 } from '../../hooks/useCatalogFilterOptions';
 import { type CatalogItemDialogs, useCatalogItemDialogs } from '../../hooks/useCatalogItemDialogs';
 import { type CatalogListFilters, useCatalogListFilters } from '../../hooks/useCatalogListFilters';
+import { type BulkDeletion, useBulkDeletion } from '../../hooks/useBulkDeletion';
 import { type CardSelection, useCardSelection } from '../../hooks/useCardSelection';
 import { BulkDeleteCardsDialog } from '../BulkDeleteCardsDialog/BulkDeleteCardsDialog';
 import { BulkSelectionBar } from '../BulkSelectionBar/BulkSelectionBar';
+import { cardSelectionColumn } from '../SelectionCheckbox/cardSelectionColumn';
 import {
   AlbumNumberCell,
   EditionCell,
@@ -91,7 +91,6 @@ type CardFilterName = keyof typeof initialFilters;
 
 type CardFilterSelect = CatalogFilterSelectConfig<CardFilterName>;
 
-/** Status é da CCD106 (rascunho): o filtro aparece desabilitado até lá (CCD105, L12). */
 const statusSelect: CatalogFilterSelectConfig<'status'> = {
   name: 'status',
   label: 'Status',
@@ -102,39 +101,7 @@ const statusSelect: CatalogFilterSelectConfig<'status'> = {
   disabled: true,
 };
 
-interface SelectionCheckboxProps {
-  label: string;
-  checked: boolean;
-  onChange: () => void;
-}
-
-function SelectionCheckbox({ label, checked, onChange }: SelectionCheckboxProps) {
-  return (
-    <label className={styles.check}>
-      <input type="checkbox" aria-label={label} checked={checked} onChange={onChange} />
-    </label>
-  );
-}
-
-function selectionColumn(selection: CardSelection, rows: Card[]): DataTableColumn<Card> {
-  return {
-    key: 'select',
-    header: (
-      <SelectionCheckbox
-        label="Selecionar as cartas da página"
-        checked={selection.areAllSelected(rows)}
-        onChange={() => selection.togglePage(rows)}
-      />
-    ),
-    render: (card) => (
-      <SelectionCheckbox
-        label={`Selecionar ${card.name}`}
-        checked={selection.isSelected(card.id)}
-        onChange={() => selection.toggle(card)}
-      />
-    ),
-  };
-}
+const noop = () => undefined;
 
 interface CardsTableSource {
   dialogs: CatalogItemDialogs<Card>;
@@ -147,7 +114,7 @@ function cardsTableOf({ dialogs, selection, rows }: CardsTableSource): CatalogTa
   return {
     caption: 'Cartas do catálogo',
     emptyTitle: 'Nenhuma carta encontrada',
-    columns: [selectionColumn(selection, rows), ...cardColumns, actions],
+    columns: [cardSelectionColumn(selection, rows), ...cardColumns, actions],
   };
 }
 
@@ -223,27 +190,10 @@ function CardFilters({ list, summary }: CardFiltersProps) {
           onChange={list.changeFilter}
         />
       ))}
-      <CatalogFilterSelect select={statusSelect} value="" onChange={() => undefined} />
+      <CatalogFilterSelect select={statusSelect} value="" onChange={noop} />
     </CatalogFilters>
   );
 }
-
-function useBulkDeletion(selection: CardSelection, notify: (notice: CatalogNotice) => void) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return {
-    isOpen,
-    open: () => setIsOpen(true),
-    close: () => setIsOpen(false),
-    finish: (notice: CatalogNotice) => {
-      setIsOpen(false);
-      selection.clear();
-      notify(notice);
-    },
-  };
-}
-
-type BulkDeletion = ReturnType<typeof useBulkDeletion>;
 
 function BulkDeletionDialog({ bulk, selection }: { bulk: BulkDeletion; selection: CardSelection }) {
   if (!bulk.isOpen) return null;

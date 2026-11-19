@@ -38,7 +38,6 @@ function pendingHintOf(pending?: number): string | undefined {
   return `${formatCount(pending)} ${pending === 1 ? 'pendente' : 'pendentes'} de revisão`;
 }
 
-/** Indicadores do frame 208-2895 (CCD105, R7 e L8): álbuns, licenciados e pendentes de revisão. */
 export function CatalogStats({ summary }: { summary?: CatalogSummary }) {
   return (
     <div className={styles.stats}>

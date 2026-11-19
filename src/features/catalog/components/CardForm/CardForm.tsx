@@ -118,7 +118,6 @@ function PairRow({ children }: { children: ReactNode }) {
   );
 }
 
-/** "Ano de lançamento" é da CCD106: aparece desabilitado até lá (CCD105, L12). */
 function ReleaseYearField() {
   return (
     <IconInput label="Ano de lançamento" icon="calendar" iconEnd disabled placeholder="AAAA" />

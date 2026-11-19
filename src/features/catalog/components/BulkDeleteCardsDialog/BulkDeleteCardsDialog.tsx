@@ -10,7 +10,6 @@ interface BulkDeleteCardsDialogProps {
   onDeleted: (notice: CatalogNotice) => void;
 }
 
-/** Modal "Excluir 3 cartas?" do frame 832-4908, com o motivo obrigatório (CCD105, R10). */
 export function BulkDeleteCardsDialog({ cards, onClose, onDeleted }: BulkDeleteCardsDialogProps) {
   const removal = useBulkDeleteCards();
   const title = bulkDeleteTitle(cards.length);

@@ -135,10 +135,8 @@ function invalidNoteOf(action: string) {
       : `Corrija os ${count} campos destacados para ${action}.`;
 }
 
-/** O rascunho é da CCD106: até lá o botão aparece desabilitado, como decidido na L12 da CCD105. */
 export const DRAFT_LABEL = 'Salvar como Rascunho';
 
-/** Modal "Duplicar carta" do frame 832-6457: cadastro novo com os dados de outra carta. */
 export function duplicateModalTextsOf(sourceName: string) {
   const texts = catalogItemTexts.card;
   return {

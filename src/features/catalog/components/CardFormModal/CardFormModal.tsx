@@ -10,7 +10,6 @@ const texts = catalogItemTexts.card;
 
 interface CardFormModalProps {
   card?: Card;
-  /** Carta de origem: abre o "Duplicar carta", que cadastra uma carta nova (CCD105). */
   source?: Card;
   onClose: () => void;
   onSaved: (notice: CatalogNotice) => void;

@@ -39,7 +39,6 @@ export function useAlbumOptions(current?: SelectOption): SelectOption[] {
   return withCurrentOption(options, current);
 }
 
-/** Anos dos álbuns, do mais novo ao mais antigo, para o filtro "Ano" das cartas (CCD105, R9). */
 export function useAlbumYearOptions(): SelectOption[] {
   const { data } = useAlbumsList(OPTIONS_PAGE);
   const years = (data?.data ?? []).flatMap(({ year }) => (year === null ? [] : [year]));

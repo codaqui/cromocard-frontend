@@ -45,7 +45,6 @@ function cardFormDefaults(card?: Card): CardFormValues {
   };
 }
 
-/** A carta nova parte da de origem, sem numeração, código e imagens (CCD105, R2 e L11). */
 export function duplicateOf(source: Card): Card {
   return { ...source, number: null, code: null, frontImageUrl: null, backImageUrl: null };
 }

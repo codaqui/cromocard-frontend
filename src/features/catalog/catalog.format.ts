@@ -35,13 +35,11 @@ export function importedCardsNotice(created: number, fileName: string): CatalogN
   };
 }
 
-/** "Gyarados, Ninetales e Zapdos", como no frame 832-4908. */
 export function joinNames(names: string[]): string {
   if (names.length <= 1) return names.join('');
   return `${names.slice(0, -1).join(', ')} e ${names.at(-1)}`;
 }
 
-/** "Excluir 3 cartas?" e "Excluir 3 cartas", do modal de exclusão em lote (frame 832-4908). */
 export function bulkDeleteTitle(count: number): string {
   return `Excluir ${pluralOf(count, 'carta', 'cartas')}`;
 }
@@ -59,7 +57,6 @@ function skippedDetail(skipped: SkippedCard[]): string {
   return `${joinNames(skipped.map(skippedNameOf))} ${verb} em coleções.`;
 }
 
-/** Aviso depois da exclusão em lote: quantas saíram e quais ficaram (CCD105, L13). */
 export function bulkDeletedNotice({ deleted, skipped }: BulkDeleteCardsResult): CatalogNotice {
   const title =
     deleted.length === 0

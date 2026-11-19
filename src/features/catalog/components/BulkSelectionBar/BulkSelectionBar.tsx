@@ -7,7 +7,6 @@ interface BulkSelectionBarProps {
   onClear: () => void;
 }
 
-/** "3 selecionadas · Excluir selecionadas · Limpar seleção", no rodapé da lista (frame 832-4908). */
 export function BulkSelectionBar({ count, onDelete, onClear }: BulkSelectionBarProps) {
   if (count === 0) return null;
 

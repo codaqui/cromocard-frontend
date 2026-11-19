@@ -2,7 +2,6 @@ import { useState } from 'react';
 
 import type { CatalogItemRef, CatalogNotice } from '../catalog.types';
 
-/** `item` edita um item existente; `source` cadastra um novo a partir de outro (CCD105). */
 export interface CatalogFormTarget<T> {
   item?: T;
   source?: T;
