@@ -11,9 +11,10 @@ interface StatCardProps {
   value?: number;
   hint?: string;
   icon: CatalogIconName;
+  tone?: 'info' | 'warning';
 }
 
-function StatCard({ label, value, hint, icon }: StatCardProps) {
+function StatCard({ label, value, hint, icon, tone = 'info' }: StatCardProps) {
   const labelId = useId();
 
   return (
@@ -25,7 +26,7 @@ function StatCard({ label, value, hint, icon }: StatCardProps) {
         <p className={styles.value}>{formatCount(value)}</p>
         {hint && <p className={styles.warning}>{hint}</p>}
       </div>
-      <span className={styles.icon}>
+      <span className={tone === 'warning' ? styles.warningIcon : styles.icon}>
         <CatalogIcon name={icon} size={20} />
       </span>
     </section>
@@ -46,7 +47,8 @@ export function CatalogStats({ summary }: { summary?: CatalogSummary }) {
         label="Álbuns licenciados"
         value={summary?.licensedAlbums}
         hint={pendingHintOf(summary?.pendingAlbumRequests)}
-        icon="checkCircle"
+        icon="verified"
+        tone="warning"
       />
     </div>
   );
