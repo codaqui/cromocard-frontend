@@ -4,10 +4,13 @@ import { Button } from '@/components/Button/Button';
 import { Icon } from '@/components/Icon/Icon';
 import { Modal } from '@/components/Modal/Modal';
 
-import { deadlineHoursLabels, DEFAULT_DEADLINE_HOURS } from '../../seller-verifications.labels';
+import {
+  type PendingNoticeFormState,
+  usePendingNoticeForm,
+} from '../../hooks/usePendingNoticeForm';
 import { usePendingTemplates, useSendPendingNotice } from '../../seller-verifications.queries';
+import type { SendPendingNoticeInput } from '../../seller-verifications.schemas';
 import type {
-  DeadlineHours,
   PendingNoticeResult,
   PendingNoticeTarget,
   PendingTemplate,
@@ -21,54 +24,19 @@ interface PendingNoticeModalProps {
   onBackToDashboard: () => void;
 }
 
-function fillTemplate(
-  body: string,
-  target: PendingNoticeTarget,
-  deadlineHours: DeadlineHours,
-): string {
-  return body
-    .replaceAll('{nome}', target.sellerName)
-    .replaceAll('{cnpj}', target.cnpj)
-    .replaceAll('{prazo}', deadlineHoursLabels[deadlineHours]);
-}
-
-function usePendingNoticeDraft(target: PendingNoticeTarget, templates: PendingTemplate[]) {
-  const [templateKey, setTemplateKey] = useState('');
-  const [message, setMessage] = useState('');
-  const [deadlineHours, setDeadlineHours] = useState<DeadlineHours>(DEFAULT_DEADLINE_HOURS);
-
-  const templateOf = (key: string) => templates.find((item) => item.key === key);
-
-  const selectTemplate = (key: string) => {
-    setTemplateKey(key);
-    const template = templateOf(key);
-    if (template) setMessage(fillTemplate(template.body, target, deadlineHours));
-  };
-
-  const changeDeadline = (hours: DeadlineHours) => {
-    setDeadlineHours(hours);
-    const template = templateOf(templateKey);
-    const untouched = template && message === fillTemplate(template.body, target, deadlineHours);
-    if (untouched) setMessage(fillTemplate(template.body, target, hours));
-  };
-
-  return { templateKey, message, setMessage, deadlineHours, changeDeadline, selectTemplate };
-}
-
 interface FormFooterProps {
   isPending: boolean;
-  canSubmit: boolean;
   onClose: () => void;
   onSubmit: () => void;
 }
 
-function FormFooter({ isPending, canSubmit, onClose, onSubmit }: FormFooterProps) {
+function FormFooter({ isPending, onClose, onSubmit }: FormFooterProps) {
   return (
     <>
       <Button variant="secondary" disabled={isPending} onClick={onClose}>
         Cancelar
       </Button>
-      <Button disabled={isPending || !canSubmit} onClick={onSubmit}>
+      <Button disabled={isPending} onClick={onSubmit}>
         <Icon name="send" size={16} />
         {isPending ? 'Enviando…' : 'Enviar Notificação & Registrar Log'}
       </Button>
@@ -76,83 +44,49 @@ function FormFooter({ isPending, canSubmit, onClose, onSubmit }: FormFooterProps
   );
 }
 
-function usePendingNoticeSubmit(
-  target: PendingNoticeTarget,
-  draft: ReturnType<typeof usePendingNoticeDraft>,
-  onSent: (result: PendingNoticeResult, message: string) => void,
-) {
-  const mutation = useSendPendingNotice();
-
-  const submit = () => {
-    const input = {
-      templateKey: draft.templateKey || undefined,
-      message: draft.message,
-      deadlineHours: draft.deadlineHours,
-    };
-    mutation.mutate(
-      { id: target.id, input },
-      { onSuccess: (result) => onSent(result, draft.message) },
-    );
-  };
-
-  return { mutation, submit };
-}
-
 interface PendingNoticeModalBodyProps {
   target: PendingNoticeTarget;
   templates: PendingTemplate[];
-  draft: ReturnType<typeof usePendingNoticeDraft>;
+  form: PendingNoticeFormState;
   mutation: ReturnType<typeof useSendPendingNotice>;
   onClose: () => void;
-  onSubmit: () => void;
 }
 
-function ModalFields({
+function PendingNoticeModalBody({
   target,
   templates,
-  draft,
+  form,
   mutation,
-}: Omit<PendingNoticeModalBodyProps, 'onClose' | 'onSubmit'>) {
-  return (
-    <PendingNoticeForm
-      target={target}
-      templates={templates}
-      templateKey={draft.templateKey}
-      message={draft.message}
-      deadlineHours={draft.deadlineHours}
-      messageError={mutation.error?.message}
-      onTemplateChange={draft.selectTemplate}
-      onMessageChange={draft.setMessage}
-      onDeadlineChange={draft.changeDeadline}
-    />
-  );
-}
-
-function PendingNoticeModalBody(props: PendingNoticeModalBodyProps) {
-  const { draft, mutation, onClose, onSubmit } = props;
-  const footer = (
-    <FormFooter
-      isPending={mutation.isPending}
-      canSubmit={Boolean(draft.message.trim())}
-      onClose={onClose}
-      onSubmit={onSubmit}
-    />
-  );
-
+  onClose,
+}: PendingNoticeModalBodyProps) {
   return (
     <Modal
       open
       title="Notificar Lojista — Pendência Cadastral"
-      subtitle={`Destinatário: ${props.target.sellerName} (${props.target.sellerEmail})`}
+      subtitle={`Destinatário: ${target.sellerName} (${target.sellerEmail})`}
       icon="warning"
       size="medium"
       onClose={onClose}
       dismissible={!mutation.isPending}
-      footer={footer}
+      footer={
+        <FormFooter isPending={mutation.isPending} onClose={onClose} onSubmit={form.submit} />
+      }
     >
-      <ModalFields {...props} />
+      <PendingNoticeForm templates={templates} form={form} apiError={mutation.error?.message} />
     </Modal>
   );
+}
+
+type OnSent = (result: PendingNoticeResult, message: string) => void;
+
+function usePendingNoticeSend(target: PendingNoticeTarget, onSent: OnSent) {
+  const mutation = useSendPendingNotice();
+  const send = (input: SendPendingNoticeInput) =>
+    mutation.mutate(
+      { id: target.id, input },
+      { onSuccess: (result) => onSent(result, input.message) },
+    );
+  return { mutation, send };
 }
 
 function PendingNoticeFormContent({
@@ -162,20 +96,19 @@ function PendingNoticeFormContent({
 }: {
   target: PendingNoticeTarget;
   onClose: () => void;
-  onSent: (result: PendingNoticeResult, message: string) => void;
+  onSent: OnSent;
 }) {
   const templates = usePendingTemplates().data ?? [];
-  const draft = usePendingNoticeDraft(target, templates);
-  const { mutation, submit } = usePendingNoticeSubmit(target, draft, onSent);
+  const { mutation, send } = usePendingNoticeSend(target, onSent);
+  const form = usePendingNoticeForm({ target, templates, onSubmit: send });
 
   return (
     <PendingNoticeModalBody
       target={target}
       templates={templates}
-      draft={draft}
+      form={form}
       mutation={mutation}
       onClose={onClose}
-      onSubmit={submit}
     />
   );
 }

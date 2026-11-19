@@ -1,26 +1,18 @@
+import { FormError } from '@/components/FormError/FormError';
 import { Icon } from '@/components/Icon/Icon';
 import { Select } from '@/components/Select/Select';
 import { Textarea } from '@/components/Textarea/Textarea';
 import { cn } from '@/utils/cn';
 
+import type { PendingNoticeFormState } from '../../hooks/usePendingNoticeForm';
 import { deadlineHoursOptions } from '../../seller-verifications.labels';
-import type {
-  DeadlineHours,
-  PendingNoticeTarget,
-  PendingTemplate,
-} from '../../seller-verifications.types';
+import type { DeadlineHours, PendingTemplate } from '../../seller-verifications.types';
 import styles from './PendingNoticeModal.module.css';
 
 interface PendingNoticeFormProps {
-  target: PendingNoticeTarget;
   templates: PendingTemplate[];
-  templateKey: string;
-  message: string;
-  deadlineHours: DeadlineHours;
-  messageError?: string;
-  onTemplateChange: (key: string) => void;
-  onMessageChange: (message: string) => void;
-  onDeadlineChange: (hours: DeadlineHours) => void;
+  form: PendingNoticeFormState;
+  apiError?: string;
 }
 
 const CHANNELS = ['Notificação no Site', 'E-mail Transacional'];
@@ -62,11 +54,7 @@ function TemplateOption({ template, isActive, onSelect }: TemplateOptionProps) {
   );
 }
 
-function TemplateSelect({
-  templates,
-  templateKey,
-  onTemplateChange,
-}: Pick<PendingNoticeFormProps, 'templates' | 'templateKey' | 'onTemplateChange'>) {
+function TemplateSelect({ templates, form }: Pick<PendingNoticeFormProps, 'templates' | 'form'>) {
   return (
     <div>
       <div className={styles.sectionHeader}>
@@ -78,8 +66,8 @@ function TemplateSelect({
           <TemplateOption
             key={template.key}
             template={template}
-            isActive={template.key === templateKey}
-            onSelect={onTemplateChange}
+            isActive={template.key === form.templateKey}
+            onSelect={form.selectTemplate}
           />
         ))}
       </div>
@@ -87,43 +75,36 @@ function TemplateSelect({
   );
 }
 
-function MessageField({
-  message,
-  messageError,
-  onMessageChange,
-}: Pick<PendingNoticeFormProps, 'message' | 'messageError' | 'onMessageChange'>) {
+function MessageField({ form }: Pick<PendingNoticeFormProps, 'form'>) {
   return (
     <Textarea
       label="Corpo da mensagem transacional"
       hint="Variáveis automáticas ativas: nome, CNPJ e prazo"
-      value={message}
-      error={messageError}
-      onChange={(event) => onMessageChange(event.target.value)}
+      error={form.messageError}
+      {...form.messageField}
     />
   );
 }
 
-function DeadlineSelect({
-  deadlineHours,
-  onDeadlineChange,
-}: Pick<PendingNoticeFormProps, 'deadlineHours' | 'onDeadlineChange'>) {
+function DeadlineSelect({ form }: Pick<PendingNoticeFormProps, 'form'>) {
   return (
     <Select
       label="Prazo para regularização (SLA)"
       options={deadlineHoursOptions}
-      value={String(deadlineHours)}
-      onChange={(event) => onDeadlineChange(Number(event.target.value) as DeadlineHours)}
+      value={String(form.deadlineHours)}
+      onChange={(event) => form.changeDeadline(Number(event.target.value) as DeadlineHours)}
     />
   );
 }
 
-export function PendingNoticeForm(props: PendingNoticeFormProps) {
+export function PendingNoticeForm({ templates, form, apiError }: PendingNoticeFormProps) {
   return (
     <div className={styles.form}>
       <Channels />
-      <TemplateSelect {...props} />
-      <MessageField {...props} />
-      <DeadlineSelect {...props} />
+      <TemplateSelect templates={templates} form={form} />
+      <MessageField form={form} />
+      <DeadlineSelect form={form} />
+      <FormError message={apiError} />
     </div>
   );
 }

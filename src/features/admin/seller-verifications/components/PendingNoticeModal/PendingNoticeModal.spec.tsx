@@ -158,14 +158,49 @@ describe('PendingNoticeModal', () => {
     expect(await screen.findByText('Este credenciamento já foi decidido')).toBeInTheDocument();
   });
 
-  it('CA5: o botão Enviar fica desabilitado com o corpo vazio', async () => {
+  it('CA5: com o corpo vazio, avisa no campo e não envia', async () => {
     vi.mocked(sellerVerificationsApi.getPendingTemplates).mockResolvedValue(templates);
     renderModal();
     await screen.findByText('Destinatário: Fábio TCG Store (fabio@cromocard.dev)');
 
-    expect(
+    const send = screen.getByRole('button', { name: 'Enviar Notificação & Registrar Log' });
+    expect(send).toBeEnabled();
+    await userEvent.click(send);
+
+    expect(await screen.findByText('Escreva o corpo da mensagem')).toBeInTheDocument();
+    expect(screen.getByLabelText('Corpo da mensagem transacional')).toHaveAttribute(
+      'aria-invalid',
+      'true',
+    );
+    expect(sellerVerificationsApi.sendPendingNotice).not.toHaveBeenCalled();
+  });
+
+  it('CA5: corpo só com espaços também é recusado', async () => {
+    vi.mocked(sellerVerificationsApi.getPendingTemplates).mockResolvedValue(templates);
+    renderModal();
+    await screen.findByText('Destinatário: Fábio TCG Store (fabio@cromocard.dev)');
+
+    await userEvent.type(screen.getByLabelText('Corpo da mensagem transacional'), '   ');
+    await userEvent.click(
       screen.getByRole('button', { name: 'Enviar Notificação & Registrar Log' }),
-    ).toBeDisabled();
+    );
+
+    expect(await screen.findByText('Escreva o corpo da mensagem')).toBeInTheDocument();
+    expect(sellerVerificationsApi.sendPendingNotice).not.toHaveBeenCalled();
+  });
+
+  it('CA5: escolher um modelo depois do erro tira o aviso do campo', async () => {
+    vi.mocked(sellerVerificationsApi.getPendingTemplates).mockResolvedValue(templates);
+    renderModal();
+    await screen.findByText('Destinatário: Fábio TCG Store (fabio@cromocard.dev)');
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Enviar Notificação & Registrar Log' }),
+    );
+    await screen.findByText('Escreva o corpo da mensagem');
+
+    await userEvent.click(screen.getByRole('option', { name: 'Chave Pix divergente do CNPJ' }));
+
+    expect(screen.queryByText('Escreva o corpo da mensagem')).not.toBeInTheDocument();
   });
 
   it('CA3/CA4: envia a notificação e mostra a confirmação', async () => {
