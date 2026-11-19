@@ -13,6 +13,8 @@ import { useReportInvalid } from './useReportInvalid';
 const cardFields = [
   'name',
   'number',
+  'code',
+  'variants',
   'description',
   'frontImageUrl',
   'backImageUrl',
@@ -31,6 +33,8 @@ function cardFormDefaults(card?: Card): CardFormValues {
   return {
     name: card?.name ?? '',
     number: card?.number ?? '',
+    code: card?.code ?? '',
+    variants: card?.variants ?? '',
     description: card?.description ?? '',
     frontImageUrl: card?.frontImageUrl ?? '',
     backImageUrl: card?.backImageUrl ?? '',
