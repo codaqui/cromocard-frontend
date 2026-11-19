@@ -135,6 +135,22 @@ function invalidNoteOf(action: string) {
       : `Corrija os ${count} campos destacados para ${action}.`;
 }
 
+/** O rascunho é da CCD106: até lá o botão aparece desabilitado, como decidido na L12 da CCD105. */
+export const DRAFT_LABEL = 'Salvar como Rascunho';
+
+/** Modal "Duplicar carta" do frame 832-6457: cadastro novo com os dados de outra carta. */
+export function duplicateModalTextsOf(sourceName: string) {
+  const texts = catalogItemTexts.card;
+  return {
+    title: 'Duplicar carta',
+    subtitle: `Dados copiados de ${sourceName}. Informe a numeração, o código e as imagens da nova carta.`,
+    submitLabel: texts.createLabel,
+    draftLabel: DRAFT_LABEL,
+    invalidNote: invalidNoteOf(texts.createAction),
+    confirmMessage: texts.confirmSave,
+  };
+}
+
 /** Textos do modal de cadastro ou, com o nome do item, de edição. */
 export function formModalTextsOf(kind: CatalogItemKind, editingName?: string) {
   const texts = catalogItemTexts[kind];
@@ -142,7 +158,9 @@ export function formModalTextsOf(kind: CatalogItemKind, editingName?: string) {
   if (editingName === undefined) {
     const { createTitle: title, createSubtitle: subtitle, createLabel: submitLabel } = texts;
     const invalidNote = invalidNoteOf(texts.createAction);
-    return { title, subtitle, submitLabel, note: texts.createNote, invalidNote, confirmMessage };
+    const draftLabel = kind === 'card' ? DRAFT_LABEL : undefined;
+    const note = texts.createNote;
+    return { title, subtitle, submitLabel, note, draftLabel, invalidNote, confirmMessage };
   }
   return {
     title: texts.editTitle,

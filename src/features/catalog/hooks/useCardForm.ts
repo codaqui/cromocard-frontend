@@ -45,6 +45,11 @@ function cardFormDefaults(card?: Card): CardFormValues {
   };
 }
 
+/** A carta nova parte da de origem, sem numeração, código e imagens (CCD105, R2 e L11). */
+export function duplicateOf(source: Card): Card {
+  return { ...source, number: null, code: null, frontImageUrl: null, backImageUrl: null };
+}
+
 export function numberTakenMessage(apiError: ApiError, number: string): string {
   if (apiError.message === DELETED_CARD_NUMBER_MESSAGE) return apiError.message;
   return `A numeração ${number} já existe neste álbum.`;

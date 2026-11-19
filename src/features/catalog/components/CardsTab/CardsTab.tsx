@@ -83,8 +83,8 @@ function cardsTableWith(dialogs: CatalogItemDialogs<Card>): CatalogTable<Card> {
 }
 
 function renderCardForm(dialogs: CatalogItemDialogs<Card>) {
-  return (card?: Card) => (
-    <CardFormModal card={card} onClose={dialogs.close} onSaved={dialogs.finish} />
+  return (card?: Card, source?: Card) => (
+    <CardFormModal card={card} source={source} onClose={dialogs.close} onSaved={dialogs.finish} />
   );
 }
 
