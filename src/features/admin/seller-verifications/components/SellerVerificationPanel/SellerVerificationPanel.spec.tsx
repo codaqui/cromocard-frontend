@@ -125,6 +125,15 @@ describe('SellerVerificationPanel', () => {
     expect(screen.queryByText('Cards Kanto LTDA')).not.toBeInTheDocument();
   });
 
+  it('CA2: cadastro sem documentos mostra "Docs 0" e avisa na aba', async () => {
+    vi.mocked(sellerVerificationsApi.getById).mockResolvedValue(buildDetail({ documents: [] }));
+    renderPanel();
+
+    await userEvent.click(await screen.findByRole('tab', { name: 'Docs 0' }));
+
+    expect(screen.getByText('Nenhum documento enviado.')).toBeInTheDocument();
+  });
+
   it('CA2: endereço sem complemento sai sem o separador a mais', async () => {
     const detail = buildDetail();
     vi.mocked(sellerVerificationsApi.getById).mockResolvedValue({
