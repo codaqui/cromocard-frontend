@@ -7,6 +7,10 @@ describe('reports.format', () => {
     expect(formatReportCell('2026-11-16T02:00:00.000Z')).toBe('15/11/2026');
     expect(formatReportCell('SELLER')).toBe('Vendedor');
     expect(formatReportCell('ALBUM')).toBe('Álbum');
+    expect(formatReportCell('UNDER_REVIEW')).toBe('Em análise');
+    expect(formatReportCell('PENDING')).toBe('Pendente');
+    expect(formatReportCell('APPROVED')).toBe('Aprovado');
+    expect(formatReportCell('REJECTED')).toBe('Reprovado');
     expect(formatReportCell('Pikachu')).toBe('Pikachu');
   });
 

@@ -31,6 +31,7 @@ export const REPORT_CARDS: ReportCardInfo[] = [
   },
   {
     id: 'seller-audit',
+    type: 'seller-audit',
     title: 'Auditoria de Lojistas',
     description: 'Cadastros de vendedores por status no período.',
     columnsCount: 5,
@@ -48,6 +49,7 @@ export const REPORT_CARDS: ReportCardInfo[] = [
 export const SAMPLE_COLUMN_KEYS: Record<ReportType, string[]> = {
   signups: ['name', 'role', 'createdAt'],
   catalog: ['name', 'franchise', 'createdAt'],
+  'seller-audit': ['legalName', 'status', 'createdAt'],
 };
 
 const PRESET_LABELS: Record<PeriodPreset, string> = {

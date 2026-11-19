@@ -5,7 +5,6 @@ import { Button } from '@/components/Button/Button';
 import { DataTable, type DataTableColumn } from '@/components/DataTable/DataTable';
 import { Icon } from '@/components/Icon/Icon';
 import type { IconName } from '@/components/Icon/icon-paths';
-import type { UserRole } from '@/types/authenticated-user';
 import { cn } from '@/utils/cn';
 import { formatDate } from '@/utils/formatDate';
 import { formatLastAccess } from '@/utils/formatLastAccess';
@@ -14,6 +13,7 @@ import { formatPhone } from '@/utils/formatPhone';
 import {
   roleLabels,
   roleTones,
+  showsUnderAnalysisBadge,
   statusLabels,
   statusTones,
   toggleStatusCopyFor,
@@ -48,8 +48,13 @@ interface RowActionsProps {
   onDelete: (user: UserSummary) => void;
 }
 
-function RoleBadge({ role }: { role: UserRole }) {
-  return <Badge tone={roleTones[role]}>{roleLabels[role]}</Badge>;
+function RoleBadge({ user }: { user: UserSummary }) {
+  return (
+    <div className={styles.roleCell}>
+      <Badge tone={roleTones[user.role]}>{roleLabels[user.role]}</Badge>
+      {showsUnderAnalysisBadge(user) && <Badge tone="warning">Em análise</Badge>}
+    </div>
+  );
 }
 
 function NameCell({ user }: { user: UserSummary }) {
@@ -160,7 +165,7 @@ function buildColumns(actions: Omit<RowActionsProps, 'user'>): DataTableColumn<U
   return [
     { key: 'name', header: 'Usuário', render: (user) => <NameCell user={user} /> },
     { key: 'contact', header: 'Contato', render: (user) => <ContactCell user={user} /> },
-    { key: 'role', header: 'Papel', render: (user) => <RoleBadge role={user.role} /> },
+    { key: 'role', header: 'Papel', render: (user) => <RoleBadge user={user} /> },
     { key: 'status', header: 'Status', render: (user) => <StatusBadge user={user} /> },
     {
       key: 'lastLogin',

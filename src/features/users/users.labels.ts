@@ -2,8 +2,9 @@ import type { BadgeTone } from '@/components/Badge/Badge';
 import type { IconName } from '@/components/Icon/icon-paths';
 import type { SelectOption } from '@/components/Select/Select';
 import { USER_ROLES, type UserRole } from '@/types/authenticated-user';
+import type { SellerVerificationStatus } from '@/types/seller-verification';
 
-import type { AdminAction, UserStatus } from './users.types';
+import type { AdminAction, UserStatus, UserSummary } from './users.types';
 
 export const roleLabels: Record<UserRole, string> = {
   CUSTOMER: 'Cliente',
@@ -33,6 +34,13 @@ export const statusTones: Record<UserStatus, BadgeTone> = {
   SUSPENDED: 'warning',
   BLOCKED: 'danger',
 };
+
+const UNDER_ANALYSIS_STATUSES: SellerVerificationStatus[] = ['UNDER_REVIEW', 'PENDING'];
+
+export function showsUnderAnalysisBadge(user: UserSummary): boolean {
+  if (user.role !== 'SELLER' || !user.verificationStatus) return false;
+  return UNDER_ANALYSIS_STATUSES.includes(user.verificationStatus);
+}
 
 export interface ToggleStatusCopy {
   label: string;

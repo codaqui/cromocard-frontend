@@ -1,5 +1,6 @@
 import type { PaginationParams } from '@/types/api';
 import type { UserRole } from '@/types/authenticated-user';
+import type { SellerVerificationStatus } from '@/types/seller-verification';
 
 export const USER_STATUSES = ['ACTIVE', 'SUSPENDED', 'BLOCKED'] as const;
 
@@ -22,6 +23,7 @@ export interface UserSummary {
   phone: string | null;
   lastLoginAt: string | null;
   lastLoginIp: string | null;
+  verificationStatus?: SellerVerificationStatus | null;
 }
 
 export interface ListUsersParams extends PaginationParams {
