@@ -139,6 +139,26 @@ describe('CatalogAdminPage', () => {
     expect(catalogApi.listCards).toHaveBeenLastCalledWith(LIST_PAGE);
   });
 
+  it('R9: o filtro Ano oferece os anos dos álbuns, sem repetir, do mais novo ao mais antigo', async () => {
+    vi.mocked(catalogApi.listAlbums).mockResolvedValue(
+      pageOf([
+        { ...album, id: 'a1', year: 1999 },
+        { ...album, id: 'a2', year: 2026 },
+        { ...album, id: 'a3', year: null },
+        { ...album, id: 'a4', year: 1999 },
+      ]),
+    );
+    renderPage();
+    const yearSelect = await screen.findByLabelText('Ano');
+    await within(yearSelect).findByRole('option', { name: '1999' });
+
+    expect(
+      within(yearSelect)
+        .getAllByRole('option')
+        .map(({ textContent }) => textContent),
+    ).toEqual(['Todos os anos', '2026', '1999']);
+  });
+
   it('L12: o filtro de status da CCD106 aparece desabilitado', async () => {
     renderPage();
 

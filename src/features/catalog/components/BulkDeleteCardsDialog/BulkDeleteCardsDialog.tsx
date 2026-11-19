@@ -14,9 +14,9 @@ interface BulkDeleteCardsDialogProps {
 export function BulkDeleteCardsDialog({ cards, onClose, onDeleted }: BulkDeleteCardsDialogProps) {
   const removal = useBulkDeleteCards();
   const title = bulkDeleteTitle(cards.length);
-  const confirm = (reason?: string) =>
+  const confirm = (reason = '') =>
     removal.mutate(
-      { ids: cards.map(({ id }) => id), reason: reason ?? '' },
+      { ids: cards.map(({ id }) => id), reason },
       { onSuccess: (result) => onDeleted(bulkDeletedNotice(result)) },
     );
 
