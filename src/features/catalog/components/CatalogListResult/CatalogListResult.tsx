@@ -1,5 +1,5 @@
 import type { UseQueryResult } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { type ReactNode, useEffect } from 'react';
 
 import { Button } from '@/components/Button/Button';
 import { DataTable, type DataTableColumn } from '@/components/DataTable/DataTable';
@@ -21,6 +21,7 @@ interface CatalogListResultProps<T extends { id: string }> {
   query: UseQueryResult<PaginatedResponse<T>>;
   table: CatalogTable<T>;
   onPageChange: (page: number) => void;
+  footer?: ReactNode;
 }
 
 function previousPageWithItems<T>(result?: PaginatedResponse<T>): number | null {
@@ -56,6 +57,7 @@ export function CatalogListResult<T extends { id: string }>({
   query,
   table,
   onPageChange,
+  footer,
 }: CatalogListResultProps<T>) {
   const isSteppingBack = useStepBackFromEmptyPage(query.data, onPageChange);
 
@@ -65,7 +67,16 @@ export function CatalogListResult<T extends { id: string }>({
   }
   if (query.data.data.length === 0) return <EmptyState title={table.emptyTitle} />;
 
-  const { data: rows, meta } = query.data;
+  return <ListPage page={query.data} table={table} onPageChange={onPageChange} footer={footer} />;
+}
+
+interface ListPageProps<T> extends Omit<CatalogListResultProps<T & { id: string }>, 'query'> {
+  page: PaginatedResponse<T & { id: string }>;
+}
+
+function ListPage<T>({ page, table, onPageChange, footer }: ListPageProps<T>) {
+  const { data: rows, meta } = page;
+
   return (
     <div className={styles.result}>
       <DataTable
@@ -74,7 +85,9 @@ export function CatalogListResult<T extends { id: string }>({
         rows={rows}
         getRowKey={(row) => row.id}
       />
-      <CatalogPagination meta={meta} shown={rows.length} onPageChange={onPageChange} />
+      <CatalogPagination meta={meta} shown={rows.length} onPageChange={onPageChange}>
+        {footer}
+      </CatalogPagination>
     </div>
   );
 }

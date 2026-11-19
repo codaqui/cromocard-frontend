@@ -39,6 +39,15 @@ export function useAlbumOptions(current?: SelectOption): SelectOption[] {
   return withCurrentOption(options, current);
 }
 
+/** Anos dos álbuns, do mais novo ao mais antigo, para o filtro "Ano" das cartas (CCD105, R9). */
+export function useAlbumYearOptions(): SelectOption[] {
+  const { data } = useAlbumsList(OPTIONS_PAGE);
+  const years = (data?.data ?? []).flatMap(({ year }) => (year === null ? [] : [year]));
+  return [...new Set(years)]
+    .sort((first, second) => second - first)
+    .map((year) => ({ value: String(year), label: String(year) }));
+}
+
 /** A própria categoria e todas as que descendem dela: nenhuma pode ser a categoria pai (L9). */
 export function selfAndDescendantIdsOf(categories: Category[], rootId?: string): Set<string> {
   const ids = new Set<string>(rootId ? [rootId] : []);

@@ -1,7 +1,7 @@
 import { ApiError } from '@/lib/api-error';
 
 import { EMPTY_VALUE_LABEL } from './catalog.labels';
-import type { CatalogNotice } from './catalog.types';
+import type { BulkDeleteCardsResult, CatalogNotice, SkippedCard } from './catalog.types';
 
 const countFormatter = new Intl.NumberFormat('pt-BR');
 const ALBUM_NUMBER_DIGITS = 3;
@@ -33,6 +33,39 @@ export function importedCardsNotice(created: number, fileName: string): CatalogN
     title: pluralOf(created, 'carta importada', 'cartas importadas'),
     detail: `O arquivo ${fileName} foi importado no catálogo.`,
   };
+}
+
+/** "Gyarados, Ninetales e Zapdos", como no frame 832-4908. */
+export function joinNames(names: string[]): string {
+  if (names.length <= 1) return names.join('');
+  return `${names.slice(0, -1).join(', ')} e ${names.at(-1)}`;
+}
+
+/** "Excluir 3 cartas?" e "Excluir 3 cartas", do modal de exclusão em lote (frame 832-4908). */
+export function bulkDeleteTitle(count: number): string {
+  return `Excluir ${pluralOf(count, 'carta', 'cartas')}`;
+}
+
+export function bulkDeleteMessage(names: string[]): string {
+  return `${joinNames(names)} ${names.length === 1 ? 'sai' : 'saem'} do catálogo. Cartas que já estão em coleções não são excluídas e aparecem no aviso. A exclusão fica registrada no log de auditoria com o motivo.`;
+}
+
+const skippedNameOf = ({ name, number }: SkippedCard) =>
+  number ? `${name} nº ${formatAlbumNumber(number)}` : name;
+
+function skippedDetail(skipped: SkippedCard[]): string {
+  if (skipped.length === 0) return 'A exclusão foi registrada no log de auditoria.';
+  const verb = skipped.length === 1 ? 'ficou porque está' : 'ficaram porque estão';
+  return `${joinNames(skipped.map(skippedNameOf))} ${verb} em coleções.`;
+}
+
+/** Aviso depois da exclusão em lote: quantas saíram e quais ficaram (CCD105, L13). */
+export function bulkDeletedNotice({ deleted, skipped }: BulkDeleteCardsResult): CatalogNotice {
+  const title =
+    deleted.length === 0
+      ? 'Nenhuma carta excluída'
+      : pluralOf(deleted.length, 'carta excluída do catálogo', 'cartas excluídas do catálogo');
+  return { title, detail: skippedDetail(skipped) };
 }
 
 /** Colunas do modelo de CSV (L3), na ordem do arquivo. */
