@@ -65,4 +65,19 @@ describe('sellerVerificationsApi', () => {
       { reason: 'CNPJ inválido' },
     ]);
   });
+
+  it('getPendingTemplates busca os modelos de pendência (R4)', () => {
+    void sellerVerificationsApi.getPendingTemplates();
+    expect(callsOf('get')[0]).toEqual(['/admin/seller-verifications/pending-templates']);
+  });
+
+  it('sendPendingNotice envia a mensagem, o modelo e o prazo (R5, R6)', () => {
+    const input = {
+      templateKey: 'pix_key_mismatch',
+      message: 'Corrija a chave Pix',
+      deadlineHours: 48 as const,
+    };
+    void sellerVerificationsApi.sendPendingNotice('ver-1', input);
+    expect(callsOf('post')[0]).toEqual(['/admin/seller-verifications/ver-1/pending-notice', input]);
+  });
 });

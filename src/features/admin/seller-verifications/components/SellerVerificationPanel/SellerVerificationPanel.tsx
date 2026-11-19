@@ -24,6 +24,8 @@ import {
   useValidateSellerDocument,
 } from '../../seller-verifications.queries';
 import type { SellerVerificationDetail } from '../../seller-verifications.types';
+import { usePendingNoticeModal } from '../../hooks/usePendingNoticeModal';
+import { PendingNoticeModal } from '../PendingNoticeModal/PendingNoticeModal';
 import { DocumentList } from './DocumentList';
 import { InternalNotes } from './InternalNotes';
 import { RegistrationTab } from './RegistrationTab';
@@ -52,28 +54,34 @@ interface PanelFooterProps {
   approveErrorMessage?: string;
   onApprove: () => void;
   onOpenReject: () => void;
+  onNotify: () => void;
 }
 
-function PanelFooter({
-  detail,
-  isApproving,
-  approveErrorMessage,
-  onApprove,
-  onOpenReject,
-}: PanelFooterProps) {
+type DecisionButtonsProps = Omit<PanelFooterProps, 'detail' | 'approveErrorMessage'>;
+
+function DecisionButtons({ isApproving, onApprove, onOpenReject, onNotify }: DecisionButtonsProps) {
+  return (
+    <div className={styles.decisionActions}>
+      <Button variant="secondary" onClick={onNotify}>
+        Notificar Pendência
+      </Button>
+      <Button variant="danger" onClick={onOpenReject}>
+        Rejeitar
+      </Button>
+      <Button disabled={isApproving} onClick={onApprove}>
+        {isApproving ? 'Aguarde…' : 'Validar Lojista'}
+      </Button>
+    </div>
+  );
+}
+
+function PanelFooter({ detail, approveErrorMessage, ...buttons }: PanelFooterProps) {
   if (!canDecide(detail.status)) return <DecidedInfo detail={detail} />;
 
   return (
     <>
       <FormError message={approveErrorMessage} />
-      <div className={styles.decisionActions}>
-        <Button variant="danger" onClick={onOpenReject}>
-          Rejeitar
-        </Button>
-        <Button disabled={isApproving} onClick={onApprove}>
-          {isApproving ? 'Aguarde…' : 'Validar Lojista'}
-        </Button>
-      </div>
+      <DecisionButtons {...buttons} />
     </>
   );
 }
@@ -170,6 +178,7 @@ function useSellerVerificationActions(id: string) {
     dismissToast: () => setToastMessage(null),
     ...useDocumentAndNoteActions(id, notify),
     ...useDecisionActions(id, notify),
+    pendingNotice: usePendingNoticeModal(),
   };
 }
 
@@ -229,6 +238,7 @@ function PanelDecisionFooter({ detail, actions }: PanelDecisionFooterProps) {
         approveErrorMessage={actions.approve.errorMessage}
         onApprove={actions.approve.run}
         onOpenReject={actions.openReject}
+        onNotify={() => actions.pendingNotice.openFor(detail)}
       />
       <RejectDialog
         open={actions.isRejectOpen}
@@ -297,6 +307,11 @@ function SellerVerificationPanelContent({ id, onClose }: { id: string; onClose: 
       {detailQuery.isError && <ErrorState message={detailQuery.error.message} />}
       {detailQuery.data && <PanelBody detail={detailQuery.data} actions={actions} />}
       <Toast message={actions.toastMessage} onDismiss={actions.dismissToast} />
+      <PendingNoticeModal
+        target={actions.pendingNotice.target}
+        onClose={actions.pendingNotice.close}
+        onBackToDashboard={onClose}
+      />
     </Drawer>
   );
 }

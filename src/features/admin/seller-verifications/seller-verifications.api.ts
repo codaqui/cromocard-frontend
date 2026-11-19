@@ -1,8 +1,15 @@
 import { api } from '@/lib/http';
 
-import type { AddNoteInput, ApproveInput, RejectInput } from './seller-verifications.schemas';
+import type {
+  AddNoteInput,
+  ApproveInput,
+  RejectInput,
+  SendPendingNoticeInput,
+} from './seller-verifications.schemas';
 import type {
   ListSellerVerificationsParams,
+  PendingNoticeResult,
+  PendingTemplate,
   SellerVerificationDetail,
   SellerVerificationListItem,
   SellerVerificationPeriodParams,
@@ -25,4 +32,8 @@ export const sellerVerificationsApi = {
     api.post<SellerVerificationDetail>(`/admin/seller-verifications/${id}/approve`, input),
   reject: (id: string, input: RejectInput) =>
     api.post<SellerVerificationDetail>(`/admin/seller-verifications/${id}/reject`, input),
+  getPendingTemplates: () =>
+    api.get<PendingTemplate[]>('/admin/seller-verifications/pending-templates'),
+  sendPendingNotice: (id: string, input: SendPendingNoticeInput) =>
+    api.post<PendingNoticeResult>(`/admin/seller-verifications/${id}/pending-notice`, input),
 };
