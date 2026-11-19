@@ -93,14 +93,96 @@
   font-size: var(--font-size-caption);
 }
 
-.sentActions {
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+}
+
+.summaryRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+  font-size: var(--font-size-sm);
+}
+
+.summaryRow dt {
+  color: var(--color-label);
+}
+
+.summaryRow dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-sunken);
+}
+
+.previewLabel {
   display: flex;
   align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--letter-spacing-caps);
+  text-transform: uppercase;
+  color: var(--color-label);
+}
+
+.previewText {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-style: italic;
+  overflow-wrap: anywhere;
+}
+
+.sentActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
   gap: var(--space-3);
 }
 
+.sentActions > button {
+  flex: 1 1 auto;
+}
+
 .profileLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   font-size: var(--font-size-sm);
   font-weight: 700;
   color: var(--color-info);
+  text-decoration: none;
+}
+
+.deliveryStatus {
+  font-size: var(--font-size-xs);
+  text-align: center;
+  color: var(--color-label);
+}
+
+.delivered {
+  font-weight: 700;
+  color: var(--color-info);
+}
+
+.notDelivered {
+  font-weight: 700;
+  color: var(--color-warning);
 }

@@ -191,6 +191,11 @@ interface ModalContentProps {
   onBackToDashboard: () => void;
 }
 
+const sentSubtitle = (emailDelivered: boolean) =>
+  emailDelivered
+    ? 'A mensagem foi entregue com sucesso aos canais cadastrados do parceiro.'
+    : 'A notificação no site foi criada, mas o e-mail não foi entregue.';
+
 function SentModal({
   target,
   sent,
@@ -198,7 +203,15 @@ function SentModal({
   onBackToDashboard,
 }: ModalContentProps & { sent: SentNotice }) {
   return (
-    <Modal open title="Notificação enviada" size="medium" onClose={onClose}>
+    <Modal
+      open
+      title="Notificação Enviada ao Lojista"
+      eyebrow="Confirmação de envio"
+      subtitle={sentSubtitle(sent.result.emailDelivered)}
+      icon="checkCircle"
+      size="medium"
+      onClose={onClose}
+    >
       <PendingNoticeSent
         target={target}
         result={sent.result}

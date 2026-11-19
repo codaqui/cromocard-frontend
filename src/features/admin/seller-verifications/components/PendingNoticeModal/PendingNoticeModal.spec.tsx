@@ -191,8 +191,11 @@ describe('PendingNoticeModal', () => {
       message: 'Corrija a chave Pix',
       deadlineHours: 48,
     });
-    expect(await screen.findByText('Notificação enviada')).toBeInTheDocument();
-    expect(screen.getByText('Notificação no site e E-mail')).toBeInTheDocument();
+    expect(
+      await screen.findByRole('dialog', { name: 'Notificação Enviada ao Lojista' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Notificação no site & E-mail')).toBeInTheDocument();
+    expect(screen.getByText('Status:', { exact: false })).toHaveTextContent('Status: Entregue');
     expect(screen.getByText(/^\d{2}\/11\/2026,? \d{2}:\d{2}$/)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Ver perfil do lojista' })).toBeInTheDocument();
   });
@@ -239,6 +242,10 @@ describe('PendingNoticeModal', () => {
     );
 
     expect(await screen.findByRole('alert')).toHaveTextContent('O e-mail não foi entregue');
+    expect(screen.getByText('Status:', { exact: false })).toHaveTextContent(
+      'Status: E-mail não entregue',
+    );
+    expect(screen.getByRole('dialog')).toHaveTextContent('mas o e-mail não foi entregue');
   });
 
   it('R10: cancelar fecha sem enviar', async () => {
