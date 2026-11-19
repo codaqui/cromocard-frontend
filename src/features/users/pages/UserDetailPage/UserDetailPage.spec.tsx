@@ -18,7 +18,9 @@ vi.mock('../../users.api', () => ({
     getById: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
+    warn: vi.fn(),
     suspend: vi.fn(),
+    block: vi.fn(),
     reactivate: vi.fn(),
     remove: vi.fn(),
     resendActivation: vi.fn(),
@@ -39,10 +41,12 @@ function buildUser(overrides: Partial<UserDetail> = {}): UserDetail {
     cpf: null,
     lastLoginAt: null,
     lastLoginIp: null,
+    suspendedUntil: null,
     oauthProvider: null,
     activationPending: false,
     addresses: [],
     adminActions: [],
+    warningsCount: 0,
     ...overrides,
   };
 }
@@ -63,7 +67,9 @@ describe('UserDetailPage', () => {
   beforeEach(() => {
     vi.mocked(usersApi.getById).mockReset();
     vi.mocked(usersApi.update).mockReset();
+    vi.mocked(usersApi.warn).mockReset();
     vi.mocked(usersApi.suspend).mockReset();
+    vi.mocked(usersApi.block).mockReset();
     vi.mocked(usersApi.reactivate).mockReset();
     vi.mocked(usersApi.remove).mockReset();
     vi.mocked(usersApi.resendActivation).mockReset();
@@ -357,6 +363,60 @@ describe('UserDetailPage', () => {
 
     expect(screen.getByRole('button', { name: 'Suspenso' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Excluir' })).toBeDisabled();
+  });
+
+  it('CCD099: mostra as advertências anteriores no cabeçalho e no card de ações', async () => {
+    const user = buildUser({ warningsCount: 2 });
+    renderDetail(user);
+    await screen.findByRole('heading', { name: user.name });
+
+    expect(screen.getAllByText('2 advertências anteriores')).toHaveLength(2);
+  });
+
+  it('CCD099: aplica uma advertência pelo card de ações e mostra o toast', async () => {
+    const user = buildUser();
+    renderDetail(user);
+    await screen.findByRole('heading', { name: user.name });
+    vi.mocked(usersApi.warn).mockResolvedValue({ warningsCount: 1 });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Aplicar' }));
+    const dialog = screen.getByRole('dialog', { name: 'Aplicar sanção' });
+    await userEvent.click(within(dialog).getByRole('radio', { name: /Advertir/ }));
+    await userEvent.type(
+      within(dialog).getByLabelText('Justificativa (obrigatória)'),
+      'Linguagem ofensiva no chat do grupo',
+    );
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Aplicar sanção' }));
+
+    expect(usersApi.warn).toHaveBeenCalledWith(user.id, {
+      reason: 'Linguagem ofensiva no chat do grupo',
+      reportId: undefined,
+    });
+    expect(await screen.findByText('Advertência registrada com sucesso.')).toBeInTheDocument();
+  });
+
+  it('CCD099: na própria conta, aplicar sanção fica indisponível', async () => {
+    const user = buildUser({ role: 'ADMIN' });
+    renderDetail(user, { id: user.id, role: 'ADMIN' });
+    await screen.findByRole('heading', { name: user.name });
+
+    expect(screen.getByRole('button', { name: 'Indisponível' })).toBeDisabled();
+  });
+
+  it('CCD099: cancelar a sanção fecha o diálogo sem chamar a API', async () => {
+    const user = buildUser();
+    renderDetail(user);
+    await screen.findByRole('heading', { name: user.name });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Aplicar' }));
+    await userEvent.click(
+      within(screen.getByRole('dialog', { name: 'Aplicar sanção' })).getByRole('button', {
+        name: 'Cancelar',
+      }),
+    );
+
+    expect(screen.queryByRole('dialog', { name: 'Aplicar sanção' })).not.toBeInTheDocument();
+    expect(usersApi.warn).not.toHaveBeenCalled();
   });
 
   it('R4: erro ao carregar o usuário mostra o estado de erro', async () => {

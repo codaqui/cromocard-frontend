@@ -1,6 +1,6 @@
 import { z } from '@/lib/zod';
 
-import { ALBUM_STATUSES, CATEGORY_TYPES } from './catalog.types';
+import { ALBUM_STATUSES, CATEGORY_BADGES, CATEGORY_TYPES } from './catalog.types';
 
 const SMALLINT_MAX = 32767;
 const URL_MAX_LENGTH = 255;
@@ -92,6 +92,10 @@ export const categoryFormSchema = z.object({
   type: z.string().pipe(z.enum(CATEGORY_TYPES, { error: 'Escolha o tipo da categoria.' })),
   parentCategoryId: optionalReference,
   description: optionalText(CATEGORY_DESCRIPTION_MAX_LENGTH),
+  badge: z
+    .string()
+    .transform((value) => value || null)
+    .pipe(z.enum(CATEGORY_BADGES, { error: 'Escolha o selo da lista.' }).nullable()),
 });
 
 export type AlbumFormValues = z.input<typeof albumFormSchema>;

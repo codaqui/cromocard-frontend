@@ -30,7 +30,13 @@ const validCard = {
   languageId: LANGUAGE_ID,
 };
 
-const emptyCategory = { name: 'Futebol', type: 'ALBUM', parentCategoryId: '', description: '' };
+const emptyCategory = {
+  name: 'Futebol',
+  type: 'ALBUM',
+  parentCategoryId: '',
+  description: '',
+  badge: '',
+};
 
 function messagesOf(result: { success: boolean; error?: { issues: { message: string }[] } }) {
   return result.error?.issues.map((issue) => issue.message) ?? [];
@@ -126,7 +132,24 @@ describe('categoryFormSchema', () => {
       type: 'ALBUM',
       parentCategoryId: null,
       description: null,
+      badge: null,
     });
+  });
+
+  it('CA14: o selo vazio vira nulo e Padrão e Em alta passam', () => {
+    const parse = (badge: string) => categoryFormSchema.parse({ ...emptyCategory, badge }).badge;
+
+    expect([parse(''), parse('STANDARD'), parse('TRENDING')]).toEqual([
+      null,
+      'STANDARD',
+      'TRENDING',
+    ]);
+  });
+
+  it('CA14: recusa um selo que não é da lista', () => {
+    const result = categoryFormSchema.safeParse({ ...emptyCategory, badge: 'GOLD' });
+
+    expect(messagesOf(result)).toEqual(['Escolha o selo da lista.']);
   });
 
   it('R15: guarda a descrição sem os espaços das pontas e recusa acima de 255 caracteres', () => {

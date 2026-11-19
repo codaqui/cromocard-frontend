@@ -1,8 +1,19 @@
-import type { AlbumStatus, CatalogItemKind, CatalogNotice, CategoryType } from './catalog.types';
+import type {
+  AlbumStatus,
+  CatalogItemKind,
+  CatalogNotice,
+  CategoryBadge,
+  CategoryType,
+} from './catalog.types';
 
 export const categoryTypeLabels: Record<CategoryType, string> = {
   ALBUM: 'Álbum',
   CARD: 'Carta',
+};
+
+export const categoryBadgeLabels: Record<CategoryBadge, string> = {
+  STANDARD: 'Padrão',
+  TRENDING: 'Em alta',
 };
 
 export const albumStatusLabels: Record<AlbumStatus, string> = {
@@ -90,7 +101,8 @@ export const catalogItemTexts: Record<CatalogItemKind, CatalogItemTexts> = {
   },
   category: {
     createTitle: 'Nova categoria',
-    createSubtitle: 'A ordem das categorias padrão fica em Configurações.',
+    createSubtitle:
+      'O slug é gerado a partir do nome. A ordem das categorias padrão fica em Configurações.',
     createLabel: 'Cadastrar categoria',
     createAction: 'cadastrar a categoria',
     editTitle: 'Editar categoria',

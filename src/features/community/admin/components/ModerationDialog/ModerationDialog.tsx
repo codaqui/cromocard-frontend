@@ -1,5 +1,6 @@
 import { ConfirmDialog } from '@/components/ConfirmDialog/ConfirmDialog';
 import { Icon } from '@/components/Icon/Icon';
+import { REASON_MAX_LENGTH, WARNING_REASON_MAX_LENGTH } from '@/lib/reason';
 import { cn } from '@/utils/cn';
 
 import { formatGroupCode } from '../../community-admin.format';
@@ -75,6 +76,10 @@ function moderationDialogLook(action: CommunityAction, text: ModerationText) {
   };
 }
 
+function reasonMaxLengthOf(action: CommunityAction): number {
+  return action.action === 'removeAndWarn' ? WARNING_REASON_MAX_LENGTH : REASON_MAX_LENGTH;
+}
+
 function ModerationDialogContent({ action, onClose, onDone }: ModerationDialogContentProps) {
   const mutation = useModerationMutations()[action.action];
   const text = moderationTexts[action.action];
@@ -88,6 +93,7 @@ function ModerationDialogContent({ action, onClose, onDone }: ModerationDialogCo
       {...moderationDialogLook(action, text)}
       actionsLayout="spread"
       requireReason
+      reasonMaxLength={reasonMaxLengthOf(action)}
       isConfirming={mutation.isPending}
       errorMessage={mutation.error?.message}
       onConfirm={confirm}
