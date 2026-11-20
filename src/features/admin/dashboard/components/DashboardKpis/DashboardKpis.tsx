@@ -1,11 +1,13 @@
 import type { Period } from '@/components/PeriodFilter/PeriodFilter';
+import { SELLER_REGISTRATIONS_ANCHOR } from '@/features/admin';
 
 import arrowIcon from '../../assets/arrow-forward.svg';
-import { formatCount, formatVariation } from '../../dashboard.format';
+import { formatCount, formatPercent, formatVariation } from '../../dashboard.format';
 import type {
   DashboardPeriodParams,
   DashboardSummary,
   DashboardKpis as Kpis,
+  SellerCredentialing,
   SignupGoal,
 } from '../../dashboard.types';
 import styles from './DashboardKpis.module.css';
@@ -20,6 +22,7 @@ interface DashboardKpisProps {
   summary: DashboardSummary;
   period: Period;
   params: DashboardPeriodParams;
+  credentialing?: SellerCredentialing;
 }
 
 interface Metric {
@@ -121,7 +124,7 @@ function signupsTile({ summary, period, params }: DashboardKpisProps): KpiTilePr
   };
 }
 
-function sellersTile(kpis: Kpis): KpiTileProps {
+function newSellersTile(kpis: Kpis): KpiTileProps {
   return {
     label: 'Novos vendedores',
     value: formatCount(kpis.newSellers),
@@ -132,9 +135,44 @@ function sellersTile(kpis: Kpis): KpiTileProps {
   };
 }
 
+function QueueLink({ onAnalyzeQueue }: Pick<SellerCredentialing, 'onAnalyzeQueue'>) {
+  return (
+    <>
+      <p className={styles.footerText}>Fila pendente</p>
+      <a
+        href={`#${SELLER_REGISTRATIONS_ANCHOR}`}
+        className={styles.footerLink}
+        onClick={onAnalyzeQueue}
+      >
+        Analisar Fila
+        <img src={arrowIcon} alt="" width={9.33} height={9.33} />
+      </a>
+    </>
+  );
+}
+
+const pluralOf = (count: number, singular: string, plural: string) =>
+  count === 1 ? singular : plural;
+
+function credentialingTile({ summary, onAnalyzeQueue }: SellerCredentialing): KpiTileProps {
+  return {
+    label: 'Lojistas & Credenciamento',
+    value: formatCount(summary.approved),
+    unit: pluralOf(summary.approved, 'aprovado', 'aprovados'),
+    badge: `${formatCount(summary.pending)} ${pluralOf(summary.pending, 'Pendente', 'Pendentes')}`,
+    badgeTone: 'warning',
+    description: `Conversão de ${formatPercent(summary.conversionRate)} (aprovados ÷ analisados).`,
+    glow: 'primary',
+    footer: <QueueLink onAnalyzeQueue={onAnalyzeQueue} />,
+  };
+}
+
+const sellersTile = ({ summary, credentialing }: DashboardKpisProps) =>
+  credentialing ? credentialingTile(credentialing) : newSellersTile(summary.kpis);
+
 export function DashboardKpis(props: DashboardKpisProps) {
   const { kpis } = props.summary;
-  const tiles = [usersTile(kpis), cardsTile(kpis), signupsTile(props), sellersTile(kpis)];
+  const tiles = [usersTile(kpis), cardsTile(kpis), signupsTile(props), sellersTile(props)];
 
   return (
     <div className={styles.kpis}>

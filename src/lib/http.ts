@@ -111,8 +111,13 @@ export const api = {
     return response.data;
   },
 
-  async getBlob(url: string): Promise<Blob> {
-    const response = await http.get<Blob>(url, { responseType: 'blob' });
+  async getWithMeta<T, M>(url: string, params?: object): Promise<{ data: T; meta: M }> {
+    const response = await http.get<{ data: T; meta: M }>(url, { params });
+    return response.data;
+  },
+
+  async getBlob(url: string, params?: object): Promise<Blob> {
+    const response = await http.get<Blob>(url, { params, responseType: 'blob' });
     return response.data;
   },
 

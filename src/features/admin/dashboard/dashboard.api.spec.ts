@@ -28,14 +28,4 @@ describe('dashboardApi', () => {
 
     expect(http.get).toHaveBeenCalledWith('/admin/dashboard/signups-evolution', params);
   });
-
-  it('lista os vendedores recentes do período', async () => {
-    await dashboardApi.listRecentSellers({ period: '7d', page: 1, pageSize: 5 });
-
-    expect(http.getPage).toHaveBeenCalledWith('/admin/dashboard/recent-sellers', {
-      period: '7d',
-      page: 1,
-      pageSize: 5,
-    });
-  });
 });

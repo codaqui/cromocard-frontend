@@ -1,11 +1,16 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Period } from '@/components/PeriodFilter/PeriodFilter';
 
 import { dashboardApi } from '../../dashboard.api';
-import type { DashboardKpis as Kpis, DashboardSummary } from '../../dashboard.types';
+import type {
+  DashboardKpis as Kpis,
+  DashboardSummary,
+  SellerCredentialing,
+} from '../../dashboard.types';
 import { DashboardKpis } from './DashboardKpis';
 
 vi.mock('../../dashboard.api', () => ({
@@ -35,11 +40,20 @@ const summaryOf = (changes: Partial<DashboardSummary> = {}): DashboardSummary =>
 const withKpis = (changes: Partial<Kpis>, rest: Partial<DashboardSummary> = {}) =>
   summaryOf({ kpis: { ...kpis, ...changes }, ...rest });
 
-function renderKpis(summary: DashboardSummary, period: Period = { preset: '30d' }) {
+function renderKpis(
+  summary: DashboardSummary,
+  period: Period = { preset: '30d' },
+  credentialing?: SellerCredentialing,
+) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={queryClient}>
-      <DashboardKpis summary={summary} period={period} params={{ period: '30d' }} />
+      <DashboardKpis
+        summary={summary}
+        period={period}
+        params={{ period: '30d' }}
+        credentialing={credentialing}
+      />
     </QueryClientProvider>,
   );
 }
@@ -177,5 +191,32 @@ describe('DashboardKpis', () => {
     });
 
     expect(tile('Novos cadastros')).toHaveTextContent('0Nenhum cadastro no período.');
+  });
+
+  it('sem o credenciamento, o 4º card é "Novos vendedores" com o atalho para a lista', () => {
+    renderKpis(summaryOf());
+
+    expect(tile('Novos vendedores')).toHaveTextContent('148 no período');
+    expect(screen.getByRole('link', { name: 'Ver lista' })).toHaveAttribute(
+      'href',
+      '#vendedores-recentes',
+    );
+  });
+
+  it('R4 (CCD094): com o credenciamento, o 4º card mostra pendentes, aprovados e conversão', async () => {
+    const onAnalyzeQueue = vi.fn();
+    renderKpis(summaryOf(), undefined, {
+      summary: { approved: 0, pending: 1, conversionRate: 0 },
+      onAnalyzeQueue,
+    });
+
+    const card = tile('Lojistas & Credenciamento');
+    expect(card).toHaveTextContent('0 aprovados');
+    expect(card).toHaveTextContent('1 Pendente');
+    expect(card).toHaveTextContent('Conversão de 0% (aprovados ÷ analisados).');
+    expect(screen.queryByRole('region', { name: 'Novos vendedores' })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('link', { name: 'Analisar Fila' }));
+    expect(onAnalyzeQueue).toHaveBeenCalledOnce();
   });
 });

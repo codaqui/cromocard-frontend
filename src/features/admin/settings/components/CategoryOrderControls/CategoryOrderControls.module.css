@@ -1,0 +1,51 @@
+.order {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.control,
+.pinned {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-1);
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.control {
+  background: var(--color-surface-high);
+  color: var(--color-text);
+}
+
+.pinned {
+  background: var(--color-warning);
+  color: var(--color-warning-soft);
+}
+
+.control:hover:not([aria-disabled='true']) {
+  background: var(--color-neutral-soft);
+}
+
+.control[aria-disabled='true'] {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.control:focus-visible,
+.pinned:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Área de toque de 40 px no celular e no tablet (revisão do PR #21, B1). */
+@media (max-width: 64rem) {
+  .control,
+  .pinned {
+    min-width: var(--size-control);
+    min-height: var(--size-control);
+  }
+}

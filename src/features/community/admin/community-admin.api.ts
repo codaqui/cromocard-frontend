@@ -17,6 +17,8 @@ const REPORTS = '/admin/community/reports';
 export const communityAdminApi = {
   listGroups: (params: ListGroupsParams) => api.getPage<AdminGroupSummary>(GROUPS, params),
   getSummary: () => api.get<CommunitySummary>(`${GROUPS}/summary`),
+  warnGroup: ({ id, reason }: ModerationAction) =>
+    api.post<AdminGroupDetail>(`${GROUPS}/${id}/warn`, { reason }),
   suspendGroup: ({ id, reason }: ModerationAction) =>
     api.post<AdminGroupDetail>(`${GROUPS}/${id}/suspend`, { reason }),
   reactivateGroup: ({ id, reason }: ModerationAction) =>
@@ -26,6 +28,8 @@ export const communityAdminApi = {
     api.getPage<GroupMessageReport>(REPORTS, params),
   removeReportedMessage: ({ id, reason }: ModerationAction) =>
     api.post<ReportResolution>(`${REPORTS}/${id}/remove-message`, { reason }),
+  removeAndWarn: ({ id, reason }: ModerationAction) =>
+    api.post<ReportResolution>(`${REPORTS}/${id}/remove-and-warn`, { reason }),
   dismissReport: ({ id, reason }: ModerationAction) =>
     api.post<ReportResolution>(`${REPORTS}/${id}/dismiss`, { reason }),
 };

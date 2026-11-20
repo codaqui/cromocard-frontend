@@ -47,6 +47,10 @@
   height: 100%;
 }
 
+.rightDialog.wideDialog {
+  width: min(var(--size-drawer-wide), 100%);
+}
+
 .header {
   display: flex;
   align-items: flex-start;

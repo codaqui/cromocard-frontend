@@ -1,6 +1,14 @@
-import { Icon } from '@/components/Icon/Icon';
+import type { ReactNode } from 'react';
 
-import { formatReportedAt } from '../../community-admin.format';
+import { Icon } from '@/components/Icon/Icon';
+import type { SanctionTarget } from '@/features/users';
+
+import {
+  formatAccountAge,
+  formatPriorWarnings,
+  formatReportedAt,
+  formatReportedBy,
+} from '../../community-admin.format';
 import type {
   GroupMessageReport,
   OnCommunityAction,
@@ -12,6 +20,16 @@ import styles from './ModerationQueue.module.css';
 interface ReportCardProps {
   report: GroupMessageReport;
   onAction: OnCommunityAction;
+  onSanctionAuthor: (target: SanctionTarget) => void;
+}
+
+function OriginItem({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div>
+      <dt>{label}</dt>
+      <dd>{children}</dd>
+    </div>
+  );
 }
 
 function ReportOrigin({
@@ -23,19 +41,25 @@ function ReportOrigin({
 }) {
   return (
     <dl className={styles.origin}>
-      <div>
-        <dt>Origem:</dt>
-        <dd className={styles.strong}>{message.groupName}</dd>
-      </div>
-      <div>
-        <dt>Denunciado por:</dt>
-        <dd className={styles.reporter}>{report.reporterName}</dd>
-      </div>
-      <div>
-        <dt>Timestamp:</dt>
-        <dd>{formatReportedAt(message.createdAt)}</dd>
-      </div>
+      <OriginItem label="Origem:">
+        <span className={styles.strong}>{message.groupName}</span>
+      </OriginItem>
+      <OriginItem label="Denunciado por:">
+        <span className={styles.reporter}>
+          {formatReportedBy(report.reporterName, message.reportersCount)}
+        </span>
+      </OriginItem>
+      <OriginItem label="Denunciada em:">{formatReportedAt(message.createdAt)}</OriginItem>
     </dl>
+  );
+}
+
+function AuthorStats({ message }: { message: ReportedMessage }) {
+  return (
+    <div className={styles.authorStats}>
+      <span className={styles.statPill}>{formatAccountAge(message.authorAccountAgeDays)}</span>
+      <span className={styles.statPill}>{formatPriorWarnings(message.authorWarnings)}</span>
+    </div>
   );
 }
 
@@ -53,6 +77,7 @@ function ReportHeader({
       </span>
       <div className={styles.cardIdentity}>
         <h3 className={styles.author}>{message.authorName}</h3>
+        <AuthorStats message={message} />
         <ReportOrigin report={report} message={message} />
       </div>
       <span className={styles.reason}>{report.reason}</span>
@@ -72,11 +97,27 @@ function ReportedText({ message }: { message: ReportedMessage }) {
   );
 }
 
-function ReportActions({ report, onAction }: ReportCardProps) {
+function sanctionTargetOf(report: GroupMessageReport, message: ReportedMessage): SanctionTarget {
+  return {
+    id: message.authorId,
+    name: message.authorName,
+    username: null,
+    warningsCount: message.authorWarnings,
+    reportId: report.id,
+  };
+}
+
+function ResolveActions({
+  report,
+  onAction,
+}: {
+  report: GroupMessageReport;
+  onAction: OnCommunityAction;
+}) {
   const act = (action: ReportAction) => () => onAction({ kind: 'report', action, report });
 
   return (
-    <div className={styles.cardActions}>
+    <>
       <button type="button" className={styles.dismiss} onClick={act('dismiss')}>
         <Icon name="checkCircle" size={14} />
         Dispensar Denúncia
@@ -85,11 +126,36 @@ function ReportActions({ report, onAction }: ReportCardProps) {
         <Icon name="warning" size={14} />
         Remover Mensagem
       </button>
+      <button type="button" className={styles.removeAndWarn} onClick={act('removeAndWarn')}>
+        <Icon name="warning" size={14} />
+        Remover Mensagem &amp; Advertir Usuário
+      </button>
+    </>
+  );
+}
+
+function ReportActions({
+  report,
+  message,
+  onAction,
+  onSanctionAuthor,
+}: ReportCardProps & { message: ReportedMessage }) {
+  return (
+    <div className={styles.cardActions}>
+      <ResolveActions report={report} onAction={onAction} />
+      <button
+        type="button"
+        className={styles.sanctionAuthor}
+        onClick={() => onSanctionAuthor(sanctionTargetOf(report, message))}
+      >
+        <Icon name="block" size={14} />
+        Aplicar sanção ao autor
+      </button>
     </div>
   );
 }
 
-export function ReportCard({ report, onAction }: ReportCardProps) {
+export function ReportCard({ report, onAction, onSanctionAuthor }: ReportCardProps) {
   const { message } = report;
   if (!message) return null;
 
@@ -103,7 +169,12 @@ export function ReportCard({ report, onAction }: ReportCardProps) {
           {report.description}
         </p>
       )}
-      <ReportActions report={report} onAction={onAction} />
+      <ReportActions
+        report={report}
+        onAction={onAction}
+        onSanctionAuthor={onSanctionAuthor}
+        message={message}
+      />
     </article>
   );
 }

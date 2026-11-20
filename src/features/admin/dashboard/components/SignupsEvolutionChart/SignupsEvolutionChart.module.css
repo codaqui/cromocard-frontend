@@ -21,7 +21,7 @@
 }
 
 .heading {
-  flex: 1;
+  flex: 1 1 var(--size-card-min);
   min-width: 0;
 }
 

@@ -2,9 +2,11 @@ import type { PaginationParams } from '@/types/api';
 
 export type GroupAccessType = 'OPEN' | 'CLOSED';
 
-export type GroupStatus = 'ACTIVE' | 'SUSPENDED';
+export type GroupStatus = 'ACTIVE' | 'WARNED' | 'SUSPENDED';
 
 export type ReportStatus = 'PENDING' | 'UNDER_REVIEW' | 'RESOLVED' | 'DISMISSED';
+
+export type ReportSeverity = 'CRITICAL' | 'SPAM';
 
 export interface AdminGroupSummary {
   id: string;
@@ -31,8 +33,12 @@ export interface ReportedMessage {
   id: string;
   content: string;
   createdAt: string;
+  authorId: string;
   authorName: string;
   groupName: string;
+  authorAccountAgeDays: number;
+  authorWarnings: number;
+  reportersCount: number;
 }
 
 export interface GroupMessageReport {
@@ -55,13 +61,14 @@ export interface ListGroupsParams extends PaginationParams {
 
 export interface ListGroupMessageReportsParams extends PaginationParams {
   status?: ReportStatus;
+  severity?: ReportSeverity;
 }
 
 export type GroupToggleAction = 'suspend' | 'reactivate';
 
-export type GroupAction = GroupToggleAction | 'delete';
+export type GroupAction = GroupToggleAction | 'warn' | 'delete';
 
-export type ReportAction = 'removeMessage' | 'dismiss';
+export type ReportAction = 'removeMessage' | 'removeAndWarn' | 'dismiss';
 
 export type ModerationKind = GroupAction | ReportAction;
 

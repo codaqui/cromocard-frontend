@@ -12,7 +12,11 @@ FROM nginxinc/nginx-unprivileged:1.30-alpine AS runtime
 # A imagem base sai antes das correções do Alpine; sem atualizar, o Trivy do CI reprova (ADR-055, decisão 6).
 # O CI refaz este estágio sem cache (no-cache-filters: runtime), senão o apk upgrade antigo seria reaproveitado.
 USER root
-RUN apk upgrade --no-cache
+# Os módulos dinâmicos da imagem (njs, xslt, geoip, image-filter) prendem o nginx na versão de nginx.org e impedem a
+# correção do Alpine; o nginx.conf não carrega nenhum deles, então saem, e o nginx vem do Alpine já corrigido.
+RUN apk del --no-cache nginx-module-geoip nginx-module-image-filter nginx-module-njs nginx-module-xslt \
+  && apk upgrade --no-cache \
+  && apk add --no-cache 'nginx>=1.30.7-r0'
 USER 101
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build --chown=nginx:nginx /app/dist /usr/share/nginx/html

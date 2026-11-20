@@ -22,6 +22,8 @@ export const AUDIT_ACTION_META: Record<AuditAction, AuditActionMeta> = {
   USER_REACTIVATED: { label: 'Reativou Usuário', tone: 'info' },
   USER_DELETED: { label: 'Excluiu Usuário', tone: 'danger' },
   GLOBAL_NOTIFICATION_SENT: { label: 'Enviou Notificação Global', tone: 'neutral' },
+  GLOBAL_NOTIFICATION_SCHEDULED: { label: 'Agendou Notificação Global', tone: 'neutral' },
+  GLOBAL_NOTIFICATION_CANCELED: { label: 'Cancelou Notificação Agendada', tone: 'warning' },
   ALBUM_CREATED: { label: 'Criou Álbum', tone: 'primary' },
   ALBUM_UPDATED: { label: 'Editou Álbum', tone: 'neutral' },
   ALBUM_DELETED: { label: 'Excluiu Álbum', tone: 'warning' },

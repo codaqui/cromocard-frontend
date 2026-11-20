@@ -80,3 +80,7 @@
     font-size: var(--font-size-md);
   }
 }
+
+.input[readonly] {
+  color: var(--color-text-muted);
+}
