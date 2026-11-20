@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { albumFormSchema, cardFormSchema, categoryFormSchema } from './catalog.schemas';
+import {
+  albumFormSchema,
+  bulkDeleteFormSchema,
+  cardFormSchema,
+  categoryFormSchema,
+  variantLabelsOf,
+} from './catalog.schemas';
 
 const ALBUM_ID = '0190f3a4-7b1c-7d2e-8f3a-4b5c6d7e8f90';
 const CATEGORY_ID = '0190f3a4-7b1c-7d2e-8f3a-4b5c6d7e8f91';
@@ -21,6 +27,8 @@ const emptyAlbum = {
 const validCard = {
   name: 'Pelé',
   number: '10',
+  code: '',
+  variants: '',
   description: '',
   frontImageUrl: FRONT_IMAGE_URL,
   backImageUrl: '',
@@ -122,6 +130,56 @@ describe('cardFormSchema', () => {
     const result = cardFormSchema.safeParse({ ...validCard, number: '1'.repeat(21) });
 
     expect(messagesOf(result)).toEqual(['Use no máximo 20 caracteres.']);
+  });
+});
+
+describe('código e variantes da carta (CCD105)', () => {
+  it('R8: código vazio vira null e o preenchido perde os espaços das pontas', () => {
+    expect(cardFormSchema.parse({ ...validCard, code: '' }).code).toBeNull();
+    expect(cardFormSchema.parse({ ...validCard, code: ' CRD-POK-0004 ' }).code).toBe(
+      'CRD-POK-0004',
+    );
+  });
+
+  it('R8: recusa código acima de 30 caracteres', () => {
+    const result = cardFormSchema.safeParse({ ...validCard, code: 'C'.repeat(31) });
+
+    expect(fieldsOf(result)).toEqual(['code']);
+    expect(messagesOf(result)).toEqual(['Use no máximo 30 caracteres.']);
+  });
+
+  it('R8: arruma as variantes como o backend: sem vazias nem repetidas', () => {
+    const parsed = cardFormSchema.parse({
+      ...validCard,
+      variants: ' Shadowless ,, Holofoil, shadowless ',
+    });
+
+    expect(parsed.variants).toBe('Shadowless, Holofoil');
+    expect(cardFormSchema.parse({ ...validCard, variants: ' , ' }).variants).toBeNull();
+  });
+
+  it('R8: recusa variantes acima de 120 caracteres', () => {
+    const variants = Array.from({ length: 13 }, (_, index) => `Variante${index}`).join(',');
+
+    expect(messagesOf(cardFormSchema.safeParse({ ...validCard, variants }))).toEqual([
+      'Use no máximo 120 caracteres.',
+    ]);
+  });
+
+  it('R8: separa as variantes guardadas em etiquetas', () => {
+    expect(variantLabelsOf('Shadowless, Holofoil')).toEqual(['Shadowless', 'Holofoil']);
+    expect(variantLabelsOf(null)).toEqual([]);
+  });
+});
+
+describe('bulkDeleteFormSchema', () => {
+  it('R10: exige o motivo da exclusão em lote', () => {
+    const result = bulkDeleteFormSchema.safeParse({ reason: ' ' });
+
+    expect(messagesOf(result)).toEqual(['O motivo precisa ter pelo menos 3 caracteres']);
+    expect(bulkDeleteFormSchema.parse({ reason: ' Duplicadas ' })).toEqual({
+      reason: 'Duplicadas',
+    });
   });
 });
 

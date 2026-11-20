@@ -25,6 +25,11 @@
   font-size: var(--font-size-sm);
 }
 
+.select:disabled {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
 .select:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 0;

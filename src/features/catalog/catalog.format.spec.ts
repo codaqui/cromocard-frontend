@@ -12,6 +12,10 @@ import {
   formatFileSize,
   importedCardsNotice,
   importErrorLine,
+  bulkDeletedNotice,
+  bulkDeleteMessage,
+  bulkDeleteTitle,
+  joinNames,
 } from './catalog.format';
 
 const KB = 1024;
@@ -104,5 +108,28 @@ describe('catalog.format: importação de CSV', () => {
       'O arquivo tem linhas com erro',
     );
     expect(failedImportSummary(undefined, new Error('Falha de rede'))).toBe('Falha de rede');
+  });
+});
+
+describe('exclusão em lote (CCD105)', () => {
+  it('R10: junta os nomes como no Figma', () => {
+    expect(joinNames([])).toBe('');
+    expect(joinNames(['Gyarados'])).toBe('Gyarados');
+    expect(joinNames(['Gyarados', 'Ninetales', 'Zapdos'])).toBe('Gyarados, Ninetales e Zapdos');
+  });
+
+  it('R10: título e mensagem no singular e no plural', () => {
+    expect(bulkDeleteTitle(1)).toBe('Excluir 1 carta');
+    expect(bulkDeleteTitle(3)).toBe('Excluir 3 cartas');
+    expect(bulkDeleteMessage(['Zapdos'])).toMatch(/^Zapdos sai do catálogo./);
+  });
+
+  it('L13: nenhuma carta excluída quando todas estão em coleções', () => {
+    expect(
+      bulkDeletedNotice({ deleted: [], skipped: [{ id: '1', name: 'Zico', number: '8' }] }),
+    ).toEqual({
+      title: 'Nenhuma carta excluída',
+      detail: 'Zico nº 008 ficou porque está em coleções.',
+    });
   });
 });

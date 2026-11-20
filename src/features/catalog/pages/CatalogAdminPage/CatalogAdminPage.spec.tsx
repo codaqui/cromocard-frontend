@@ -25,8 +25,31 @@ vi.mock('../../catalog.api', () => ({
     listRarities: vi.fn(),
     listLanguages: vi.fn(),
     deleteItem: vi.fn(),
+    getSummary: vi.fn(),
+    bulkDeleteCards: vi.fn(),
   },
 }));
+
+const SUMMARY = {
+  albums: 142,
+  licensedAlbums: 128,
+  pendingAlbumRequests: 14,
+  albumYears: [2026, 1999],
+};
+
+const secondCard: Card = {
+  ...card,
+  id: '0190f3a4-0000-7000-8000-000000000021',
+  name: 'Garrincha',
+  code: null,
+  variants: null,
+};
+const thirdCard: Card = {
+  ...card,
+  id: '0190f3a4-0000-7000-8000-000000000022',
+  name: 'Zico',
+  number: '8',
+};
 
 const RARITY = rarity;
 
@@ -55,6 +78,8 @@ describe('CatalogAdminPage', () => {
     vi.mocked(catalogApi.listRarities).mockReset().mockResolvedValue([RARITY]);
     vi.mocked(catalogApi.listLanguages).mockReset().mockResolvedValue([]);
     vi.mocked(catalogApi.deleteItem).mockReset().mockResolvedValue(undefined);
+    vi.mocked(catalogApi.getSummary).mockReset().mockResolvedValue(SUMMARY);
+    vi.mocked(catalogApi.bulkDeleteCards).mockReset();
   });
 
   it('CA1: abre na aba de cartas com a lista paginada, a busca e os filtros', async () => {
@@ -69,21 +94,85 @@ describe('CatalogAdminPage', () => {
       'aria-selected',
       'true',
     );
-    expect(screen.getByLabelText('Buscar carta pelo nome ou número')).toBeInTheDocument();
+    expect(screen.getByLabelText('Buscar carta pelo nome, número ou código')).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: 'Paginação' })).toHaveTextContent(
       'Mostrando registros 1 - 1 de 1 itens',
     );
     expect(catalogApi.listCards).toHaveBeenCalledWith(LIST_PAGE);
   });
 
-  it('mostra o cabeçalho do catálogo e os totais nos indicadores e nas abas', async () => {
+  it('CA4: mostra o total de álbuns, os licenciados e os pendentes de revisão, e os totais nas abas', async () => {
     renderPage();
 
     expect(screen.getByRole('heading', { name: 'Gestão de Catálogo' })).toBeInTheDocument();
-    const albums = await screen.findByRole('region', { name: 'Álbuns oficiais' });
-    expect(await within(albums).findByText('1')).toBeInTheDocument();
-    expect(within(albums).getByText('2 categorias & franquias')).toBeInTheDocument();
+    const total = await screen.findByRole('region', { name: 'Total de álbuns' });
+    expect(await within(total).findByText('142')).toBeInTheDocument();
+    const licensed = screen.getByRole('region', { name: 'Álbuns licenciados' });
+    expect(within(licensed).getByText('128')).toBeInTheDocument();
+    expect(within(licensed).getByText('14 pendentes de revisão')).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Categorias & Franquias 2/ })).toBeInTheDocument();
+  });
+
+  it('CA4: com uma solicitação pendente, o texto fica no singular', async () => {
+    vi.mocked(catalogApi.getSummary).mockResolvedValue({ ...SUMMARY, pendingAlbumRequests: 1 });
+    renderPage();
+
+    expect(await screen.findByText('1 pendente de revisão')).toBeInTheDocument();
+  });
+
+  it('R8: a lista mostra o código e as variantes da carta, e "Sem código" quando não tem', async () => {
+    vi.mocked(catalogApi.listCards).mockResolvedValue(pageOf([card, secondCard]));
+    renderPage();
+
+    const table = await screen.findByRole('table', { name: 'Cartas do catálogo' });
+    expect(within(table).getByText('#CRD-FUT-0010')).toBeInTheDocument();
+    expect(within(table).getByText('Holofoil')).toBeInTheDocument();
+    expect(within(table).getByText('Shadowless')).toBeInTheDocument();
+    expect(within(table).getByText('Sem código')).toBeInTheDocument();
+  });
+
+  it('CA6: filtra pelo ano do álbum e limpa todos os filtros', async () => {
+    renderPage();
+    await screen.findByRole('option', { name: '2026' });
+    await userEvent.selectOptions(screen.getByLabelText('Ano'), '2026');
+
+    expect(catalogApi.listCards).toHaveBeenLastCalledWith({ ...LIST_PAGE, year: '2026' });
+    expect(screen.getByText('Ano: 2026')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Limpar todos os filtros' }));
+
+    expect(screen.queryByText('Ano: 2026')).not.toBeInTheDocument();
+    expect(catalogApi.listCards).toHaveBeenLastCalledWith(LIST_PAGE);
+  });
+
+  it('L16: o filtro Ano oferece os anos que o resumo devolve, mesmo de álbuns fora da lista carregada', async () => {
+    vi.mocked(catalogApi.listAlbums).mockResolvedValue(pageOf([]));
+    renderPage();
+    const yearSelect = await screen.findByLabelText('Ano');
+    await within(yearSelect).findByRole('option', { name: '1999' });
+
+    expect(
+      within(yearSelect)
+        .getAllByRole('option')
+        .map(({ textContent }) => textContent),
+    ).toEqual(['Todos os anos', '2026', '1999']);
+  });
+
+  it('L12: o filtro de status da CCD106 aparece desabilitado', async () => {
+    renderPage();
+
+    expect(await screen.findByLabelText('Status')).toBeDisabled();
+  });
+
+  it('R2: a ação Duplicar só existe nas cartas e abre o "Duplicar carta"', async () => {
+    renderPage();
+    await userEvent.click(await screen.findByRole('button', { name: `Duplicar ${card.name}` }));
+
+    expect(screen.getByRole('dialog', { name: 'Duplicar carta' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Nome da carta *')).toHaveValue(card.name);
+    await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+    await userEvent.click(screen.getByRole('tab', { name: /Álbuns Oficiais/ }));
+    await screen.findByRole('table', { name: 'Álbuns do catálogo' });
+    expect(screen.queryByRole('button', { name: /^Duplicar/ })).not.toBeInTheDocument();
   });
 
   it('CA1: troca de página pela paginação numerada', async () => {
@@ -138,7 +227,7 @@ describe('CatalogAdminPage', () => {
   it('CA1: busca as cartas pelo nome', async () => {
     renderPage();
     await userEvent.type(
-      await screen.findByLabelText('Buscar carta pelo nome ou número'),
+      await screen.findByLabelText('Buscar carta pelo nome, número ou código'),
       ' Pelé ',
     );
 
@@ -325,12 +414,15 @@ describe('CatalogAdminPage', () => {
 
   it('CA1: a busca vira chip e sai pelo chip', async () => {
     renderPage();
-    await userEvent.type(await screen.findByLabelText('Buscar carta pelo nome ou número'), 'Pelé');
+    await userEvent.type(
+      await screen.findByLabelText('Buscar carta pelo nome, número ou código'),
+      'Pelé',
+    );
     await userEvent.click(
       await screen.findByRole('button', { name: 'Remover filtro Busca: Pelé' }),
     );
 
-    expect(screen.getByLabelText('Buscar carta pelo nome ou número')).toHaveValue('');
+    expect(screen.getByLabelText('Buscar carta pelo nome, número ou código')).toHaveValue('');
   });
 
   it('CA1: avança de página pelo botão da paginação', async () => {
@@ -376,5 +468,112 @@ describe('CatalogAdminPage', () => {
     );
 
     expect(screen.getByText('Franquia: Futebol')).toBeInTheDocument();
+  });
+  describe('exclusão em lote (CCD105)', () => {
+    const REASON = 'Cartas duplicadas na importação';
+
+    beforeEach(() => {
+      vi.mocked(catalogApi.listCards).mockResolvedValue(pageOf([card, secondCard, thirdCard]));
+    });
+
+    async function selectCards(...names: string[]) {
+      await screen.findByRole('table', { name: 'Cartas do catálogo' });
+      for (const name of names) {
+        await userEvent.click(screen.getByRole('checkbox', { name: `Selecionar ${name}` }));
+      }
+    }
+
+    it('CA7: exclui as selecionadas com o motivo e avisa quantas saíram', async () => {
+      vi.mocked(catalogApi.bulkDeleteCards).mockResolvedValue({
+        deleted: [card.id, secondCard.id],
+        skipped: [],
+      });
+      renderPage();
+      await selectCards(card.name, secondCard.name);
+
+      expect(screen.getByText('2 selecionadas')).toBeInTheDocument();
+      await userEvent.click(screen.getByRole('button', { name: 'Excluir selecionadas' }));
+      const dialog = screen.getByRole('alertdialog', { name: 'Excluir 2 cartas?' });
+      expect(within(dialog).queryByRole('button', { name: 'Fechar' })).not.toBeInTheDocument();
+      expect(within(dialog).getByText(/^Pelé e Garrincha saem do catálogo./)).toBeInTheDocument();
+      await userEvent.type(within(dialog).getByLabelText('Motivo (obrigatório)'), REASON);
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Excluir 2 cartas' }));
+
+      await vi.waitFor(() =>
+        expect(catalogApi.bulkDeleteCards).toHaveBeenCalledWith({
+          ids: [card.id, secondCard.id],
+          reason: REASON,
+        }),
+      );
+      expect(await screen.findByText('2 cartas excluídas do catálogo')).toBeInTheDocument();
+      expect(
+        screen.getByText('A exclusão foi registrada no log de auditoria.'),
+      ).toBeInTheDocument();
+      expect(screen.queryByText('2 selecionadas')).not.toBeInTheDocument();
+    });
+
+    it('R10: sem motivo, o lote não é excluído', async () => {
+      renderPage();
+      await selectCards(card.name);
+      await userEvent.click(screen.getByRole('button', { name: 'Excluir selecionadas' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Excluir 1 carta' }));
+
+      expect(
+        await screen.findByText('O motivo precisa ter pelo menos 3 caracteres'),
+      ).toBeInTheDocument();
+      expect(catalogApi.bulkDeleteCards).not.toHaveBeenCalled();
+    });
+
+    it('CA9: o aviso lista as cartas que ficaram por estarem em coleções', async () => {
+      vi.mocked(catalogApi.bulkDeleteCards).mockResolvedValue({
+        deleted: [card.id],
+        skipped: [
+          { id: thirdCard.id, name: 'Zico', number: '8' },
+          { id: secondCard.id, name: 'Garrincha', number: null },
+        ],
+      });
+      renderPage();
+      await userEvent.click(
+        await screen.findByRole('checkbox', { name: 'Selecionar as cartas da página' }),
+      );
+      await userEvent.click(screen.getByRole('button', { name: 'Excluir selecionadas' }));
+      await userEvent.type(screen.getByLabelText('Motivo (obrigatório)'), REASON);
+      await userEvent.click(screen.getByRole('button', { name: 'Excluir 3 cartas' }));
+
+      expect(await screen.findByText('1 carta excluída do catálogo')).toBeInTheDocument();
+      expect(
+        screen.getByText('Zico nº 008 e Garrincha ficaram porque estão em coleções.'),
+      ).toBeInTheDocument();
+    });
+
+    it('R10: marca e desmarca a página inteira e limpa a seleção', async () => {
+      renderPage();
+      const pageCheckbox = await screen.findByRole('checkbox', {
+        name: 'Selecionar as cartas da página',
+      });
+      await userEvent.click(pageCheckbox);
+
+      expect(screen.getByText('3 selecionadas')).toBeInTheDocument();
+      expect(pageCheckbox).toBeChecked();
+      await userEvent.click(pageCheckbox);
+      expect(screen.queryByText(/selecionadas?$/)).not.toBeInTheDocument();
+      await selectCards(card.name);
+      await userEvent.click(screen.getByRole('checkbox', { name: `Selecionar ${card.name}` }));
+      expect(screen.queryByText('1 selecionada')).not.toBeInTheDocument();
+      await selectCards(card.name);
+      await userEvent.click(screen.getByRole('button', { name: 'Limpar seleção' }));
+      expect(screen.getByRole('checkbox', { name: `Selecionar ${card.name}` })).not.toBeChecked();
+    });
+
+    it('R10: voltar fecha o modal sem excluir e mantém a seleção', async () => {
+      renderPage();
+      await selectCards(card.name);
+      await userEvent.click(screen.getByRole('button', { name: 'Excluir selecionadas' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Voltar' }));
+
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+      expect(screen.getByText('1 selecionada')).toBeInTheDocument();
+      expect(catalogApi.bulkDeleteCards).not.toHaveBeenCalled();
+    });
   });
 });

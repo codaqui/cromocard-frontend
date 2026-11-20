@@ -11,6 +11,7 @@ export interface CatalogFilterSelectConfig<TName extends string> {
   placeholder: string;
   icon: CatalogIconName;
   options: SelectOption[];
+  disabled?: boolean;
 }
 
 interface CatalogFilterSelectProps<TName extends string> {
@@ -46,6 +47,7 @@ export function CatalogFilterSelect<TName extends string>({
         aria-label={select.label}
         className={styles.select}
         value={value}
+        disabled={select.disabled}
         onChange={(event) => onChange(select.name, event.target.value)}
       >
         <FilterOptions placeholder={select.placeholder} options={select.options} />

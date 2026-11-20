@@ -2,19 +2,19 @@ import { useId } from 'react';
 
 import type { CatalogIconName } from '../../catalog-icon-paths';
 import { formatCount } from '../../catalog.format';
-import type { CatalogTotals } from '../../hooks/useCatalogTotals';
+import type { CatalogSummary } from '../../catalog.types';
 import { CatalogIcon } from '../CatalogIcon/CatalogIcon';
 import styles from './CatalogStats.module.css';
 
 interface StatCardProps {
   label: string;
   value?: number;
-  hint: string;
+  hint?: string;
   icon: CatalogIconName;
-  tone: 'accent' | 'warning';
+  tone?: 'info' | 'warning';
 }
 
-function StatCard({ label, value, hint, icon, tone }: StatCardProps) {
+function StatCard({ label, value, hint, icon, tone = 'info' }: StatCardProps) {
   const labelId = useId();
 
   return (
@@ -24,30 +24,29 @@ function StatCard({ label, value, hint, icon, tone }: StatCardProps) {
           {label}
         </h2>
         <p className={styles.value}>{formatCount(value)}</p>
-        <p className={styles[tone]}>{hint}</p>
+        {hint && <p className={styles.warning}>{hint}</p>}
       </div>
-      <span className={styles.icon}>
+      <span className={tone === 'warning' ? styles.warningIcon : styles.icon}>
         <CatalogIcon name={icon} size={20} />
       </span>
     </section>
   );
 }
 
-export function CatalogStats({ totals }: { totals: CatalogTotals }) {
+function pendingHintOf(pending?: number): string | undefined {
+  if (pending === undefined) return undefined;
+  return `${formatCount(pending)} ${pending === 1 ? 'pendente' : 'pendentes'} de revisão`;
+}
+
+export function CatalogStats({ summary }: { summary?: CatalogSummary }) {
   return (
     <div className={styles.stats}>
+      <StatCard label="Total de álbuns" value={summary?.albums} icon="menuBook" />
       <StatCard
-        label="Total de cartas"
-        value={totals.cards}
-        hint="cartas ativas no catálogo global"
-        icon="menuBook"
-        tone="accent"
-      />
-      <StatCard
-        label="Álbuns oficiais"
-        value={totals.albums}
-        hint={`${formatCount(totals.categories)} categorias & franquias`}
-        icon="libraryAdd"
+        label="Álbuns licenciados"
+        value={summary?.licensedAlbums}
+        hint={pendingHintOf(summary?.pendingAlbumRequests)}
+        icon="verified"
         tone="warning"
       />
     </div>

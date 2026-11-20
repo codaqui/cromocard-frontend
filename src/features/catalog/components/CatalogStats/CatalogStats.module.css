@@ -42,10 +42,15 @@
   color: var(--color-warning);
 }
 
-.icon {
+.icon,
+.warningIcon {
   display: inline-flex;
   padding: var(--space-2);
   border-radius: var(--radius-sm);
   background: var(--color-surface-high);
   color: var(--color-info);
+}
+
+.warningIcon {
+  color: var(--color-warning);
 }

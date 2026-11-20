@@ -9,15 +9,16 @@ interface CheckboxProps extends Omit<ComponentProps<'input'>, 'type'> {
   label: ReactNode;
   hint?: string;
   error?: string;
+  hideLabel?: boolean;
 }
 
-export function Checkbox({ label, hint, error, id, ...inputProps }: CheckboxProps) {
+export function Checkbox({ label, hint, error, id, hideLabel, ...inputProps }: CheckboxProps) {
   const generatedId = useId();
   const checkboxId = id ?? generatedId;
 
   return (
     <div className={styles.field}>
-      <label htmlFor={checkboxId} className={styles.label}>
+      <label htmlFor={checkboxId} className={hideLabel ? styles.touchLabel : styles.label}>
         <input
           id={checkboxId}
           type="checkbox"
@@ -26,7 +27,7 @@ export function Checkbox({ label, hint, error, id, ...inputProps }: CheckboxProp
           aria-describedby={describedByOf(checkboxId, { hint, error })}
           {...inputProps}
         />
-        {label}
+        {hideLabel ? <span className={styles.visuallyHidden}>{label}</span> : label}
       </label>
       <FieldMessages inputId={checkboxId} hint={hint} error={error} />
     </div>

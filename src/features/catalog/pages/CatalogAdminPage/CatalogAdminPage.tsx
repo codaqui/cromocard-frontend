@@ -12,6 +12,7 @@ import { CatalogIcon } from '../../components/CatalogIcon/CatalogIcon';
 import { CatalogStats } from '../../components/CatalogStats/CatalogStats';
 import { CategoriesTab } from '../../components/CategoriesTab/CategoriesTab';
 import { RowsPerPage } from '../../components/RowsPerPage/RowsPerPage';
+import { useCatalogSummary } from '../../catalog.queries';
 import { useCatalogCreate } from '../../hooks/useCatalogCreate';
 import { type CatalogTotals, useCatalogTotals } from '../../hooks/useCatalogTotals';
 import styles from './CatalogAdminPage.module.css';
@@ -91,13 +92,14 @@ function CatalogTabs({ totals, activeTab, onTabChange, notify }: CatalogTabsProp
 
 export function CatalogAdminPage() {
   const totals = useCatalogTotals();
+  const summary = useCatalogSummary();
   const create = useCatalogCreate();
   const [activeTab, setActiveTab] = useState<CatalogTabId>('cards');
 
   return (
     <section className={styles.page}>
       <CatalogHeader activeTab={activeTab} onAction={create.open} />
-      <CatalogStats totals={totals} />
+      <CatalogStats summary={summary.data} />
       <CatalogTabs
         totals={totals}
         activeTab={activeTab}

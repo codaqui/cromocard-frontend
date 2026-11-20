@@ -161,4 +161,30 @@ describe('ConfirmDialog', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Excluir' }));
     expect(onConfirm).toHaveBeenCalledWith(undefined);
   });
+
+  it('no padrão, mostra o botão de fechar', () => {
+    render(<ConfirmDialog {...baseProps} onConfirm={vi.fn()} onCancel={vi.fn()} />);
+
+    expect(screen.getByRole('button', { name: 'Fechar' })).toBeInTheDocument();
+  });
+
+  it('compacto: sem o botão de fechar e com o motivo confirmado pelo rótulo do Figma', async () => {
+    const onConfirm = vi.fn();
+    render(
+      <ConfirmDialog
+        {...baseProps}
+        variant="compact"
+        plainReasonLabel
+        requireReason
+        reasonLabel="Motivo (obrigatório)"
+        onConfirm={onConfirm}
+        onCancel={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByRole('button', { name: 'Fechar' })).not.toBeInTheDocument();
+    await userEvent.type(screen.getByLabelText('Motivo (obrigatório)'), 'Duplicadas');
+    await userEvent.click(screen.getByRole('button', { name: 'Suspender' }));
+    expect(onConfirm).toHaveBeenCalledWith('Duplicadas');
+  });
 });

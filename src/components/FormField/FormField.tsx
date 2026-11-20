@@ -3,12 +3,13 @@ import type { ReactNode } from 'react';
 import { errorIdOf, hintIdOf } from './field-ids';
 import styles from './FormField.module.css';
 
-/** Opções de rótulo que TextField e Select repassam ao FormField. */
+/** Opções de rótulo que TextField, Select e Textarea repassam ao FormField. */
 export interface FieldLabelOptions {
   /** Esconde o rótulo na tela e mantém para leitores de tela (o campo mostra o texto no placeholder). */
   hideLabel?: boolean;
   /** Texto curto alinhado à direita do rótulo, como "obrigatório" ou "único" no Figma. */
   labelAside?: string;
+  plainLabel?: boolean;
 }
 
 interface FormFieldProps extends FieldLabelOptions {
@@ -47,6 +48,7 @@ function FieldLabel({
   label,
   hideLabel,
   labelAside,
+  plainLabel,
 }: FieldLabelOptions & { inputId: string; label: string }) {
   if (hideLabel) {
     return (
@@ -57,7 +59,7 @@ function FieldLabel({
   }
   return (
     <div className={styles.labelRow}>
-      <label htmlFor={inputId} className={styles.label}>
+      <label htmlFor={inputId} className={plainLabel ? styles.plainLabel : styles.label}>
         {label}
       </label>
       {labelAside && <span className={styles.labelAside}>{labelAside}</span>}

@@ -1,16 +1,24 @@
+import type { DataTableColumn } from '@/components/DataTable/DataTable';
 import type { SelectOption } from '@/components/Select/Select';
 
 import { filtersStateOf, listSummary, selectChips } from '../../catalog.filter-chips';
 import { formatEdition } from '../../catalog.format';
 import { useCardsList } from '../../catalog.queries';
+import { variantLabelsOf } from '../../catalog.schemas';
 import type { Card, CatalogTabProps } from '../../catalog.types';
 import {
   useAlbumOptions,
+  useAlbumYearOptions,
   useCategoryOptions,
   useRarityOptions,
 } from '../../hooks/useCatalogFilterOptions';
 import { type CatalogItemDialogs, useCatalogItemDialogs } from '../../hooks/useCatalogItemDialogs';
 import { type CatalogListFilters, useCatalogListFilters } from '../../hooks/useCatalogListFilters';
+import { type BulkDeletion, useBulkDeletion } from '../../hooks/useBulkDeletion';
+import { type CardSelection, useCardSelection } from '../../hooks/useCardSelection';
+import { BulkDeleteCardsDialog } from '../BulkDeleteCardsDialog/BulkDeleteCardsDialog';
+import { BulkSelectionBar } from '../BulkSelectionBar/BulkSelectionBar';
+import { cardSelectionColumn } from '../CardSelectionColumn/cardSelectionColumn';
 import {
   AlbumNumberCell,
   EditionCell,
@@ -29,47 +37,53 @@ import { catalogActionsColumn } from '../CatalogRowActions/catalogActionsColumn'
 import { CardFormModal } from '../CardFormModal/CardFormModal';
 import styles from './CardsTab.module.css';
 
-const cardsTable: CatalogTable<Card> = {
-  caption: 'Cartas do catálogo',
-  emptyTitle: 'Nenhuma carta encontrada',
-  columns: [
-    {
-      key: 'image',
-      header: 'Carta',
-      render: (card) => <Thumbnail imageUrl={card.frontImageUrl} badge={card.rarity?.name} />,
-    },
-    {
-      key: 'name',
-      header: 'Nome e código',
-      render: (card) => <TitleCell title={card.name} tags={[card.language?.name]} />,
-    },
-    {
-      key: 'album',
-      header: 'Álbum',
-      render: ({ album }) => (
-        <EditionCell title={album?.title} edition={album && formatEdition(album)} />
-      ),
-    },
-    {
-      key: 'category',
-      header: 'Franquia',
-      render: (card) => <FranchiseBadge name={card.category?.name} />,
-    },
-    {
-      key: 'number',
-      header: 'Nº',
-      render: (card) => <AlbumNumberCell number={card.number} total={card.album?.totalCards} />,
-    },
-  ],
-};
+const NO_CODE_LABEL = 'Sem código';
+
+const codeLabelOf = (code: string | null) => (code ? `#${code}` : NO_CODE_LABEL);
+
+const cardColumns: DataTableColumn<Card>[] = [
+  {
+    key: 'image',
+    header: 'Carta',
+    render: (card) => <Thumbnail imageUrl={card.frontImageUrl} badge={card.rarity?.name} />,
+  },
+  {
+    key: 'name',
+    header: 'Nome e código',
+    render: (card) => (
+      <TitleCell
+        title={card.name}
+        detail={codeLabelOf(card.code)}
+        tags={variantLabelsOf(card.variants)}
+      />
+    ),
+  },
+  {
+    key: 'album',
+    header: 'Álbum',
+    render: ({ album }) => (
+      <EditionCell title={album?.title} edition={album && formatEdition(album)} />
+    ),
+  },
+  {
+    key: 'category',
+    header: 'Franquia',
+    render: (card) => <FranchiseBadge name={card.category?.name} />,
+  },
+  {
+    key: 'number',
+    header: 'Nº',
+    render: (card) => <AlbumNumberCell number={card.number} total={card.album?.totalCards} />,
+  },
+];
 
 const cardFiltersTexts = {
   label: 'Filtros das cartas',
-  searchLabel: 'Buscar carta pelo nome ou número',
+  searchLabel: 'Buscar carta pelo nome, número ou código',
   searchPlaceholder: 'Buscar por nome ou código…',
 };
 
-const initialFilters = { categoryId: '', albumId: '', rarityId: '' };
+const initialFilters = { categoryId: '', albumId: '', rarityId: '', year: '' };
 
 const cardsFound = { one: 'carta encontrada', many: 'cartas encontradas' };
 
@@ -77,14 +91,36 @@ type CardFilterName = keyof typeof initialFilters;
 
 type CardFilterSelect = CatalogFilterSelectConfig<CardFilterName>;
 
-function cardsTableWith(dialogs: CatalogItemDialogs<Card>): CatalogTable<Card> {
+const statusSelect: CatalogFilterSelectConfig<'status'> = {
+  name: 'status',
+  label: 'Status',
+  chipLabel: 'Status',
+  placeholder: 'Publicadas',
+  icon: 'gamepad',
+  options: [],
+  disabled: true,
+};
+
+const noop = () => undefined;
+
+interface CardsTableSource {
+  dialogs: CatalogItemDialogs<Card>;
+  selection: CardSelection;
+  rows: Card[];
+}
+
+function cardsTableOf({ dialogs, selection, rows }: CardsTableSource): CatalogTable<Card> {
   const actions = catalogActionsColumn<Card>('card', (card) => card.name, dialogs);
-  return { ...cardsTable, columns: [...cardsTable.columns, actions] };
+  return {
+    caption: 'Cartas do catálogo',
+    emptyTitle: 'Nenhuma carta encontrada',
+    columns: [cardSelectionColumn(selection, rows), ...cardColumns, actions],
+  };
 }
 
 function renderCardForm(dialogs: CatalogItemDialogs<Card>) {
-  return (card?: Card) => (
-    <CardFormModal card={card} onClose={dialogs.close} onSaved={dialogs.finish} />
+  return (card?: Card, source?: Card) => (
+    <CardFormModal card={card} source={source} onClose={dialogs.close} onSaved={dialogs.finish} />
   );
 }
 
@@ -95,6 +131,17 @@ function franchiseSelect(options: SelectOption[]): CardFilterSelect {
     chipLabel: 'Franquia',
     placeholder: 'Todas as franquias',
     icon: 'gamepad',
+    options,
+  };
+}
+
+function yearSelect(options: SelectOption[]): CardFilterSelect {
+  return {
+    name: 'year',
+    label: 'Ano',
+    chipLabel: 'Ano',
+    placeholder: 'Todos os anos',
+    icon: 'calendar',
     options,
   };
 }
@@ -118,6 +165,7 @@ function useCardFilterSelects(): CardFilterSelect[] {
       icon: 'diamond',
       options: useRarityOptions(),
     },
+    yearSelect(useAlbumYearOptions()),
   ];
 }
 
@@ -142,7 +190,30 @@ function CardFilters({ list, summary }: CardFiltersProps) {
           onChange={list.changeFilter}
         />
       ))}
+      <CatalogFilterSelect select={statusSelect} value="" onChange={noop} />
     </CatalogFilters>
+  );
+}
+
+function BulkDeletionDialog({ bulk, selection }: { bulk: BulkDeletion; selection: CardSelection }) {
+  if (!bulk.isOpen) return null;
+
+  return (
+    <BulkDeleteCardsDialog
+      cards={selection.selected}
+      onClose={bulk.close}
+      onDeleted={bulk.finish}
+    />
+  );
+}
+
+function selectionBarOf(bulk: BulkDeletion, selection: CardSelection) {
+  return (
+    <BulkSelectionBar
+      count={selection.selected.length}
+      onDelete={bulk.open}
+      onClear={selection.clear}
+    />
   );
 }
 
@@ -150,15 +221,20 @@ export function CardsTab({ pageSize, notify }: CatalogTabProps) {
   const list = useCatalogListFilters(initialFilters, pageSize);
   const cardsQuery = useCardsList(list.params);
   const dialogs = useCatalogItemDialogs<Card>(notify);
+  const selection = useCardSelection();
+  const bulk = useBulkDeletion(selection, notify);
+  const rows = cardsQuery.data?.data ?? [];
 
   return (
     <div className={styles.tab}>
       <CatalogDialogs dialogs={dialogs} renderForm={renderCardForm(dialogs)} />
+      <BulkDeletionDialog bulk={bulk} selection={selection} />
       <CardFilters list={list} summary={listSummary(cardsQuery.data?.meta.total, cardsFound)} />
       <CatalogListResult
         query={cardsQuery}
-        table={cardsTableWith(dialogs)}
+        table={cardsTableOf({ dialogs, selection, rows })}
         onPageChange={list.changePage}
+        footer={selectionBarOf(bulk, selection)}
       />
     </div>
   );
