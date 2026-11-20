@@ -31,7 +31,6 @@ interface ConfirmDialogProps {
   eyebrow?: ReactNode;
   cancelLabel?: string;
   actionsLayout?: 'end' | 'spread';
-  /** `compact`: sem o botão de fechar, na largura do modal compacto e com o rótulo do motivo sem caixa alta. */
   variant?: ConfirmDialogVariant;
 }
 

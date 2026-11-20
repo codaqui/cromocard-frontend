@@ -3,13 +3,12 @@ import type { ReactNode } from 'react';
 import { errorIdOf, hintIdOf } from './field-ids';
 import styles from './FormField.module.css';
 
-/** Opções de rótulo que TextField e Select repassam ao FormField. */
+/** Opções de rótulo que TextField, Select e Textarea repassam ao FormField. */
 export interface FieldLabelOptions {
   /** Esconde o rótulo na tela e mantém para leitores de tela (o campo mostra o texto no placeholder). */
   hideLabel?: boolean;
   /** Texto curto alinhado à direita do rótulo, como "obrigatório" ou "único" no Figma. */
   labelAside?: string;
-  /** Rótulo sem caixa alta, como o "Motivo (obrigatório)" dos modais de confirmação compactos no Figma. */
   plainLabel?: boolean;
 }
 

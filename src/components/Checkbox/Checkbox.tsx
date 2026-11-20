@@ -9,7 +9,6 @@ interface CheckboxProps extends Omit<ComponentProps<'input'>, 'type'> {
   label: ReactNode;
   hint?: string;
   error?: string;
-  /** Esconde o texto na tela (fica para leitores de tela) e mantém a área de toque, como a seleção de linhas de tabela. */
   hideLabel?: boolean;
 }
 
