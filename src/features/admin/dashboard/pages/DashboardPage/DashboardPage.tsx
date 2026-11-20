@@ -17,18 +17,16 @@ import type { SellerVerificationStatus } from '@/types/seller-verification';
 
 import { DashboardHeader } from '../../components/DashboardHeader/DashboardHeader';
 import { DashboardKpis } from '../../components/DashboardKpis/DashboardKpis';
-import { SignupsChart } from '../../components/SignupsChart/SignupsChart';
+import { SignupsEvolutionChart } from '../../components/SignupsEvolutionChart/SignupsEvolutionChart';
 import { SignupsMix } from '../../components/SignupsMix/SignupsMix';
 import { DEFAULT_DASHBOARD_PERIOD, toPeriodParams } from '../../dashboard.period';
-import { useDashboardSummary } from '../../dashboard.queries';
+import { useDashboardSummary, useSignupsEvolution } from '../../dashboard.queries';
 import type {
   DashboardPeriodParams,
   DashboardSummary,
   SellerCredentialing,
 } from '../../dashboard.types';
 import styles from './DashboardPage.module.css';
-
-const NO_DATA_FOR_FILTERS = 'Não foram encontrados dados para os filtros selecionados';
 
 interface LoadErrorProps {
   message: string;
@@ -44,6 +42,22 @@ function LoadError({ message, onRetry }: LoadErrorProps) {
       </Button>
     </div>
   );
+}
+
+interface PeriodSelection {
+  params: DashboardPeriodParams;
+  period: Period;
+}
+
+function SignupsEvolution({ params, period }: PeriodSelection) {
+  const query = useSignupsEvolution(params);
+
+  if (query.isPending) return <LoadingState message="Carregando a evolução dos cadastros…" />;
+  if (query.isError) {
+    return <LoadError message={query.error.message} onRetry={() => void query.refetch()} />;
+  }
+
+  return <SignupsEvolutionChart evolution={query.data} period={period} />;
 }
 
 interface SellerRegistrationsProps {
@@ -84,44 +98,42 @@ interface DashboardSections {
 
 interface DashboardDataProps extends DashboardSections {
   summary: DashboardSummary;
+  selection: PeriodSelection;
 }
 
-function DashboardData({ summary, credentialing, sellerVerifications }: DashboardDataProps) {
+function DashboardData({
+  summary,
+  selection,
+  credentialing,
+  sellerVerifications,
+}: DashboardDataProps) {
   if (summary.isEmpty) return <EmptyState title="Não existem dados para apresentação" />;
 
   return (
     <>
-      <DashboardKpis
-        kpis={summary.kpis}
-        signups={summary.signupsByMonth}
-        credentialing={credentialing}
-      />
-      {summary.kpis.newUsers === 0 ? (
-        <EmptyState title={NO_DATA_FOR_FILTERS} />
-      ) : (
-        <div className={styles.insights}>
-          <SignupsChart signups={summary.signupsByMonth} />
-          <SignupsMix kpis={summary.kpis} />
-        </div>
-      )}
+      <DashboardKpis summary={summary} {...selection} credentialing={credentialing} />
+      <div className={styles.insights}>
+        <SignupsEvolution {...selection} />
+        <SignupsMix kpis={summary.kpis} />
+      </div>
       <SellerRegistrations {...sellerVerifications} />
     </>
   );
 }
 
 interface DashboardContentProps extends DashboardSections {
-  params: DashboardPeriodParams;
+  selection: PeriodSelection;
 }
 
-function DashboardContent({ params, ...sections }: DashboardContentProps) {
-  const query = useDashboardSummary(params);
+function DashboardContent({ selection, ...sections }: DashboardContentProps) {
+  const query = useDashboardSummary(selection.params);
 
   if (query.isPending) return <LoadingState message="Carregando o dashboard…" />;
   if (query.isError) {
     return <LoadError message={query.error.message} onRetry={() => void query.refetch()} />;
   }
 
-  return <DashboardData summary={query.data} {...sections} />;
+  return <DashboardData summary={query.data} selection={selection} {...sections} />;
 }
 
 function useSellerCredentialing(
@@ -145,7 +157,7 @@ export function DashboardPage() {
     <section className={styles.page}>
       <DashboardHeader period={period} params={params} onPeriodChange={setPeriod} />
       <DashboardContent
-        params={params}
+        selection={{ params, period }}
         credentialing={credentialing}
         sellerVerifications={{
           statusFilter,
