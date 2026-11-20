@@ -16,3 +16,16 @@
 .cancelStart {
   margin-right: auto;
 }
+
+/* Variante compacta (avisos das solicitações, frames 847-390 e 847-883): rótulo em caixa normal. */
+.compactForm label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--color-text);
+}
+
+.compactForm textarea {
+  background: var(--color-surface-sunken);
+}

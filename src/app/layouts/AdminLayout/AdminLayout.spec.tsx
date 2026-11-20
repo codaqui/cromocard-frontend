@@ -26,10 +26,7 @@ const routes = [
   { path: paths.home, element: <p>Área pública</p> },
 ];
 
-const underConstructionModules = [
-  { label: 'Notificação', story: 'CCD060' },
-  { label: 'Solicitações', story: 'CCD064' },
-];
+const underConstructionModules = [{ label: 'Notificação', story: 'CCD060' }];
 
 function renderBackoffice(initialPath: string = paths.backoffice.dashboard) {
   return renderWithProviders({ routes, initialPath, user: { id: '1', role: 'ADMIN' } });
@@ -80,6 +77,17 @@ describe('AdminLayout', () => {
       'aria-current',
       'page',
     );
+  });
+
+  it('navega para a Fila de Solicitações', async () => {
+    renderBackoffice();
+    const menu = await screen.findByRole('navigation', { name: 'Módulos oficiais' });
+
+    await userEvent.click(within(menu).getByRole('link', { name: 'Solicitações' }));
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Fila de Solicitações' }),
+    ).toBeInTheDocument();
   });
 
   it('navega para as Configurações Globais', async () => {

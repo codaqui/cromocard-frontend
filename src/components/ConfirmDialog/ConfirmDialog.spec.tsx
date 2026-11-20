@@ -35,6 +35,31 @@ describe('ConfirmDialog', () => {
     expect(onConfirm).not.toHaveBeenCalled();
   });
 
+  it('usa o texto próprio quando o motivo fica em branco, sem perder o mínimo de 3', async () => {
+    const onConfirm = vi.fn();
+    render(
+      <ConfirmDialog
+        {...baseProps}
+        requireReason
+        reasonRequiredMessage="Informe o motivo para recusar a sugestão."
+        onConfirm={onConfirm}
+        onCancel={vi.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Suspender' }));
+    expect(
+      await screen.findByText('Informe o motivo para recusar a sugestão.'),
+    ).toBeInTheDocument();
+
+    await userEvent.type(screen.getByLabelText('Motivo'), 'ok');
+    await userEvent.click(screen.getByRole('button', { name: 'Suspender' }));
+    expect(
+      await screen.findByText('O motivo precisa ter pelo menos 3 caracteres'),
+    ).toBeInTheDocument();
+    expect(onConfirm).not.toHaveBeenCalled();
+  });
+
   it('confirma com o motivo sem espaços nas pontas', async () => {
     const onConfirm = vi.fn();
     render(<ConfirmDialog {...baseProps} requireReason onConfirm={onConfirm} onCancel={vi.fn()} />);
@@ -43,6 +68,17 @@ describe('ConfirmDialog', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Suspender' }));
 
     expect(onConfirm).toHaveBeenCalledWith('Spam repetido');
+  });
+
+  it('na variante compacta não mostra o X de fechar e cancela pelo botão', async () => {
+    const onCancel = vi.fn();
+    render(
+      <ConfirmDialog {...baseProps} variant="compact" onConfirm={vi.fn()} onCancel={onCancel} />,
+    );
+
+    expect(screen.queryByRole('button', { name: /fechar/i })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+    expect(onCancel).toHaveBeenCalledOnce();
   });
 
   it('cancela pelo botão e pelo Esc', async () => {
