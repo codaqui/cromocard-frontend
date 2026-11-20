@@ -1,3 +1,4 @@
+import type { IconName } from '@/components/Icon/icon-paths';
 import type { Period } from '@/components/PeriodFilter/PeriodFilter';
 import { SELLER_REGISTRATIONS_ANCHOR } from '@/features/admin';
 
@@ -58,6 +59,11 @@ function SellersLink() {
   );
 }
 
+function variationIcon(variation: number | null): IconName | undefined {
+  if (variation === null) return undefined;
+  return variation < 0 ? 'trendingDown' : 'trendingUp';
+}
+
 function usersTile(kpis: Kpis): KpiTileProps {
   return {
     label: 'Total de usuários',
@@ -65,6 +71,7 @@ function usersTile(kpis: Kpis): KpiTileProps {
     unit: 'usuários',
     badge: formatVariation(kpis.usersVariation),
     badgeTone: (kpis.usersVariation ?? 0) < 0 ? 'warning' : 'info',
+    badgeIcon: variationIcon(kpis.usersVariation),
     description: 'Clientes e vendedores, sem administradores e sem contas excluídas.',
     glow: 'primary',
     footer: (
@@ -86,6 +93,7 @@ function cardsTile(kpis: Kpis): KpiTileProps {
       ? `+${formatCount(kpis.newCardsThisWeek)} novas cartas esta semana`
       : 'A contagem aparece quando o catálogo estiver no ar.',
     descriptionTone: catalogOn ? 'accent' : undefined,
+    descriptionIcon: catalogOn ? 'addCircle' : undefined,
     glow: 'accent',
   };
 }

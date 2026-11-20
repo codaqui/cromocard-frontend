@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { Period } from '@/components/PeriodFilter/PeriodFilter';
 
@@ -49,6 +49,21 @@ const week = days(5, [
 ]);
 
 describe('SignupsEvolutionChart', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it.each([
+    ['primeiro', 0, '0px'],
+    ['último', 6, '160px'],
+  ])('R5: o balão do %s ponto fica dentro do gráfico', async (_, index, left) => {
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(300);
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(140);
+    renderChart(evolutionOf('day', week), { preset: '7d' });
+
+    await userEvent.hover(screen.getAllByRole('img')[index]!);
+
+    expect(screen.getByRole('tooltip').style.left).toBe(left);
+  });
+
   it('CA1: em 7 dias, mostra um ponto por dia com o dia da semana e o total de cada linha', () => {
     renderChart(evolutionOf('day', week), { preset: '7d' });
 
@@ -110,7 +125,7 @@ describe('SignupsEvolutionChart', () => {
 
     expect(screen.getByText('Novos cadastros por dia nos últimos 30 dias.')).toBeInTheDocument();
     expect(screen.getByText('13/10')).toBeInTheDocument();
-    expect(screen.getByText('11/11 (Hoje)')).toBeInTheDocument();
+    expect(screen.getByText('11/11 (HOJE)')).toBeInTheDocument();
   });
 
   it('R4: em 1 ano, os pontos são por mês e o mês atual aparece marcado', () => {

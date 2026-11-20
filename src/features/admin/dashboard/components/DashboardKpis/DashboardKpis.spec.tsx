@@ -101,6 +101,23 @@ describe('DashboardKpis', () => {
     expect(users).toHaveTextContent('Lojistas1.530');
   });
 
+  it('R9: o selo da variação tem o ícone de alta, de queda ou nenhum quando é novo', () => {
+    const { unmount } = renderKpis(summaryOf());
+    expect(screen.getByText('+12,4%').querySelector('svg')).toBeInTheDocument();
+    unmount();
+
+    renderKpis(withKpis({ usersVariation: null }));
+    expect(screen.getByText('Novo').querySelector('svg')).not.toBeInTheDocument();
+  });
+
+  it('R11: as novas cartas da semana vêm com o ícone de adição', () => {
+    renderKpis(summaryOf());
+
+    expect(
+      screen.getByText('+3.120 novas cartas esta semana').querySelector('svg'),
+    ).toBeInTheDocument();
+  });
+
   it('CA6: 100 contra 80 cadastros mostra +25%', () => {
     renderKpis(withKpis({ usersVariation: 25 }));
 

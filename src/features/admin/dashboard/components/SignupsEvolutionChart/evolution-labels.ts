@@ -4,6 +4,7 @@ import type { EvolutionBucket, EvolutionPoint } from '../../dashboard.types';
 
 const BRASILIA_TIME_ZONE = 'America/Sao_Paulo';
 const MAX_AXIS_LABELS = 7;
+const MAX_MONTH_LABELS = 5;
 const MAX_POINTS_WITH_WEEKDAY = 8;
 
 const keyFormatter = new Intl.DateTimeFormat('en-CA', {
@@ -71,24 +72,25 @@ function currentText(at: string, bucket: EvolutionBucket, withWeekday: boolean):
   const date = new Date(at);
   if (bucket === 'hour') return `Agora (${partsOf(date).hour}h)`;
   if (bucket === 'month') return `${axisText(at, bucket, false)} (atual)`;
-  return withWeekday ? `${weekdayOf(date)} (Hoje)` : `${dayMonth(date)} (Hoje)`;
+  return withWeekday ? `${weekdayOf(date)} (Hoje)` : `${dayMonth(date)} (HOJE)`;
 }
 
-function labelIndexes(count: number): number[] {
-  const step = Math.max(1, Math.ceil((count - 1) / (MAX_AXIS_LABELS - 1)));
+function labelIndexes(count: number, maxLabels: number): number[] {
+  const step = Math.max(1, Math.ceil((count - 1) / (maxLabels - 1)));
   const indexes = Array.from({ length: count }, (_, index) => index).filter(
     (index) => index % step === 0,
   );
   const last = count - 1;
   const lastPicked = indexes.at(-1) ?? last;
   if (lastPicked === last) return indexes;
-  return last - lastPicked < step / 2 ? [...indexes.slice(0, -1), last] : [...indexes, last];
+  return [...indexes.slice(0, -1), last];
 }
 
 export interface AxisLabel {
   index: number;
   text: string;
   current: boolean;
+  boxed: boolean;
 }
 
 export function axisLabels(
@@ -97,11 +99,13 @@ export function axisLabels(
   now: Date,
 ): AxisLabel[] {
   const withWeekday = points.length <= MAX_POINTS_WITH_WEEKDAY;
-  return labelIndexes(points.length).map((index) => {
+  const boxesToday = bucket === 'day' && withWeekday;
+  const maxLabels = bucket === 'month' ? MAX_MONTH_LABELS : MAX_AXIS_LABELS;
+  return labelIndexes(points.length, maxLabels).map((index) => {
     const at = points[index]?.at ?? '';
     const current = isCurrent(at, bucket, now);
     const text = current ? currentText(at, bucket, withWeekday) : axisText(at, bucket, withWeekday);
-    return { index, text, current };
+    return { index, text, current, boxed: current && boxesToday };
   });
 }
 

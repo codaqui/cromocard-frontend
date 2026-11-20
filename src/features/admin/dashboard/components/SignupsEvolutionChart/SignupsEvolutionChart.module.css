@@ -159,7 +159,7 @@
   font-size: var(--font-size-xs);
   white-space: nowrap;
   pointer-events: none;
-  transform: translate(-50%, calc(-100% - var(--space-3)));
+  transform: translateY(calc(-100% - var(--space-3)));
 }
 
 .tooltipTitle {
@@ -190,7 +190,6 @@
   top: 0;
   font-size: var(--font-size-xs);
   font-weight: 700;
-  letter-spacing: var(--letter-spacing-caps);
   color: var(--color-label);
   white-space: nowrap;
   transform: translateX(-50%);
@@ -204,7 +203,7 @@
   transform: translateX(-100%);
 }
 
-@container (max-width: 40rem) {
+@container (max-width: 36rem) {
   .axisLabel:nth-child(even):not(:last-child) {
     display: none;
   }
@@ -218,6 +217,12 @@
 
 .currentLabel {
   color: var(--color-chart-secondary);
+}
+
+.boxedLabel {
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  background: var(--color-info-soft);
 }
 
 .empty {

@@ -39,10 +39,14 @@ function AxisLabels({ evolution, now }: { evolution: SignupsEvolution; now: Date
 
   return (
     <ol className={styles.axis} aria-hidden="true">
-      {labels.map(({ index, text, current }) => (
+      {labels.map(({ index, text, current, boxed }) => (
         <li
           key={index}
-          className={cn(styles.axisLabel, current && styles.currentLabel)}
+          className={cn(
+            styles.axisLabel,
+            current && styles.currentLabel,
+            boxed && styles.boxedLabel,
+          )}
           style={{ left: `${(index / lastIndex) * 100}%` }}
         >
           {text}

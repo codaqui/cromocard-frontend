@@ -114,12 +114,24 @@ interface TooltipProps {
   anchor: ChartPoint;
 }
 
+const keepInsidePlot = (ratio: number) => (tooltip: HTMLDivElement | null) => {
+  if (!tooltip) return;
+  const plotWidth = tooltip.parentElement?.clientWidth ?? 0;
+  const centered = ratio * plotWidth - tooltip.offsetWidth / 2;
+  const left = Math.min(Math.max(0, centered), plotWidth - tooltip.offsetWidth);
+  tooltip.style.left = `${Math.max(0, left)}px`;
+};
+
 function Tooltip({ point, bucket, anchor }: TooltipProps) {
-  const left = `${(anchor.x / CHART_WIDTH) * PERCENT}%`;
   const top = `${(anchor.y / CHART_HEIGHT) * PERCENT}%`;
 
   return (
-    <div role="tooltip" className={styles.tooltip} style={{ left, top }}>
+    <div
+      ref={keepInsidePlot(anchor.x / CHART_WIDTH)}
+      role="tooltip"
+      className={styles.tooltip}
+      style={{ top }}
+    >
       <p className={styles.tooltipTitle}>{pointLabel(point.at, bucket)}</p>
       <p className={styles.tooltipCollectors}>{collectorsText(point.collectors)}</p>
       <p className={styles.tooltipSellers}>{sellersText(point.sellers)}</p>
