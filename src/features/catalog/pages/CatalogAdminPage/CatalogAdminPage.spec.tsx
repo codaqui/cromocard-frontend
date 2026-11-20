@@ -30,7 +30,12 @@ vi.mock('../../catalog.api', () => ({
   },
 }));
 
-const SUMMARY = { albums: 142, licensedAlbums: 128, pendingAlbumRequests: 14 };
+const SUMMARY = {
+  albums: 142,
+  licensedAlbums: 128,
+  pendingAlbumRequests: 14,
+  albumYears: [2026, 1999],
+};
 
 const secondCard: Card = {
   ...card,
@@ -139,15 +144,8 @@ describe('CatalogAdminPage', () => {
     expect(catalogApi.listCards).toHaveBeenLastCalledWith(LIST_PAGE);
   });
 
-  it('R9: o filtro Ano oferece os anos dos álbuns, sem repetir, do mais novo ao mais antigo', async () => {
-    vi.mocked(catalogApi.listAlbums).mockResolvedValue(
-      pageOf([
-        { ...album, id: 'a1', year: 1999 },
-        { ...album, id: 'a2', year: 2026 },
-        { ...album, id: 'a3', year: null },
-        { ...album, id: 'a4', year: 1999 },
-      ]),
-    );
+  it('L16: o filtro Ano oferece os anos que o resumo devolve, mesmo de álbuns fora da lista carregada', async () => {
+    vi.mocked(catalogApi.listAlbums).mockResolvedValue(pageOf([]));
     renderPage();
     const yearSelect = await screen.findByLabelText('Ano');
     await within(yearSelect).findByRole('option', { name: '1999' });
@@ -496,6 +494,7 @@ describe('CatalogAdminPage', () => {
       expect(screen.getByText('2 selecionadas')).toBeInTheDocument();
       await userEvent.click(screen.getByRole('button', { name: 'Excluir selecionadas' }));
       const dialog = screen.getByRole('alertdialog', { name: 'Excluir 2 cartas?' });
+      expect(within(dialog).queryByRole('button', { name: 'Fechar' })).not.toBeInTheDocument();
       expect(within(dialog).getByText(/^Pelé e Garrincha saem do catálogo./)).toBeInTheDocument();
       await userEvent.type(within(dialog).getByLabelText('Motivo (obrigatório)'), REASON);
       await userEvent.click(within(dialog).getByRole('button', { name: 'Excluir 2 cartas' }));

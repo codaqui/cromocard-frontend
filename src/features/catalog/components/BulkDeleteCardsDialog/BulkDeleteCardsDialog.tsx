@@ -10,6 +10,14 @@ interface BulkDeleteCardsDialogProps {
   onDeleted: (notice: CatalogNotice) => void;
 }
 
+const dialogLook = {
+  cancelLabel: 'Voltar',
+  tone: 'danger',
+  variant: 'compact',
+  requireReason: true,
+  reasonLabel: 'Motivo (obrigatório)',
+} as const;
+
 export function BulkDeleteCardsDialog({ cards, onClose, onDeleted }: BulkDeleteCardsDialogProps) {
   const removal = useBulkDeleteCards();
   const title = bulkDeleteTitle(cards.length);
@@ -25,10 +33,7 @@ export function BulkDeleteCardsDialog({ cards, onClose, onDeleted }: BulkDeleteC
       title={`${title}?`}
       message={bulkDeleteMessage(cards.map(({ name }) => name))}
       confirmLabel={title}
-      cancelLabel="Voltar"
-      tone="danger"
-      requireReason
-      reasonLabel="Motivo (obrigatório)"
+      {...dialogLook}
       isConfirming={removal.isPending}
       errorMessage={removal.error?.message}
       onConfirm={confirm}

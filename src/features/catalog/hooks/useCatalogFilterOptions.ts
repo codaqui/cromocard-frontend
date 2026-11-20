@@ -1,6 +1,12 @@
 import type { SelectOption } from '@/components/Select/Select';
 
-import { useAlbumsList, useCategoriesList, useLanguages, useRarities } from '../catalog.queries';
+import {
+  useAlbumsList,
+  useCatalogSummary,
+  useCategoriesList,
+  useLanguages,
+  useRarities,
+} from '../catalog.queries';
 import type {
   AlbumReference,
   CardAlbum,
@@ -40,11 +46,8 @@ export function useAlbumOptions(current?: SelectOption): SelectOption[] {
 }
 
 export function useAlbumYearOptions(): SelectOption[] {
-  const { data } = useAlbumsList(OPTIONS_PAGE);
-  const years = (data?.data ?? []).flatMap(({ year }) => (year === null ? [] : [year]));
-  return [...new Set(years)]
-    .sort((first, second) => second - first)
-    .map((year) => ({ value: String(year), label: String(year) }));
+  const years = useCatalogSummary().data?.albumYears ?? [];
+  return years.map((year) => ({ value: String(year), label: String(year) }));
 }
 
 /** A própria categoria e todas as que descendem dela: nenhuma pode ser a categoria pai (L9). */

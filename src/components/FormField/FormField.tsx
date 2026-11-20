@@ -9,6 +9,8 @@ export interface FieldLabelOptions {
   hideLabel?: boolean;
   /** Texto curto alinhado à direita do rótulo, como "obrigatório" ou "único" no Figma. */
   labelAside?: string;
+  /** Rótulo sem caixa alta, como o "Motivo (obrigatório)" dos modais de confirmação compactos no Figma. */
+  plainLabel?: boolean;
 }
 
 interface FormFieldProps extends FieldLabelOptions {
@@ -47,6 +49,7 @@ function FieldLabel({
   label,
   hideLabel,
   labelAside,
+  plainLabel,
 }: FieldLabelOptions & { inputId: string; label: string }) {
   if (hideLabel) {
     return (
@@ -57,7 +60,7 @@ function FieldLabel({
   }
   return (
     <div className={styles.labelRow}>
-      <label htmlFor={inputId} className={styles.label}>
+      <label htmlFor={inputId} className={plainLabel ? styles.plainLabel : styles.label}>
         {label}
       </label>
       {labelAside && <span className={styles.labelAside}>{labelAside}</span>}

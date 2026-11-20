@@ -54,4 +54,11 @@ describe('Textarea', () => {
       'Até 500 caracteres Escreva pelo menos 3 caracteres',
     );
   });
+
+  it('repassa as opções de rótulo ao campo, como o texto ao lado do rótulo', () => {
+    render(<Textarea label="Motivo" labelAside="obrigatório" plainLabel />);
+
+    expect(screen.getByRole('textbox', { name: 'Motivo' })).toBeInTheDocument();
+    expect(screen.getByText('obrigatório')).toBeInTheDocument();
+  });
 });

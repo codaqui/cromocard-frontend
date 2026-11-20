@@ -31,7 +31,11 @@ interface ConfirmDialogProps {
   eyebrow?: ReactNode;
   cancelLabel?: string;
   actionsLayout?: 'end' | 'spread';
+  /** `compact`: sem o botão de fechar, na largura do modal compacto e com o rótulo do motivo sem caixa alta. */
+  variant?: ConfirmDialogVariant;
 }
+
+type ConfirmDialogVariant = 'default' | 'compact';
 
 interface ConfirmDialogActionsProps {
   formId: string;
@@ -102,6 +106,7 @@ interface ConfirmDialogFieldsProps {
   requireReason: boolean;
   reasonLabel: string;
   reasonMaxLength: number;
+  plainReasonLabel: boolean;
   confirmationText?: string;
   extraFields?: ReactNode;
   errorMessage?: string;
@@ -111,13 +116,20 @@ interface ConfirmDialogFieldsProps {
 
 type ReasonFieldProps = Pick<
   ConfirmDialogFieldsProps,
-  'reasonLabel' | 'reasonMaxLength' | 'register' | 'errors'
+  'reasonLabel' | 'reasonMaxLength' | 'plainReasonLabel' | 'register' | 'errors'
 >;
 
-function ReasonField({ reasonLabel, reasonMaxLength, register, errors }: ReasonFieldProps) {
+function ReasonField({
+  reasonLabel,
+  reasonMaxLength,
+  plainReasonLabel,
+  register,
+  errors,
+}: ReasonFieldProps) {
   return (
     <Textarea
       label={reasonLabel}
+      plainLabel={plainReasonLabel}
       maxLength={reasonMaxLength}
       error={errors.reason?.message}
       {...register('reason')}
@@ -188,19 +200,21 @@ const confirmDialogDefaults = {
   canConfirm: true,
   cancelLabel: 'Cancelar',
   actionsLayout: 'end',
+  variant: 'default',
 } satisfies Partial<ConfirmDialogProps>;
 
 function useConfirmDialog(props: Omit<ConfirmDialogProps, 'open'>) {
   const form = { ...confirmDialogDefaults, ...props };
   const { confirmationPending, ...rest } = useConfirmDialogForm(form);
   const disabled = form.isConfirming || confirmationPending || !form.canConfirm;
-  return { ...rest, disabled, formId: useId(), messageId: useId(), ...form };
+  const plainReasonLabel = form.variant === 'compact';
+  return { ...rest, disabled, plainReasonLabel, formId: useId(), messageId: useId(), ...form };
 }
 
 function ConfirmDialogContent(props: Omit<ConfirmDialogProps, 'open'>) {
-  const { title, icon, eyebrow, messageId, isConfirming, onCancel, ...rest } =
+  const { title, icon, eyebrow, variant, messageId, isConfirming, onCancel, ...rest } =
     useConfirmDialog(props);
-  const heading = { title, icon, eyebrow };
+  const heading = { title, icon, eyebrow, variant };
 
   return (
     <Modal

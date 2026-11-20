@@ -18,7 +18,7 @@ import { type BulkDeletion, useBulkDeletion } from '../../hooks/useBulkDeletion'
 import { type CardSelection, useCardSelection } from '../../hooks/useCardSelection';
 import { BulkDeleteCardsDialog } from '../BulkDeleteCardsDialog/BulkDeleteCardsDialog';
 import { BulkSelectionBar } from '../BulkSelectionBar/BulkSelectionBar';
-import { cardSelectionColumn } from '../SelectionCheckbox/cardSelectionColumn';
+import { cardSelectionColumn } from '../CardSelectionColumn/cardSelectionColumn';
 import {
   AlbumNumberCell,
   EditionCell,

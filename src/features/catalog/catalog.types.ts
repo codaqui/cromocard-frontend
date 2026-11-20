@@ -98,6 +98,7 @@ export interface CatalogSummary {
   albums: number;
   licensedAlbums: number;
   pendingAlbumRequests: number;
+  albumYears: number[];
 }
 
 export interface BulkDeleteCardsInput {
