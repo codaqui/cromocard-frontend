@@ -1,23 +1,13 @@
 import { Icon } from '@/components/Icon/Icon';
 
 import { formatScheduleNotice } from '../../global-notifications.format';
-import { NOTIFICATION_CHANNELS, type NotificationChannel } from '../../global-notifications.types';
+import { channelPlaces } from '../../global-notifications.labels';
 import type { NotificationFormState } from '../../hooks/useNotificationForm';
 import styles from './NotificationForm.module.css';
 
-const CHANNEL_PLACES: Record<NotificationChannel, string> = {
-  IN_APP: 'a central de notificações',
-  EMAIL: 'o e-mail',
-};
-
-const placesOf = (channels: NotificationChannel[]) =>
-  NOTIFICATION_CHANNELS.filter((channel) => channels.includes(channel))
-    .map((channel) => CHANNEL_PLACES[channel])
-    .join(' e ') || CHANNEL_PLACES.IN_APP;
-
 function noticeOf({ values, hasErrors }: NotificationFormState, recipients: string) {
   if (hasErrors) return 'Corrija os campos destacados para continuar.';
-  const places = placesOf(values.channels);
+  const places = channelPlaces(values.channels);
   if (values.when === 'NOW') {
     return `A notificação vai para ${places} de ${recipients} e não pode ser desfeita.`;
   }
@@ -26,7 +16,6 @@ function noticeOf({ values, hasErrors }: NotificationFormState, recipients: stri
   return `A notificação entra na fila e vai para ${places} de ${recipients} em ${when}.`;
 }
 
-/** Aviso "Antes de enviar" com a quantidade de destinatários (CCD060 R18). */
 export function SendNotice({
   form,
   recipients,

@@ -1,6 +1,5 @@
 import styles from './NotificationsHeader.module.css';
 
-/** Cabeçalho do frame 208-2380. */
 export function NotificationsHeader() {
   return (
     <header className={styles.header}>

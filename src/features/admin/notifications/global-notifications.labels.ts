@@ -23,9 +23,22 @@ export const STATUS_META: Record<DispatchStatus, { label: string; tone: BadgeTon
   CANCELED: { label: 'Cancelado', tone: 'neutral' },
 };
 
-/** "Plataforma + E-mail", na ordem das opções do formulário. */
+const CHANNEL_PLACES: Record<NotificationChannel, string> = {
+  IN_APP: 'a central de notificações',
+  EMAIL: 'o e-mail',
+};
+
+const orderedChannels = (channels: NotificationChannel[]) =>
+  (Object.keys(CHANNEL_OPTIONS) as NotificationChannel[]).filter((channel) =>
+    channels.includes(channel),
+  );
+
+export const channelPlaces = (channels: NotificationChannel[]) =>
+  orderedChannels(channels)
+    .map((channel) => CHANNEL_PLACES[channel])
+    .join(' e ') || CHANNEL_PLACES.IN_APP;
+
 export const channelsLabel = (channels: NotificationChannel[]) =>
-  (Object.keys(CHANNEL_OPTIONS) as NotificationChannel[])
-    .filter((channel) => channels.includes(channel))
+  orderedChannels(channels)
     .map((channel) => CHANNEL_OPTIONS[channel].label)
     .join(' + ');

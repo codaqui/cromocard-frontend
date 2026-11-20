@@ -6,13 +6,13 @@ import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { Icon } from '@/components/Icon/Icon';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { Pagination } from '@/components/Pagination/Pagination';
+import type { PaginatedResponse } from '@/types/api';
 
 import { formatCount, formatDispatchDate } from '../../global-notifications.format';
 import { AUDIENCE_LABELS, STATUS_META, channelsLabel } from '../../global-notifications.labels';
 import { useDispatchHistory } from '../../global-notifications.queries';
 import type { GlobalNotification, RecipientsCount } from '../../global-notifications.types';
 import styles from './DispatchHistory.module.css';
-import type { PaginatedResponse } from '@/types/api';
 
 export const HISTORY_PAGE_SIZE = 10;
 
@@ -22,7 +22,6 @@ interface DispatchHistoryProps {
   onCancelSchedule: (dispatch: GlobalNotification) => void;
 }
 
-/** Entregue mostra quantos receberam; na fila ou cancelado, o tamanho atual do público. */
 function audienceOf(dispatch: GlobalNotification, counts?: RecipientsCount) {
   const total = dispatch.status === 'SENT' ? dispatch.recipientCount : counts?.[dispatch.audience];
   const label = AUDIENCE_LABELS[dispatch.audience];
@@ -120,7 +119,6 @@ function HistoryBody(props: Omit<DispatchHistoryProps, 'ref'>) {
   return <HistoryTable {...props} page={history.data} onPageChange={setPage} />;
 }
 
-/** Histórico de disparos do frame 208-2380 (CCD060 R16, CCD100 R8–R9, CCD101 R10). */
 export function DispatchHistory({ ref, ...props }: DispatchHistoryProps) {
   return (
     <section ref={ref} className={styles.card} aria-labelledby="dispatch-history" tabIndex={-1}>

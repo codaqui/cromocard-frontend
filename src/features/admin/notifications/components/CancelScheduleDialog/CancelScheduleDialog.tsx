@@ -27,7 +27,6 @@ function scheduleOf(iso: string) {
   return formatScheduleNotice(day, time);
 }
 
-/** Confirmação do frame 827-2006 (CCD100 R9, L5). */
 export function CancelScheduleDialog({
   dispatch,
   isCanceling,
@@ -40,8 +39,8 @@ export function CancelScheduleDialog({
       open={dispatch !== null}
       title="Cancelar agendamento?"
       message={
-        dispatch &&
-        `A notificação "${dispatch.title}", programada para ${scheduleOf(dispatch.scheduledAt!)}, não será enviada. Agendamentos não podem ser editados: para mudar, cancele e crie outro.`
+        dispatch?.scheduledAt &&
+        `A notificação "${dispatch.title}", programada para ${scheduleOf(dispatch.scheduledAt)}, não será enviada. Agendamentos não podem ser editados: para mudar, cancele e crie outro.`
       }
       confirmLabel="Cancelar agendamento"
       cancelLabel="Voltar"

@@ -13,7 +13,6 @@ import type { DispatchNotificationInput, RecipientsCount } from '../global-notif
 
 const EMPTY_AUDIENCE_MESSAGE = 'Este público não tem usuários. Escolha outro público.';
 
-/** Campos da API que aparecem no formulário; `scheduledAt` aparece no agendamento. */
 const FIELD_OF: Record<string, keyof NotificationFormValues> = {
   title: 'title',
   content: 'content',
@@ -45,7 +44,6 @@ const isFieldErrorOf = (apiError: ApiError | null) =>
   apiError?.code === 'EMPTY_AUDIENCE' ||
   (apiError?.details ?? []).some(({ field }) => field in FIELD_OF);
 
-/** Mostra no campo certo o erro que a API devolveu (400 com details e 422 EMPTY_AUDIENCE). */
 function useApiErrorsOnFields(
   apiError: ApiError | null,
   setError: UseFormSetError<NotificationFormValues>,
@@ -60,7 +58,6 @@ function useApiErrorsOnFields(
   return apiError && !isFieldErrorOf(apiError) ? apiError.message : undefined;
 }
 
-/** Público vazio não envia (CCD101 R8): avisa no campo antes de chamar a API. */
 const sendWhenAudienceHasUsers =
   (
     counts: RecipientsCount | undefined,

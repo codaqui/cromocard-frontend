@@ -14,7 +14,6 @@ function LinkField({ form: { register, errors } }: { form: NotificationFormState
   );
 }
 
-/** Título, corpo e link de destino (CCD060 R3, R4, R15). */
 export function MessageFields({ form }: { form: NotificationFormState }) {
   const { register, values, errors } = form;
   return (

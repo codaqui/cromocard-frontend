@@ -28,7 +28,6 @@ function PreviewItem({ title, content }: NotificationPreviewProps) {
   );
 }
 
-/** Como a notificação aparece na central de notificações (frame 208-2380; CCD060 R17, L13). */
 export function NotificationPreview(props: NotificationPreviewProps) {
   return (
     <section className={styles.card} aria-labelledby="notification-preview">

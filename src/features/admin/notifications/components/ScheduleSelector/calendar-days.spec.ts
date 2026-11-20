@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { monthGrid, monthLabel, monthOf, shiftMonth } from './calendar';
+import { monthGrid, monthLabel, monthOf, shiftMonth } from './calendar-days';
 
-describe('calendar', () => {
+describe('calendar-days', () => {
   it('monta novembro de 2026 de domingo a sábado, com os dias de dezembro no fim', () => {
     const weeks = monthGrid('2026-11');
 

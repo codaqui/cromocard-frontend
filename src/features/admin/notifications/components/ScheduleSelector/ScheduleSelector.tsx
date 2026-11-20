@@ -39,7 +39,6 @@ function TimePicker({ hourProps, minuteProps }: TimePickerProps) {
   );
 }
 
-/** Calendário e horário de liberação no fuso de Brasília (frame 277-2689, CCD100 R3). */
 export function ScheduleSelector({
   hourProps,
   minuteProps,

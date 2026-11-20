@@ -34,7 +34,6 @@ function useScheduleCancellation() {
   };
 }
 
-/** Disparo: o formulário, o envio e o modal de sucesso. */
 function useDispatchFlow(counts: RecipientsCount | undefined) {
   const dispatch = useDispatchNotification();
   const apiError = useMemo(
@@ -56,7 +55,6 @@ function useDispatchFlow(counts: RecipientsCount | undefined) {
   return { form, result, closeResult: () => setResult(null), isSending: dispatch.isPending };
 }
 
-/** Fecha o modal e leva ao histórico, depois que o modal devolve o foco ao botão de envio. */
 function useSeeHistory(closeResult: () => void) {
   const historyRef = useRef<HTMLElement>(null);
   const seeHistory = () => {
@@ -69,7 +67,6 @@ function useSeeHistory(closeResult: () => void) {
   return { historyRef, seeHistory };
 }
 
-/** Notificação Global em /backoffice/notifications (CCD060, com a CCD100 e a CCD101). */
 export function GlobalNotificationPage() {
   const counts = useRecipientsCount().data;
   const { form, result, closeResult, isSending } = useDispatchFlow(counts);

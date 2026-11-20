@@ -15,12 +15,30 @@ interface DispatchResultDialogProps {
   onClose: () => void;
 }
 
+interface ResultCopy {
+  title: string;
+  message: string;
+  status: string;
+}
+
+const SENT_MESSAGES = {
+  IN_APP: 'A notificação já está na central de notificações dos usuários do público escolhido.',
+  EMAIL: 'O e-mail com a notificação está sendo enviado aos usuários do público escolhido.',
+  BOTH: 'A notificação já está na central de notificações, e o e-mail está sendo enviado aos usuários do público escolhido.',
+};
+
+const sentMessageOf = (channels: GlobalNotification['channels']) => {
+  if (!channels.includes('EMAIL')) return SENT_MESSAGES.IN_APP;
+  return channels.includes('IN_APP') ? SENT_MESSAGES.BOTH : SENT_MESSAGES.EMAIL;
+};
+
+const sentCopy = (dispatch: GlobalNotification | null): ResultCopy => ({
+  title: 'Notificação enviada',
+  message: sentMessageOf(dispatch?.channels ?? []),
+  status: 'ENTREGUE',
+});
+
 const COPY = {
-  sent: {
-    title: 'Notificação enviada',
-    message: 'A notificação já está na central de notificações dos usuários do público escolhido.',
-    status: 'ENTREGUE',
-  },
   scheduled: {
     title: 'Notificação agendada',
     message:
@@ -48,8 +66,8 @@ function SummaryItem({
 
 function SummaryItems({ dispatch }: { dispatch: GlobalNotification }) {
   const first =
-    dispatch.status === 'SCHEDULED' ? (
-      <SummaryItem label="ENVIO PROGRAMADO" value={formatScheduleDate(dispatch.scheduledAt!)} />
+    dispatch.status === 'SCHEDULED' && dispatch.scheduledAt ? (
+      <SummaryItem label="ENVIO PROGRAMADO" value={formatScheduleDate(dispatch.scheduledAt)} />
     ) : (
       <SummaryItem
         label="DESTINATÁRIOS"
@@ -110,9 +128,8 @@ const badge = (
   </span>
 );
 
-/** Modal de sucesso: enviada (frame 277-2982) ou agendada (frame 821-1118). */
 export function DispatchResultDialog({ dispatch, ...actions }: DispatchResultDialogProps) {
-  const copy = dispatch?.status === 'SCHEDULED' ? COPY.scheduled : COPY.sent;
+  const copy = dispatch?.status === 'SCHEDULED' ? COPY.scheduled : sentCopy(dispatch);
   return (
     <Modal
       open={dispatch !== null}

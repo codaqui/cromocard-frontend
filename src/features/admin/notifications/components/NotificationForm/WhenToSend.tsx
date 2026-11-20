@@ -25,7 +25,6 @@ function Schedule({ form }: { form: NotificationFormState }) {
   );
 }
 
-/** Disparo imediato ou agendado (CCD100 R2). */
 export function WhenToSend({ form }: { form: NotificationFormState }) {
   return (
     <>

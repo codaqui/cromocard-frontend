@@ -11,7 +11,6 @@ interface OptionCardProps extends Omit<ComponentProps<'input'>, 'type'> {
   icon?: ReactNode;
 }
 
-/** Opção em cartão do formulário (público, canais e quando enviar), como no frame 208-2380. */
 export function OptionCard({ type, label, hint, icon, className, ...inputProps }: OptionCardProps) {
   return (
     <label className={cn(styles.card, className)}>

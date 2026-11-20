@@ -4,14 +4,13 @@ import { Icon } from '@/components/Icon/Icon';
 import { cn } from '@/utils/cn';
 
 import { formatLongDay } from '../../global-notifications.format';
-import { monthGrid, monthLabel, monthOf, shiftMonth } from './calendar';
+import { monthGrid, monthLabel, monthOf, shiftMonth } from './calendar-days';
 import styles from './ScheduleSelector.module.css';
 
 const WEEK_DAYS = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
 
 export interface CalendarProps {
   day: string;
-  /** Primeiro dia que pode ser escolhido (hoje, em Brasília). */
   minDay: string;
   onDayChange: (day: string) => void;
 }
@@ -72,7 +71,6 @@ function MonthDays({ month, day, minDay, onDayChange }: CalendarProps & { month:
   );
 }
 
-/** Calendário do frame 277-2689: dias passados e de outros meses ficam desabilitados. */
 export function Calendar(props: CalendarProps) {
   const [month, setMonth] = useState(() => monthOf(props.day));
   return (

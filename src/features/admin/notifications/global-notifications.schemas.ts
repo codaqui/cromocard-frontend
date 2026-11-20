@@ -11,7 +11,6 @@ export const TITLE_MAX_LENGTH = 120;
 export const CONTENT_MAX_LENGTH = 500;
 const LINK_MAX_LENGTH = 255;
 const MIN_SCHEDULE_LEAD_MS = 5 * 60 * 1000;
-/** Igual ao validator da API: caminho do site ou endereço http(s) (CCD060, L12). */
 const LINK_PATTERN = /^(\/(?!\/)\S*|https?:\/\/\S+)$/;
 
 export const SCHEDULE_TOO_SOON = 'Escolha um horário com pelo menos 5 minutos de antecedência.';
@@ -28,7 +27,6 @@ interface ScheduleParts {
 const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const inRange = (value: string, max: number) => /^\d{1,2}$/.test(value) && Number(value) <= max;
 
-/** O horário em UTC; `undefined` sem o dia e `null` com a hora inválida (o campo já acusa). */
 function scheduledAtOf({ scheduleDay, scheduleHour, scheduleMinute }: ScheduleParts) {
   if (!DAY_PATTERN.test(scheduleDay)) return undefined;
   if (!inRange(scheduleHour, 23) || !inRange(scheduleMinute, 59)) return null;

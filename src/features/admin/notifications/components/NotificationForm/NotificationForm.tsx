@@ -39,7 +39,6 @@ function FormActions({ form, counts, isSending }: NotificationFormProps) {
   );
 }
 
-/** Formulário "Nova notificação" do frame 208-2380, com o agendamento do 277-2689. */
 export function NotificationForm(props: NotificationFormProps) {
   const { form, counts } = props;
   const recipients = counts ? usersLabel(counts[form.values.audience]) : 'todo o público';

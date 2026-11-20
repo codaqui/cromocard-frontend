@@ -11,7 +11,6 @@ type FieldProps = ComponentProps<'input'> & ComponentProps<'textarea'>;
 interface TextInputFieldProps extends Omit<FieldProps, 'value'> {
   label: string;
   error?: string;
-  /** Tamanho atual do texto, para o contador "41/120" (usa o `maxLength`). */
   length?: number;
   multiline?: boolean;
   icon?: IconName;
@@ -22,7 +21,6 @@ function Control({ multiline, ...control }: Omit<FieldProps, 'value'> & { multil
   return <input className={styles.input} {...control} />;
 }
 
-/** Campo de texto do formulário de notificação, com o contador e o erro no rótulo. */
 export function TextInputField({
   label,
   error,

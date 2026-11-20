@@ -14,7 +14,6 @@ interface AudienceFieldsProps {
   counts?: RecipientsCount;
 }
 
-/** Público com a contagem de cada um (CCD101 R2, R3). */
 export function AudienceField({ form, counts }: AudienceFieldsProps) {
   return (
     <OptionGroup legend="Público" error={form.errors.audience?.message}>
@@ -32,7 +31,6 @@ export function AudienceField({ form, counts }: AudienceFieldsProps) {
   );
 }
 
-/** Canais: plataforma (padrão) e e-mail (CCD101 R4, R9). */
 export function ChannelsField({ form }: Pick<AudienceFieldsProps, 'form'>) {
   return (
     <OptionGroup legend="Canais" error={form.errors.channels?.message}>

@@ -18,7 +18,6 @@ export const formatCount = (value: number) => countFormatter.format(value);
 export const usersLabel = (count: number) =>
   `${formatCount(count)} ${count === 1 ? 'usuário' : 'usuários'}`;
 
-/** "13 Nov 2026 • 20:30", como no histórico do Figma. */
 export function formatDispatchDate(iso: string): string {
   const { day, month, year, hour, minute } = partsOf(iso, {
     day: '2-digit',
@@ -31,7 +30,6 @@ export function formatDispatchDate(iso: string): string {
   return `${day} ${capitalize(`${month}`.replace('.', ''))} ${year} • ${hour}:${minute}`;
 }
 
-/** "13/11/2026, 20:30" no resumo do agendamento. */
 export function formatScheduleDate(iso: string): string {
   const { day, month, year, hour, minute } = partsOf(iso, {
     day: '2-digit',
@@ -44,7 +42,6 @@ export function formatScheduleDate(iso: string): string {
   return `${day}/${month}/${year}, ${hour}:${minute}`;
 }
 
-/** "Sexta-feira, 13 de novembro de 2026" para o dia escolhido no calendário (AAAA-MM-DD). */
 export function formatLongDay(day: string): string {
   const text = new Intl.DateTimeFormat('pt-BR', {
     timeZone: 'UTC',
@@ -56,11 +53,9 @@ export function formatLongDay(day: string): string {
   return capitalize(text);
 }
 
-/** "13/11/2026 às 20:30" no aviso antes de agendar. */
 export const formatScheduleNotice = (day: string, time: string) =>
   `${day.split('-').reverse().join('/')} às ${time}`;
 
-/** Dia de hoje em Brasília (AAAA-MM-DD). */
 export function todayInBrasilia(now = new Date()): string {
   const { day, month, year } = partsOf(now.toISOString(), {
     day: '2-digit',

@@ -1,5 +1,4 @@
 export interface CalendarDay {
-  /** AAAA-MM-DD */
   iso: string;
   day: number;
   inMonth: boolean;
@@ -12,7 +11,6 @@ const isoOf = (date: Date) =>
 
 const firstDayOf = (month: string) => new Date(`${month}-01T00:00:00Z`);
 
-/** AAAA-MM de um dia AAAA-MM-DD. */
 export const monthOf = (day: string) => day.slice(0, 7);
 
 export function shiftMonth(month: string, delta: number): string {
@@ -31,7 +29,6 @@ export function monthLabel(month: string): string {
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
-/** Semanas do mês, de domingo a sábado, completadas com os dias dos meses vizinhos. */
 export function monthGrid(month: string): CalendarDay[][] {
   const first = firstDayOf(month);
   const cursor = new Date(first);
