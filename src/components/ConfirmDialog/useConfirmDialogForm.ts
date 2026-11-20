@@ -2,13 +2,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import type { FormEvent } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { reasonSchema } from '@/lib/reason';
+import { REASON_MAX_LENGTH, reasonSchemaUpTo } from '@/lib/reason';
 import { z } from '@/lib/zod';
 
 interface ConfirmDialogFormOptions {
   requireReason: boolean;
-  /** Texto do erro quando o motivo obrigatório fica em branco (ex.: frame 847-1380 das solicitações). */
   reasonRequiredMessage?: string;
+  reasonMaxLength?: number;
   confirmationText?: string;
   onConfirm: (reason?: string) => void;
 }
@@ -21,18 +21,20 @@ function matches(expected: string) {
   });
 }
 
-function requiredReason(blankMessage?: string) {
-  if (!blankMessage) return reasonSchema;
-  return z.string().trim().min(1, { error: blankMessage }).pipe(reasonSchema);
+function requiredReason(maxLength: number, blankMessage?: string) {
+  const reason = reasonSchemaUpTo(maxLength);
+  if (!blankMessage) return reason;
+  return z.string().trim().min(1, { error: blankMessage }).pipe(reason);
 }
 
 function buildSchema({
   requireReason,
   reasonRequiredMessage,
+  reasonMaxLength = REASON_MAX_LENGTH,
   confirmationText,
 }: ConfirmDialogFormOptions) {
   return z.object({
-    reason: requireReason ? requiredReason(reasonRequiredMessage) : optionalText,
+    reason: requireReason ? requiredReason(reasonMaxLength, reasonRequiredMessage) : optionalText,
     confirmation: confirmationText ? matches(confirmationText) : optionalText,
   });
 }

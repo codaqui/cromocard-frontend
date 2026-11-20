@@ -18,6 +18,7 @@ const user: UserSummary = {
   phone: null,
   lastLoginAt: null,
   lastLoginIp: null,
+  suspendedUntil: null,
 };
 
 describe('useUserActionDialogs', () => {

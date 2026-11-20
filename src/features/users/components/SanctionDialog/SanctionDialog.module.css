@@ -1,0 +1,81 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.option {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.optionSelected {
+  border-color: var(--color-primary);
+  background: var(--color-surface-raised);
+}
+
+.optionInput {
+  align-self: flex-start;
+}
+
+.optionTitle {
+  font-weight: 600;
+}
+
+.optionDescription {
+  color: var(--color-text-muted);
+}
+
+.fieldLabel {
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+}
+
+.dayOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.dayOption {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  cursor: pointer;
+}
+
+.dayOptionSelected {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+}
+
+.error {
+  color: var(--color-danger);
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+@media (max-width: 25rem) {
+  .footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

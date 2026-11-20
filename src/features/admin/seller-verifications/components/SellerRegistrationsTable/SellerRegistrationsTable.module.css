@@ -18,6 +18,13 @@
   padding: var(--space-5) var(--space-4) var(--space-4);
 }
 
+.toolbarActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
 .titleRow {
   display: flex;
   flex-wrap: wrap;
@@ -44,6 +51,16 @@
 .subtitle {
   font-size: var(--font-size-caption);
   color: var(--color-label);
+}
+
+.filter {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-sunken);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
 }
 
 .refresh {
@@ -132,14 +149,26 @@
   color: var(--color-label);
 }
 
+.cnpj {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-caption);
+  color: var(--color-text);
+}
+
 .date {
   font-family: var(--font-family-mono);
   font-size: var(--font-size-caption);
   color: var(--color-label);
 }
 
-.table .actions {
+.actionsCell {
   text-align: right;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
 }
 
 .action {
@@ -158,56 +187,33 @@
   color: var(--color-info-contrast);
 }
 
+.validate {
+  display: inline-block;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  font: inherit;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-primary-contrast);
+  cursor: pointer;
+}
+
+.validate:hover {
+  opacity: 0.9;
+}
+
 .empty {
   text-align: center;
   font-size: var(--font-size-caption);
   color: var(--color-label);
 }
 
-.footer {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  background: var(--color-surface-sunken);
-}
-
 .showing {
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface-sunken);
   font-size: var(--font-size-xs);
   font-weight: 700;
   color: var(--color-label);
-}
-
-.showing b {
-  font-weight: 800;
-  color: var(--color-text);
-}
-
-.pager {
-  display: flex;
-  gap: var(--space-2);
-}
-
-.pager button {
-  padding: var(--space-2) var(--space-3);
-  border: none;
-  border-radius: var(--radius-xs);
-  background: var(--color-surface-high);
-  font: inherit;
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  color: var(--color-label);
-  cursor: pointer;
-}
-
-.pager button:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-
-.pager .currentPage {
-  background: var(--color-primary);
-  color: var(--color-primary-contrast);
 }

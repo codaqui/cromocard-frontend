@@ -34,9 +34,11 @@ describe('communityAdminApi', () => {
   });
 
   it.each([
+    ['warnGroup', '/admin/community/groups/group-1/warn'],
     ['suspendGroup', '/admin/community/groups/group-1/suspend'],
     ['reactivateGroup', '/admin/community/groups/group-1/reactivate'],
     ['removeReportedMessage', '/admin/community/reports/group-1/remove-message'],
+    ['removeAndWarn', '/admin/community/reports/group-1/remove-and-warn'],
     ['dismissReport', '/admin/community/reports/group-1/dismiss'],
   ] as const)('%s envia só o motivo no corpo', async (method, url) => {
     await communityAdminApi[method](action);
