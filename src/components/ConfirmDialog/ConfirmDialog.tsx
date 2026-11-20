@@ -33,7 +33,6 @@ interface ConfirmDialogProps {
   eyebrow?: ReactNode;
   cancelLabel?: string;
   actionsLayout?: 'end' | 'spread';
-  /** `compact`: o aviso pequeno do Figma, sem o X e com o rótulo do motivo em caixa normal. */
   variant?: 'default' | 'compact';
 }
 

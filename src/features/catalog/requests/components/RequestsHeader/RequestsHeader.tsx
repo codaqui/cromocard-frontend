@@ -9,7 +9,6 @@ interface RequestsHeaderProps {
   children: ReactNode;
 }
 
-/** Cabeçalho do frame 228-1804: título, subtítulo, selo de pendentes e as abas. */
 export function RequestsHeader({ pending, children }: RequestsHeaderProps) {
   return (
     <header className={styles.header}>

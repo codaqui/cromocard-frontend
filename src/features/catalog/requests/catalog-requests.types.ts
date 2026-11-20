@@ -19,7 +19,6 @@ export interface SuggestedReferences {
   language?: string;
 }
 
-/** Dados sugeridos pelo cliente (`catalog_requests.data`); cada tipo usa os seus. */
 export interface SuggestedData {
   name?: string;
   title?: string;

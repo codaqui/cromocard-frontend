@@ -5,25 +5,32 @@ import {
   approvalFailureMessage,
   isAlreadyReviewed,
   itemNameOf,
+  rejectionFailureMessage,
 } from '../catalog-requests.format';
 import { useApproveRequest, useRejectRequest } from '../catalog-requests.queries';
 import type { CatalogRequest } from '../catalog-requests.types';
 
-/** Em que passo do fluxo de análise a tela está; cada passo abre um diálogo do Figma. */
 export type ReviewStep =
   | { kind: 'idle' }
   | { kind: 'approving'; request: CatalogRequest }
   | { kind: 'rejecting'; request: CatalogRequest }
   | { kind: 'reviewed'; message: string }
-  | { kind: 'failed'; message: string };
+  | { kind: 'failed'; action: ReviewAction; message: string };
+
+export type ReviewAction = 'approve' | 'reject';
 
 const IDLE: ReviewStep = { kind: 'idle' };
 
-function failureStep(request: CatalogRequest, error: Error): ReviewStep {
+const FAILURE_MESSAGES: Record<ReviewAction, (request: CatalogRequest, error: Error) => string> = {
+  approve: approvalFailureMessage,
+  reject: rejectionFailureMessage,
+};
+
+function failureStep(action: ReviewAction, request: CatalogRequest, error: Error): ReviewStep {
   if (isAlreadyReviewed(error)) {
     return { kind: 'reviewed', message: alreadyReviewedMessage(request, error) };
   }
-  return { kind: 'failed', message: approvalFailureMessage(request, error) };
+  return { kind: 'failed', action, message: FAILURE_MESSAGES[action](request, error) };
 }
 
 const approvedDetail = (request: CatalogRequest) =>
@@ -35,8 +42,8 @@ function useReviewMutations(
 ) {
   const approval = useApproveRequest();
   const rejection = useRejectRequest();
-  const failWith = (request: CatalogRequest) => (error: Error) =>
-    setStep(failureStep(request, error));
+  const failWith = (action: ReviewAction, request: CatalogRequest) => (error: Error) =>
+    setStep(failureStep(action, request, error));
 
   return {
     isApproving: approval.isPending,
@@ -44,12 +51,12 @@ function useReviewMutations(
     approve: (request: CatalogRequest) =>
       approval.mutate(request.id, {
         onSuccess: () => showApproved(approvedDetail(request)),
-        onError: failWith(request),
+        onError: failWith('approve', request),
       }),
     reject: (request: CatalogRequest, reason: string) =>
       rejection.mutate(
         { id: request.id, reason },
-        { onSuccess: () => setStep(IDLE), onError: failWith(request) },
+        { onSuccess: () => setStep(IDLE), onError: failWith('reject', request) },
       ),
   };
 }

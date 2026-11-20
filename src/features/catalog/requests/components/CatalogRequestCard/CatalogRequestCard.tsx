@@ -60,7 +60,6 @@ function CardActions({ request, onApprove, onReject }: CatalogRequestCardProps) 
   );
 }
 
-/** Um card aberto da fila (frame 228-1804): cada card é o detalhe da solicitação (L6). */
 export function CatalogRequestCard(props: CatalogRequestCardProps) {
   const { request } = props;
 

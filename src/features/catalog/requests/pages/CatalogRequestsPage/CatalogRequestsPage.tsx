@@ -73,7 +73,6 @@ function RequestsQueue({ query, ...props }: QueueProps) {
   return <RequestsList page={query.data} {...props} />;
 }
 
-/** Aviso de aprovada no alto, à direita (frame 847-2864), com a fila já atualizada. */
 function ApprovedToast({ review }: { review: RequestReview }) {
   return (
     <Toast
@@ -86,7 +85,6 @@ function ApprovedToast({ review }: { review: RequestReview }) {
   );
 }
 
-/** A aba e a página da fila; trocar de aba volta para a primeira página. */
 function useRequestsQueue() {
   const [tab, setTab] = useState<RequestTab>('ALL');
   const [page, setPage] = useState(1);
@@ -104,7 +102,6 @@ function useRequestsQueue() {
   return { tab, query, changeTab, setPage, pending: query.data?.meta.pendingByType };
 }
 
-/** Tela Solicitações (CCD064, frame 228-1804): fila de sugestões com aprovar e recusar. */
 export function CatalogRequestsPage() {
   const { tab, query, changeTab, setPage, pending } = useRequestsQueue();
   const review = useRequestReview();

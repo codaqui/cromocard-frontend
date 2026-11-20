@@ -17,7 +17,6 @@ export function useCatalogRequests(params: ListCatalogRequestsParams) {
   });
 }
 
-/** Aprovar e recusar mudam a fila e os contadores: a lista é buscada de novo nos dois casos. */
 function useReview<TInput>(request: (input: TInput) => Promise<unknown>) {
   const queryClient = useQueryClient();
 
