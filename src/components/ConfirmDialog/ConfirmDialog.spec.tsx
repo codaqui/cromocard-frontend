@@ -174,6 +174,7 @@ describe('ConfirmDialog', () => {
       <ConfirmDialog
         {...baseProps}
         variant="compact"
+        plainReasonLabel
         requireReason
         reasonLabel="Motivo (obrigatório)"
         onConfirm={onConfirm}

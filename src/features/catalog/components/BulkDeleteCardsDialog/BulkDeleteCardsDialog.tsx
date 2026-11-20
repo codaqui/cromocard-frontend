@@ -14,6 +14,7 @@ const dialogLook = {
   cancelLabel: 'Voltar',
   tone: 'danger',
   variant: 'compact',
+  plainReasonLabel: true,
   requireReason: true,
   reasonLabel: 'Motivo (obrigatório)',
 } as const;
