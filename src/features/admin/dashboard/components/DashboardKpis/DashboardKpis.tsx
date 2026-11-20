@@ -1,6 +1,12 @@
+import { SELLER_REGISTRATIONS_ANCHOR } from '@/features/admin';
+
 import arrowIcon from '../../assets/arrow-forward.svg';
-import { formatCount, formatShare } from '../../dashboard.format';
-import type { DashboardKpis as Kpis, MonthlySignups } from '../../dashboard.types';
+import { formatCount, formatPercent, formatShare } from '../../dashboard.format';
+import type {
+  DashboardKpis as Kpis,
+  MonthlySignups,
+  SellerCredentialing,
+} from '../../dashboard.types';
 import styles from './DashboardKpis.module.css';
 import { KpiTile, type KpiTileProps } from './KpiTile';
 import { Sparkline } from './Sparkline';
@@ -10,6 +16,7 @@ export const RECENT_SELLERS_ANCHOR = 'vendedores-recentes';
 interface DashboardKpisProps {
   kpis: Kpis;
   signups: MonthlySignups[];
+  credentialing?: SellerCredentialing;
 }
 
 interface Metric {
@@ -107,31 +114,65 @@ function periodFooter(signups: MonthlySignups[]) {
   );
 }
 
-function periodTiles(kpis: Kpis, signups: MonthlySignups[]): KpiTileProps[] {
-  return [
-    {
-      label: 'Novos cadastros',
-      value: `+${formatCount(kpis.newUsers)}`,
-      badge: `${formatShare(kpis.newSellers, kpis.newUsers)} vendedores`,
-      badgeTone: 'warning',
-      description: 'Clientes e vendedores cadastrados no período selecionado.',
-      glow: 'warning',
-      aside: <Sparkline signups={signups} />,
-      footer: periodFooter(signups),
-    },
-    {
-      label: 'Novos vendedores',
-      value: formatCount(kpis.newSellers),
-      unit: 'no período',
-      description: 'Vendedores que criaram conta no período selecionado.',
-      glow: 'primary',
-      footer: <SellersLink />,
-    },
-  ];
+function QueueLink({ onAnalyzeQueue }: Pick<SellerCredentialing, 'onAnalyzeQueue'>) {
+  return (
+    <>
+      <p className={styles.footerText}>Fila pendente</p>
+      <a
+        href={`#${SELLER_REGISTRATIONS_ANCHOR}`}
+        className={styles.footerLink}
+        onClick={onAnalyzeQueue}
+      >
+        Analisar Fila
+        <img src={arrowIcon} alt="" width={9.33} height={9.33} />
+      </a>
+    </>
+  );
 }
 
-export function DashboardKpis({ kpis, signups }: DashboardKpisProps) {
-  const tiles = [...catalogTiles(kpis), ...periodTiles(kpis, signups)];
+const pluralOf = (count: number, singular: string, plural: string) =>
+  count === 1 ? singular : plural;
+
+function credentialingTile({ summary, onAnalyzeQueue }: SellerCredentialing): KpiTileProps {
+  return {
+    label: 'Lojistas & Credenciamento',
+    value: formatCount(summary.approved),
+    unit: pluralOf(summary.approved, 'aprovado', 'aprovados'),
+    badge: `${formatCount(summary.pending)} ${pluralOf(summary.pending, 'Pendente', 'Pendentes')}`,
+    badgeTone: 'warning',
+    description: `Conversão de ${formatPercent(summary.conversionRate)} (aprovados ÷ analisados).`,
+    glow: 'primary',
+    footer: <QueueLink onAnalyzeQueue={onAnalyzeQueue} />,
+  };
+}
+
+function newSellersTile(kpis: Kpis): KpiTileProps {
+  return {
+    label: 'Novos vendedores',
+    value: formatCount(kpis.newSellers),
+    unit: 'no período',
+    description: 'Vendedores que criaram conta no período selecionado.',
+    glow: 'primary',
+    footer: <SellersLink />,
+  };
+}
+
+function signupsTile(kpis: Kpis, signups: MonthlySignups[]): KpiTileProps {
+  return {
+    label: 'Novos cadastros',
+    value: `+${formatCount(kpis.newUsers)}`,
+    badge: `${formatShare(kpis.newSellers, kpis.newUsers)} vendedores`,
+    badgeTone: 'warning',
+    description: 'Clientes e vendedores cadastrados no período selecionado.',
+    glow: 'warning',
+    aside: <Sparkline signups={signups} />,
+    footer: periodFooter(signups),
+  };
+}
+
+export function DashboardKpis({ kpis, signups, credentialing }: DashboardKpisProps) {
+  const sellersTile = credentialing ? credentialingTile(credentialing) : newSellersTile(kpis);
+  const tiles = [...catalogTiles(kpis), signupsTile(kpis, signups), sellersTile];
 
   return (
     <div className={styles.kpis}>

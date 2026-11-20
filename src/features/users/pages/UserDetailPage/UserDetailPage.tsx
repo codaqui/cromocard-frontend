@@ -6,6 +6,7 @@ import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { Icon } from '@/components/Icon/Icon';
 import type { IconName } from '@/components/Icon/icon-paths';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
+import { Toast } from '@/components/Toast/Toast';
 import { useAuth } from '@/hooks/useAuth';
 import { paths } from '@/routes/paths';
 import { maskCpf } from '@/utils/formatCpf';
@@ -14,12 +15,14 @@ import { formatDate } from '@/utils/formatDate';
 import { formatLastAccess } from '@/utils/formatLastAccess';
 import { formatPhone } from '@/utils/formatPhone';
 
+import { SanctionDialog } from '../../components/SanctionDialog/SanctionDialog';
 import { UserActionDialogsWithToast } from '../../components/UserActionDialogsWithToast/UserActionDialogsWithToast';
 import { UserFormModalWithToast } from '../../components/UserFormModalWithToast/UserFormModalWithToast';
+import { useSanctionDialog } from '../../hooks/useSanctionDialog';
 import { useUserActionDialogs } from '../../hooks/useUserActionDialogs';
 import { useUserFormModal } from '../../hooks/useUserFormModal';
 import { initialsOf, shortIdOf } from '../../users.format';
-import { adminActionLabels, roleLabels } from '../../users.labels';
+import { adminActionLabels, roleLabels, warningsLabel } from '../../users.labels';
 import { useUser } from '../../users.queries';
 import type { AdminActionEntry, UserAddress, UserDetail } from '../../users.types';
 import styles from './UserDetailPage.module.css';
@@ -93,7 +96,7 @@ function ProfileMeta({ user }: { user: UserDetail }) {
       </div>
       <div className={styles.metaDivider}>
         <p className={styles.metaLabel}>Advertências:</p>
-        <p className={styles.metaValue}>Nenhuma</p>
+        <p className={styles.metaValue}>{warningsLabel(user.warningsCount)}</p>
       </div>
     </div>
   );
@@ -309,13 +312,19 @@ interface UserActionsCardProps {
   isSelf: boolean;
   onEdit: () => void;
   onDelete: () => void;
+  onSanction: () => void;
 }
 
-function SanctionRow({ isSelf }: { isSelf: boolean }) {
+function SanctionRow({ isSelf, onSanction }: { isSelf: boolean; onSanction: () => void }) {
   const description = isSelf ? SELF_UNAVAILABLE : 'Advertir, suspender ou banir, com justificativa';
   return (
     <ActionRow icon="reports" title="Aplicar sanção" description={description}>
-      <Button variant="secondary" disabled title="Em breve">
+      <Button
+        variant="secondary"
+        disabled={isSelf}
+        title={isSelf ? SELF_UNAVAILABLE : undefined}
+        onClick={onSanction}
+      >
         {isSelf ? 'Indisponível' : 'Aplicar'}
       </Button>
     </ActionRow>
@@ -343,12 +352,15 @@ function EditOrDeleteRow({ isSelf, onEdit, onDelete }: UserActionsCardProps) {
   );
 }
 
-function UserActionsCard(props: UserActionsCardProps) {
-  const aside = props.isSelf ? 'Sua própria conta' : '0 advertências';
+function UserActionsCard({
+  warningsCount,
+  ...props
+}: UserActionsCardProps & { warningsCount: number }) {
+  const aside = props.isSelf ? 'Sua própria conta' : warningsLabel(warningsCount);
   return (
     <Card id="user-actions-heading" icon="settings" title="Ações sobre o usuário" aside={aside}>
       <ul className={styles.actionList}>
-        <SanctionRow isSelf={props.isSelf} />
+        <SanctionRow isSelf={props.isSelf} onSanction={props.onSanction} />
         <EditOrDeleteRow {...props} />
       </ul>
     </Card>
@@ -395,40 +407,110 @@ function useUserDetailActions(user: UserDetail) {
   const navigate = useNavigate();
   const formModal = useUserFormModal();
   const actionDialogs = useUserActionDialogs();
+  const sanctionDialog = useSanctionDialog();
 
   return {
     formModal,
     actionDialogs,
+    sanctionDialog,
     onEdit: () => formModal.openEdit(user),
     onToggleStatus: () => actionDialogs.openSuspend(user),
     onDelete: () => actionDialogs.openDelete(user),
+    onSanction: () => sanctionDialog.open(user),
     backToList: () => void navigate(paths.backoffice.users),
   };
 }
 
+function sanctionTargetOf(target: UserDetail | null) {
+  return (
+    target && {
+      id: target.id,
+      name: target.name,
+      username: target.username,
+      warningsCount: target.warningsCount,
+    }
+  );
+}
+
+type DetailActions = ReturnType<typeof useUserDetailActions>;
+
+function UserDetailFirstColumn({ user }: { user: UserDetail }) {
+  return (
+    <div className={styles.column}>
+      <PersonalDataCard user={user} />
+      <ContactSecurityCard user={user} />
+      <AddressesCard addresses={user.addresses} />
+    </div>
+  );
+}
+
+function UserDetailSecondColumn({
+  user,
+  isSelf,
+  actions,
+}: {
+  user: UserDetail;
+  isSelf: boolean;
+  actions: DetailActions;
+}) {
+  return (
+    <div className={styles.column}>
+      <UserActionsCard
+        isSelf={isSelf}
+        onEdit={actions.onEdit}
+        onDelete={actions.onDelete}
+        onSanction={actions.onSanction}
+        warningsCount={user.warningsCount}
+      />
+      <AdminActionsCard actions={user.adminActions} />
+    </div>
+  );
+}
+
+function UserDetailColumns({
+  user,
+  isSelf,
+  actions,
+}: {
+  user: UserDetail;
+  isSelf: boolean;
+  actions: DetailActions;
+}) {
+  return (
+    <div className={styles.columns}>
+      <UserDetailFirstColumn user={user} />
+      <UserDetailSecondColumn user={user} isSelf={isSelf} actions={actions} />
+    </div>
+  );
+}
+
+function UserDetailDialogs({ actions }: { actions: DetailActions }) {
+  const { formModal, actionDialogs, sanctionDialog, backToList } = actions;
+  return (
+    <>
+      <UserFormModalWithToast formModal={formModal} />
+      <UserActionDialogsWithToast dialogs={actionDialogs} onDeleted={backToList} />
+      <SanctionDialog
+        target={sanctionTargetOf(sanctionDialog.target)}
+        onClose={sanctionDialog.close}
+        onSaved={sanctionDialog.saved}
+      />
+      <Toast message={sanctionDialog.toastMessage} onDismiss={sanctionDialog.dismissToast} />
+    </>
+  );
+}
+
 function UserDetailContent({ user }: { user: UserDetail }) {
   const { user: currentUser } = useAuth();
-  const { formModal, actionDialogs, backToList, onEdit, onToggleStatus, onDelete } =
-    useUserDetailActions(user);
+  const actions = useUserDetailActions(user);
   const isSelf = currentUser?.id === user.id;
 
   return (
     <section className={styles.page}>
       <TopBar user={user} />
-      <ProfileHeader user={user} isSelf={isSelf} onToggleStatus={onToggleStatus} />
-      <div className={styles.columns}>
-        <div className={styles.column}>
-          <PersonalDataCard user={user} />
-          <ContactSecurityCard user={user} />
-          <AddressesCard addresses={user.addresses} />
-        </div>
-        <div className={styles.column}>
-          <UserActionsCard isSelf={isSelf} onEdit={onEdit} onDelete={onDelete} />
-          <AdminActionsCard actions={user.adminActions} />
-        </div>
-      </div>
-      <UserFormModalWithToast formModal={formModal} />
-      <UserActionDialogsWithToast dialogs={actionDialogs} onDeleted={backToList} />
+      <ProfileHeader user={user} isSelf={isSelf} onToggleStatus={actions.onToggleStatus} />
+      <UserDetailColumns user={user} isSelf={isSelf} actions={actions} />
+      <UserDetailDialogs actions={actions} />
     </section>
   );
 }

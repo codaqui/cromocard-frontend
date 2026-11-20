@@ -1,0 +1,140 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+}
+
+.dragging {
+  opacity: 0.5;
+}
+
+.dropTarget {
+  outline: 2px dashed var(--color-primary);
+  outline-offset: -2px;
+}
+
+.handle {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+  cursor: grab;
+}
+
+.position {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-high);
+  color: var(--color-text);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+}
+
+.identity {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.nameLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.name {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
+
+.pinnedBadge,
+.trending,
+.standard {
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-xs);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  line-height: 1.5;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.pinnedBadge,
+.trending {
+  background: var(--color-warning);
+  color: var(--color-warning-soft);
+}
+
+.standard {
+  background: var(--color-neutral-soft);
+  color: var(--color-neutral);
+}
+
+.meta {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
+
+.rowActions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-1);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-danger);
+  cursor: pointer;
+}
+
+.remove:hover {
+  background: var(--color-danger-soft);
+}
+
+.remove:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+@media (max-width: 64rem) {
+  .row {
+    flex-wrap: wrap;
+  }
+
+  .rowActions {
+    flex-basis: 100%;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+}
+
+/* Área de toque de 40 px no celular e no tablet (revisão do PR #21, B1). */
+@media (max-width: 64rem) {
+  .remove {
+    min-width: var(--size-control);
+    min-height: var(--size-control);
+  }
+}

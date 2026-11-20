@@ -29,6 +29,19 @@ describe('Toast', () => {
     );
   });
 
+  it('tinge o fundo do cartão quando pedido', () => {
+    render(
+      <Toast
+        message="Solicitação aprovada"
+        detail="Pikachu entrou no catálogo."
+        tinted
+        onDismiss={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText('Solicitação aprovada').closest('div')?.className).toMatch(/tinted/);
+  });
+
   it('anuncia o erro como alerta', () => {
     render(<Toast tone="danger" message="Não foi possível enviar" onDismiss={vi.fn()} />);
 

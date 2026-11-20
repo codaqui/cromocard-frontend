@@ -3,7 +3,7 @@ import type { IconName } from '@/components/Icon/icon-paths';
 import { cn } from '@/utils/cn';
 
 import { formatGroupCode, formatMembers } from '../../community-admin.format';
-import { groupStatusLooks } from '../../community-admin.labels';
+import { groupStatusActions, groupStatusLooks } from '../../community-admin.labels';
 import type {
   AdminGroupSummary,
   GroupAction,
@@ -79,16 +79,19 @@ function ActionButton({ label, icon, groupName, className, onClick }: ActionButt
 
 function GroupActions({ group, onAction }: GroupRowProps) {
   const act = (action: GroupAction) => () => onAction({ kind: 'group', action, group });
-  const { toggle } = groupStatusLooks[group.status];
 
   return (
     <div className={styles.actions}>
-      <ActionButton
-        {...toggle}
-        groupName={group.name}
-        className={styles[toggle.action]}
-        onClick={act(toggle.action)}
-      />
+      {groupStatusActions[group.status].map(({ action, label, icon }) => (
+        <ActionButton
+          key={action}
+          label={label}
+          icon={icon}
+          groupName={group.name}
+          className={styles[action]}
+          onClick={act(action)}
+        />
+      ))}
       <ActionButton
         label="Excluir"
         icon="delete"

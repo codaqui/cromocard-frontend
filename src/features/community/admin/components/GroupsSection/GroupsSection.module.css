@@ -199,6 +199,11 @@
   color: var(--color-success);
 }
 
+.WARNED {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
 .SUSPENDED {
   background: var(--color-alert);
   color: var(--color-alert-text);
@@ -222,6 +227,7 @@
   cursor: pointer;
 }
 
+.warn,
 .suspend {
   background: var(--color-neutral-soft);
   color: var(--color-warning);
