@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { catalogRequestsApi } from './catalog-requests.api';
 
-const api = vi.hoisted(() => ({ getPage: vi.fn(), post: vi.fn() }));
+const api = vi.hoisted(() => ({ getPage: vi.fn(), post: vi.fn(), getBlob: vi.fn() }));
 
 vi.mock('@/lib/http', () => ({ api }));
 
@@ -29,5 +29,11 @@ describe('catalogRequestsApi', () => {
     expect(api.post).toHaveBeenNthCalledWith(2, '/admin/catalog-requests/request-1/reject', {
       reason: 'Sem fonte oficial',
     });
+  });
+
+  it('baixa o checklist do álbum sugerido em CSV', async () => {
+    await catalogRequestsApi.downloadChecklist('request-1');
+
+    expect(api.getBlob).toHaveBeenCalledWith('/admin/catalog-requests/request-1/checklist.csv');
   });
 });

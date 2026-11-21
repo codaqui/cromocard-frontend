@@ -5,7 +5,7 @@ import { cn } from '@/utils/cn';
 
 import styles from './Toast.module.css';
 
-type ToastTone = 'success' | 'danger';
+type ToastTone = 'success' | 'danger' | 'warning';
 
 type ToastPlacement = 'top' | 'bottom';
 
@@ -23,7 +23,7 @@ interface ToastProps {
 
 const DEFAULT_DURATION_MS = 5000;
 
-const toneIcon = { success: 'check', danger: 'errorCircle' } as const;
+const toneIcon = { success: 'check', danger: 'errorCircle', warning: 'infoOutline' } as const;
 
 interface ToastMessageProps {
   message: string;

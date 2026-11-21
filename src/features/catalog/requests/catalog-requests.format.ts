@@ -1,6 +1,6 @@
 import { ApiError, type ApiErrorDetail } from '@/lib/api-error';
 
-import type { CatalogRequest, RequestPerson } from './catalog-requests.types';
+import type { CatalogRequest, QuorumVotes, RequestPerson } from './catalog-requests.types';
 
 const TIME = new Intl.DateTimeFormat('pt-BR', {
   hour: '2-digit',
@@ -74,3 +74,29 @@ export function rejectionFailureMessage(request: CatalogRequest, error: Error): 
 
 export const isAlreadyReviewed = (error: unknown): error is ApiError =>
   error instanceof ApiError && error.code === 'REQUEST_ALREADY_REVIEWED';
+
+const PERCENT = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 });
+const INTEGER = new Intl.NumberFormat('pt-BR');
+
+export const percentLabel = (value: number) => `${PERCENT.format(value)}%`;
+
+export const cardsLabel = (count: number) =>
+  `${INTEGER.format(count)} ${count === 1 ? 'carta' : 'cartas'}`;
+
+export const populationLabel = (count: number) =>
+  `${INTEGER.format(count)} ${count === 1 ? 'Cópia Global' : 'Cópias Globais'}`;
+
+export const rarityPluralLabel = (name: string) =>
+  name.endsWith('m') ? `${name.slice(0, -1)}ns` : `${name}s`;
+
+export const quorumHeadline = ({ total, goal, goalPercent }: QuorumVotes) =>
+  `${INTEGER.format(total)} / ${INTEGER.format(goal)} Votos (${percentLabel(goalPercent)} da Meta)`;
+
+export function categoryApprovalNote(subcategories: number): string {
+  if (subcategories === 0) return 'Ao aprovar, a categoria é criada e a votação é encerrada.';
+  const created = subcategories === 1 ? 'a subcategoria' : `as ${subcategories} subcategorias`;
+  return `Ao aprovar, a categoria e ${created} são criadas e a votação é encerrada.`;
+}
+
+export const checklistFileName = ({ code }: Pick<CatalogRequest, 'code'>) =>
+  `checklist-${code.slice(1)}.csv`;
