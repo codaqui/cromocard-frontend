@@ -223,6 +223,18 @@ describe('CommunitySuggestionsPage', () => {
     expect(screen.queryByText('Nenhuma sugestão em votação')).not.toBeInTheDocument();
   });
 
+  it('página vazia que já é a última, mesmo com sugestões no total, não entra em laço', async () => {
+    vi.mocked(catalogRequestVotesApi.list).mockResolvedValue({
+      data: [],
+      meta: { page: 1, pageSize: 10, total: 3, totalPages: 1 },
+    });
+
+    renderPage();
+
+    expect(await screen.findByText('Carregando as sugestões…')).toBeInTheDocument();
+    expect(catalogRequestVotesApi.list).toHaveBeenCalledTimes(1);
+  });
+
   it('o chip "votos seus" só aparece quando a lista cabe numa página', async () => {
     vi.mocked(catalogRequestVotesApi.list).mockResolvedValue({
       data: [lorcana, gundam],

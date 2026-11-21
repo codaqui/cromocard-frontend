@@ -6,10 +6,11 @@ import { useVotingSuggestions } from '../catalog-request-votes.queries';
 export function useSuggestionsPage() {
   const [page, setPage] = useState(1);
   const query = useVotingSuggestions({ page, pageSize: SUGGESTIONS_PAGE_SIZE });
-  const meta = query.data?.meta;
-  const isPastLastPage = query.data?.data.length === 0 && (meta?.total ?? 0) > 0;
+  const { data } = query;
+  const lastPage =
+    data && data.data.length === 0 && data.meta.total > 0 ? data.meta.totalPages : null;
 
-  if (isPastLastPage && meta && page !== meta.totalPages) setPage(meta.totalPages);
+  if (lastPage !== null && lastPage !== page) setPage(lastPage);
 
   return { query, setPage };
 }

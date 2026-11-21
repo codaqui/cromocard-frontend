@@ -14,6 +14,8 @@ const routes = [
     children: [
       { path: paths.home, element: <h1>Início</h1> },
       { path: paths.search, element: <h1>Pesquisar</h1> },
+      { path: paths.profile, element: <h1>Meu perfil</h1> },
+      { path: paths.backoffice.root, element: <h1>Painel administrativo</h1> },
     ],
   },
 ];
@@ -100,5 +102,25 @@ describe('SiteShell', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Administrador' }));
 
     expect(screen.getByRole('menuitem', { name: 'BackOffice' })).toBeInTheDocument();
+  });
+
+  it('o menu da conta leva ao perfil', async () => {
+    renderShell({ id: '1', role: 'CUSTOMER' });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cliente' }));
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Meu perfil' }));
+
+    expect(await screen.findByRole('heading', { name: 'Meu perfil' })).toBeInTheDocument();
+  });
+
+  it('o administrador chega ao BackOffice pelo menu da conta', async () => {
+    renderShell({ id: '1', role: 'ADMIN' });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Administrador' }));
+    await userEvent.click(screen.getByRole('menuitem', { name: 'BackOffice' }));
+
+    expect(
+      await screen.findByRole('heading', { name: 'Painel administrativo' }),
+    ).toBeInTheDocument();
   });
 });
