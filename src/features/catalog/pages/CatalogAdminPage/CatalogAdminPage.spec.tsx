@@ -7,7 +7,14 @@ import { renderWithProviders } from '@/test/renderWithProviders';
 
 import { catalogApi } from '../../catalog.api';
 import type { Card } from '../../catalog.types';
-import { album, card, categoriesByType, pageOf, rarity } from '../../test/catalogFixtures';
+import {
+  album,
+  card,
+  cardCategory,
+  categoriesByType,
+  pageOf,
+  rarity,
+} from '../../test/catalogFixtures';
 import { CatalogAdminPage } from './CatalogAdminPage';
 
 vi.mock('../../catalog.api', () => ({
@@ -207,6 +214,53 @@ describe('CatalogAdminPage', () => {
     const table = await screen.findByRole('table', { name: 'Categorias e franquias do catálogo' });
     expect(within(table).getByText('Futebol')).toBeInTheDocument();
     expect(within(table).getByText('Álbum')).toBeInTheDocument();
+  });
+
+  it('CA14 e CA1: a aba mostra o nome com o slug e o selo, o tipo e a quantidade de cartas', async () => {
+    const pokemon = {
+      ...cardCategory,
+      name: 'Pokémon',
+      slug: 'pokemon',
+      badge: 'TRENDING' as const,
+      cardsCount: 18240,
+    };
+    vi.mocked(catalogApi.listCategories).mockResolvedValue(pageOf([pokemon]));
+    renderPage();
+    await userEvent.click(screen.getByRole('tab', { name: /Categorias & Franquias/ }));
+
+    const table = await screen.findByRole('table', { name: 'Categorias e franquias do catálogo' });
+    expect(
+      within(table)
+        .getAllByRole('columnheader')
+        .map((header) => header.textContent),
+    ).toEqual(['Nome e slug', 'Categoria pai', 'Tipo', 'Cartas', 'Ações']);
+    const row = within(table).getByRole('row', { name: /Pokémon/ });
+    expect(within(row).getByText('pokemon')).toBeInTheDocument();
+    expect(within(row).getByText('Em alta')).toBeInTheDocument();
+    expect(within(row).getByText('18.240')).toBeInTheDocument();
+  });
+
+  it('CA14: a categoria sem selo não mostra nenhum selo', async () => {
+    renderPage();
+    await userEvent.click(screen.getByRole('tab', { name: /Categorias & Franquias/ }));
+
+    const table = await screen.findByRole('table', { name: 'Categorias e franquias do catálogo' });
+    expect(within(table).queryByText('Padrão')).not.toBeInTheDocument();
+    expect(within(table).queryByText('Em alta')).not.toBeInTheDocument();
+  });
+
+  it('CA15: busca as categorias pelo nome ou pelo slug', async () => {
+    renderPage();
+    await userEvent.click(screen.getByRole('tab', { name: /Categorias & Franquias/ }));
+    await userEvent.type(
+      await screen.findByLabelText('Buscar categoria pelo nome ou slug'),
+      ' magic-the ',
+    );
+
+    await vi.waitFor(() =>
+      expect(catalogApi.listCategories).toHaveBeenLastCalledWith({ ...LIST_PAGE, q: 'magic-the' }),
+    );
+    expect(screen.getByPlaceholderText('Buscar por nome ou slug…')).toBeInTheDocument();
   });
 
   it('R3: mostra o estado vazio quando o filtro não encontra nada', async () => {

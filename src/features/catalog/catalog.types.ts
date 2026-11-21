@@ -4,6 +4,10 @@ export const CATEGORY_TYPES = ['ALBUM', 'CARD'] as const;
 
 export type CategoryType = (typeof CATEGORY_TYPES)[number];
 
+export const CATEGORY_BADGES = ['STANDARD', 'TRENDING'] as const;
+
+export type CategoryBadge = (typeof CATEGORY_BADGES)[number];
+
 export const ALBUM_STATUSES = ['ACTIVE', 'INACTIVE'] as const;
 
 export type AlbumStatus = (typeof ALBUM_STATUSES)[number];
@@ -62,6 +66,9 @@ export interface Category {
   id: string;
   name: string;
   type: CategoryType;
+  slug: string | null;
+  badge: CategoryBadge | null;
+  cardsCount: number;
   description: string | null;
   parentCategoryId: string | null;
   parentCategory: CatalogReference | null;

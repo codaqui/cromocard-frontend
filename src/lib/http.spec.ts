@@ -250,6 +250,29 @@ describe('http', () => {
     await expect(api.getBlob('/admin/catalog/cards/import/template')).resolves.toBe(file);
   });
 
+  it('getBlob envia os parâmetros da consulta', async () => {
+    const file = new Blob(['Nome;E-mail']);
+    let sentParams: unknown;
+    useFakeApi((config) => {
+      sentParams = config.params;
+      return { status: 200, data: file };
+    });
+
+    await expect(
+      api.getBlob('/admin/reports/signups/export', { format: 'csv', period: '7d' }),
+    ).resolves.toBe(file);
+    expect(sentParams).toEqual({ format: 'csv', period: '7d' });
+  });
+
+  it('getWithMeta devolve os dados e o meta da resposta', async () => {
+    useFakeApi(() => ({ status: 200, data: { data: { rows: [] }, meta: { total: 0 } } }));
+
+    await expect(api.getWithMeta('/admin/reports/signups')).resolves.toEqual({
+      data: { rows: [] },
+      meta: { total: 0 },
+    });
+  });
+
   it('getBlob converte o erro em ApiError lendo o JSON do corpo em Blob', async () => {
     const body = { error: 'FORBIDDEN', message: 'Acesso restrito a administradores' };
     useFakeApi(() => ({ status: 403, data: new Blob([JSON.stringify(body)]) }));

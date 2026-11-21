@@ -21,6 +21,7 @@ interface ConfirmDialogProps {
   requireReason?: boolean;
   reasonLabel?: string;
   reasonRequiredMessage?: string;
+  reasonMaxLength?: number;
   confirmationText?: string;
   extraFields?: ReactNode;
   canConfirm?: boolean;
@@ -32,7 +33,6 @@ interface ConfirmDialogProps {
   eyebrow?: ReactNode;
   cancelLabel?: string;
   actionsLayout?: 'end' | 'spread';
-  /** `compact`: o aviso pequeno do Figma, sem o X e com o rótulo do motivo em caixa normal. */
   variant?: 'default' | 'compact';
 }
 
@@ -93,10 +93,6 @@ function ConfirmDialogError({ message }: { message?: string }) {
   );
 }
 
-function ReasonField(props: ComponentProps<typeof Textarea>) {
-  return <Textarea maxLength={REASON_MAX_LENGTH} {...props} />;
-}
-
 type ConfirmationFieldProps = Omit<ComponentProps<typeof TextField>, 'label'> & {
   expected: string;
 };
@@ -108,6 +104,7 @@ function ConfirmationField({ expected, ...props }: ConfirmationFieldProps) {
 interface ConfirmDialogFieldsProps {
   requireReason: boolean;
   reasonLabel: string;
+  reasonMaxLength: number;
   confirmationText?: string;
   extraFields?: ReactNode;
   errorMessage?: string;
@@ -115,18 +112,31 @@ interface ConfirmDialogFieldsProps {
   errors: ReturnType<typeof useConfirmDialogForm>['errors'];
 }
 
+type ReasonFieldProps = Pick<
+  ConfirmDialogFieldsProps,
+  'reasonLabel' | 'reasonMaxLength' | 'register' | 'errors'
+>;
+
+function ReasonField({ reasonLabel, reasonMaxLength, register, errors }: ReasonFieldProps) {
+  return (
+    <Textarea
+      label={reasonLabel}
+      maxLength={reasonMaxLength}
+      error={errors.reason?.message}
+      {...register('reason')}
+    />
+  );
+}
+
 function ReasonAndConfirmationFields({
   requireReason,
-  reasonLabel,
   confirmationText,
-  register,
-  errors,
+  ...fields
 }: Omit<ConfirmDialogFieldsProps, 'extraFields' | 'errorMessage'>) {
+  const { register, errors } = fields;
   return (
     <>
-      {requireReason && (
-        <ReasonField label={reasonLabel} error={errors.reason?.message} {...register('reason')} />
-      )}
+      {requireReason && <ReasonField {...fields} />}
       {confirmationText && (
         <ConfirmationField
           expected={confirmationText}
@@ -179,6 +189,7 @@ const confirmDialogDefaults = {
   isConfirming: false,
   requireReason: false,
   reasonLabel: 'Motivo',
+  reasonMaxLength: REASON_MAX_LENGTH,
   canConfirm: true,
   cancelLabel: 'Cancelar',
   actionsLayout: 'end',

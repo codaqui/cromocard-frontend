@@ -306,7 +306,7 @@
 
 .actionText {
   flex: 1;
-  min-width: 0;
+  min-width: 10rem;
 }
 
 .actionButtons {

@@ -263,19 +263,38 @@ describe('CatalogRequestsPage', () => {
     );
   });
 
-  it('CA4: falha ao recusar também é informada', async () => {
-    vi.mocked(catalogRequestsApi.reject).mockRejectedValue(new Error('Sem conexão.'));
-    renderPage();
+  it.each([
+    ['sem conexão', new Error('Sem conexão.'), 'Sem conexão.'],
+    [
+      'erro 500',
+      new ApiError({
+        status: 500,
+        code: 'INTERNAL_ERROR',
+        message: 'Erro inesperado no servidor.',
+      }),
+      'Erro inesperado no servidor.',
+    ],
+  ])(
+    'CA4: falha ao recusar (%s) avisa que a recusa falhou, e não a aprovação',
+    async (_, error, text) => {
+      vi.mocked(catalogRequestsApi.reject).mockRejectedValue(error);
+      renderPage();
 
-    await userEvent.click(within(await cardOf(/Disney/)).getByRole('button', { name: 'Recusar' }));
-    const dialog = screen.getByRole('alertdialog');
-    await userEvent.type(within(dialog).getByLabelText('Motivo (obrigatório)'), 'Duplicada');
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Recusar' }));
+      await userEvent.click(
+        within(await cardOf(/Disney/)).getByRole('button', { name: 'Recusar' }),
+      );
+      const dialog = screen.getByRole('alertdialog');
+      await userEvent.type(within(dialog).getByLabelText('Motivo (obrigatório)'), 'Duplicada');
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Recusar' }));
 
-    expect(
-      await screen.findByRole('dialog', { name: 'Não foi possível aprovar' }),
-    ).toHaveTextContent('Sem conexão. A solicitação continua pendente.');
-  });
+      const notice = await screen.findByRole('dialog', { name: 'Não foi possível recusar' });
+      expect(notice).toHaveTextContent(text);
+      expect(notice).toHaveTextContent('Ela continua pendente; tente recusar de novo.');
+      expect(
+        screen.queryByRole('dialog', { name: 'Não foi possível aprovar' }),
+      ).not.toBeInTheDocument();
+    },
+  );
 
   describe('campos da CCD103', () => {
     const fullCard: CatalogRequest = {

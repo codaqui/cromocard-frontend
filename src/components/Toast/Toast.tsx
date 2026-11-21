@@ -16,7 +16,6 @@ interface ToastProps {
   tone?: ToastTone;
   /** `top`: no alto, à direita, abaixo da barra, como no frame 832-1149. */
   placement?: ToastPlacement;
-  /** Fundo levemente tingido com a cor do tom, como o aviso de aprovada das solicitações (847-2864). */
   tinted?: boolean;
   durationMs?: number;
   onDismiss: () => void;

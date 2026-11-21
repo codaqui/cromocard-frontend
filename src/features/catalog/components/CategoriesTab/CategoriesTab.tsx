@@ -1,4 +1,4 @@
-import { categoryTypeLabels, EMPTY_VALUE_LABEL } from '../../catalog.labels';
+import { categoryBadgeLabels, categoryTypeLabels, EMPTY_VALUE_LABEL } from '../../catalog.labels';
 import { filtersStateOf, listSummary, selectChips } from '../../catalog.filter-chips';
 import { useCategoriesList } from '../../catalog.queries';
 import {
@@ -9,7 +9,7 @@ import {
 } from '../../catalog.types';
 import { type CatalogItemDialogs, useCatalogItemDialogs } from '../../hooks/useCatalogItemDialogs';
 import { type CatalogListFilters, useCatalogListFilters } from '../../hooks/useCatalogListFilters';
-import { FranchiseBadge, TitleCell } from '../CatalogCells/CatalogCells';
+import { CountCell, FranchiseBadge, TitleCell } from '../CatalogCells/CatalogCells';
 import { CatalogDialogs } from '../CatalogDialogs/CatalogDialogs';
 import {
   CatalogFilterSelect,
@@ -27,8 +27,14 @@ const categoriesTable: CatalogTable<Category> = {
   columns: [
     {
       key: 'name',
-      header: 'Nome',
-      render: (category) => <TitleCell title={category.name} detail={category.description} />,
+      header: 'Nome e slug',
+      render: (category) => (
+        <TitleCell
+          title={category.name}
+          detail={category.slug}
+          badge={category.badge && categoryBadgeLabels[category.badge]}
+        />
+      ),
     },
     {
       key: 'parent',
@@ -40,13 +46,18 @@ const categoriesTable: CatalogTable<Category> = {
       header: 'Tipo',
       render: (category) => <FranchiseBadge name={categoryTypeLabels[category.type]} />,
     },
+    {
+      key: 'cardsCount',
+      header: 'Cartas',
+      render: (category) => <CountCell value={category.cardsCount} />,
+    },
   ],
 };
 
 const categoryFiltersTexts = {
   label: 'Filtros das categorias',
-  searchLabel: 'Buscar categoria pelo nome',
-  searchPlaceholder: 'Buscar por nome…',
+  searchLabel: 'Buscar categoria pelo nome ou slug',
+  searchPlaceholder: 'Buscar por nome ou slug…',
 };
 
 const initialFilters = { type: '' };

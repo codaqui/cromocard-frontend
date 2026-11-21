@@ -5,13 +5,12 @@ import { Modal } from '@/components/Modal/Modal';
 import { handleOf, itemNameOf } from '../../catalog-requests.format';
 import { requestTypeTexts } from '../../catalog-requests.labels';
 import type { CatalogRequest } from '../../catalog-requests.types';
-import type { RequestReview, ReviewStep } from '../../hooks/useRequestReview';
+import type { RequestReview, ReviewAction, ReviewStep } from '../../hooks/useRequestReview';
 
 interface DialogProps {
   review: RequestReview;
 }
 
-/** Frame 847-390: confirma a aprovação dizendo o que entra no catálogo. */
 function ApproveDialog({ review, request }: DialogProps & { request: CatalogRequest }) {
   const { entersAsSuggested } = requestTypeTexts[request.type];
   return (
@@ -28,7 +27,6 @@ function ApproveDialog({ review, request }: DialogProps & { request: CatalogRequ
   );
 }
 
-/** Frames 847-883 e 847-1380: recusa com o motivo obrigatório. */
 function RejectDialog({ review, request }: DialogProps & { request: CatalogRequest }) {
   return (
     <ConfirmDialog
@@ -56,7 +54,6 @@ interface NoticeProps {
   onClose: () => void;
 }
 
-/** Avisos compactos: aprovada (847-2864), já processada (847-1878) e erro ao aprovar (847-2371). */
 function Notice({ title, message, closeLabel, onClose }: NoticeProps) {
   return (
     <Modal
@@ -73,10 +70,22 @@ function Notice({ title, message, closeLabel, onClose }: NoticeProps) {
 
 type NoticeStep = Exclude<ReviewStep, { kind: 'idle' | 'approving' | 'rejecting' }>;
 
-const NOTICE_TEXTS: Record<NoticeStep['kind'], Pick<NoticeProps, 'title' | 'closeLabel'>> = {
-  reviewed: { title: 'Esta solicitação já foi processada', closeLabel: 'Voltar para a lista' },
-  failed: { title: 'Não foi possível aprovar', closeLabel: 'Entendi' },
+type NoticeTexts = Pick<NoticeProps, 'title' | 'closeLabel'>;
+
+const ALREADY_REVIEWED: NoticeTexts = {
+  title: 'Esta solicitação já foi processada',
+  closeLabel: 'Voltar para a lista',
 };
+
+const FAILURE_TITLES: Record<ReviewAction, string> = {
+  approve: 'Não foi possível aprovar',
+  reject: 'Não foi possível recusar',
+};
+
+const noticeTextsOf = (step: NoticeStep): NoticeTexts =>
+  step.kind === 'reviewed'
+    ? ALREADY_REVIEWED
+    : { title: FAILURE_TITLES[step.action], closeLabel: 'Entendi' };
 
 export function RequestReviewDialogs({ review }: DialogProps) {
   const { step } = review;
@@ -84,5 +93,5 @@ export function RequestReviewDialogs({ review }: DialogProps) {
   if (step.kind === 'idle') return null;
   if (step.kind === 'approving') return <ApproveDialog review={review} request={step.request} />;
   if (step.kind === 'rejecting') return <RejectDialog review={review} request={step.request} />;
-  return <Notice {...NOTICE_TEXTS[step.kind]} message={step.message} onClose={review.close} />;
+  return <Notice {...noticeTextsOf(step)} message={step.message} onClose={review.close} />;
 }

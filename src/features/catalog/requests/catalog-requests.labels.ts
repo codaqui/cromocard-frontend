@@ -22,9 +22,7 @@ export function requestTabs(pending?: Record<RequestTab, number>): TabItem<Reque
 export interface RequestTypeText {
   badge: string;
   section: string;
-  /** Rodapé do card: o que entra no catálogo ao aprovar (L9). */
   approvalNote: string;
-  /** Início da frase do diálogo de aprovar, com a concordância do tipo. */
   entersAsSuggested: string;
 }
 

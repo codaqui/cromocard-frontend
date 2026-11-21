@@ -14,11 +14,21 @@ vi.mock('../../community-admin.api', () => ({
     getSummary: vi.fn(),
     listGroups: vi.fn(),
     listGroupMessageReports: vi.fn(),
+    warnGroup: vi.fn(),
     suspendGroup: vi.fn(),
+    reactivateGroup: vi.fn(),
+    deleteGroup: vi.fn(),
     dismissReport: vi.fn(),
     removeReportedMessage: vi.fn(),
+    removeAndWarn: vi.fn(),
   },
 }));
+
+const { usersApiMock } = vi.hoisted(() => ({
+  usersApiMock: { warn: vi.fn(), suspend: vi.fn(), block: vi.fn() },
+}));
+
+vi.mock('@/features/users/users.api', () => ({ usersApi: usersApiMock }));
 
 const pageOf = <T,>(data: T[]) => ({
   data,
@@ -42,6 +52,14 @@ const groups: AdminGroupSummary[] = [
     membersCount: 1,
     creatorName: 'Bruno',
   },
+  {
+    id: '0199a000-0000-7000-8000-000000004412',
+    name: 'Trocas Diretas MTG',
+    accessType: 'CLOSED',
+    status: 'WARNED',
+    membersCount: 1250,
+    creatorName: 'Urza',
+  },
 ];
 
 const report: GroupMessageReport = {
@@ -53,8 +71,12 @@ const report: GroupMessageReport = {
     id: 'message-1',
     content: 'Resgate boosters grátis neste link',
     createdAt: '2026-11-07T18:01:44Z',
+    authorId: 'author-1',
     authorName: 'Diego',
     groupName: 'Leilões Noturnos Pokémon SP',
+    authorAccountAgeDays: 10,
+    authorWarnings: 0,
+    reportersCount: 1,
   },
 };
 
@@ -76,6 +98,9 @@ describe('CommunityAdminPage', () => {
     vi.mocked(communityAdminApi.listGroupMessageReports)
       .mockReset()
       .mockResolvedValue(pageOf([report]));
+    vi.mocked(communityAdminApi.warnGroup).mockReset();
+    vi.mocked(communityAdminApi.removeAndWarn).mockReset();
+    usersApiMock.warn.mockReset();
   });
 
   it('mostra os indicadores da comunidade', async () => {
@@ -99,6 +124,18 @@ describe('CommunityAdminPage', () => {
     expect(
       within(suspended!).getByRole('button', { name: 'Reativar Vendas Paralelas' }),
     ).toBeInTheDocument();
+  });
+
+  it('CA8: grupo advertido mostra o selo e os botões Reativar e Suspender', async () => {
+    renderPage();
+
+    const table = await screen.findByRole('table', { name: 'Grupos da comunidade' });
+    const warnedRow = within(table).getByRole('row', { name: /Trocas Diretas MTG/ });
+
+    expect(warnedRow).toHaveTextContent('Advertido');
+    expect(within(warnedRow).getByRole('button', { name: /^Reativar/ })).toBeInTheDocument();
+    expect(within(warnedRow).getByRole('button', { name: /^Suspender/ })).toBeInTheDocument();
+    expect(within(warnedRow).queryByRole('button', { name: /^Advertir/ })).not.toBeInTheDocument();
   });
 
   it('CA1: busca pelo nome e filtra pelo status, voltando para a primeira página', async () => {
@@ -132,6 +169,7 @@ describe('CommunityAdminPage', () => {
     expect(screen.getByText('1 Caso Pendente')).toBeInTheDocument();
     expect(communityAdminApi.listGroupMessageReports).toHaveBeenCalledWith({
       status: 'PENDING',
+      severity: 'CRITICAL',
       page: 1,
       pageSize: 10,
     });
@@ -172,17 +210,27 @@ describe('CommunityAdminPage', () => {
     expect(screen.getAllByRole('button', { name: 'Tentar de novo' })).toHaveLength(1);
   });
   it('mostra o erro da fila de moderação e tenta de novo', async () => {
-    vi.mocked(communityAdminApi.listGroupMessageReports).mockRejectedValueOnce(
-      new ApiError({ status: 500, code: 'INTERNAL_ERROR', message: 'Falha ao carregar a fila' }),
+    vi.mocked(communityAdminApi.listGroupMessageReports).mockImplementation((params) =>
+      params.pageSize === 10
+        ? Promise.reject(
+            new ApiError({
+              status: 500,
+              code: 'INTERNAL_ERROR',
+              message: 'Falha ao carregar a fila',
+            }),
+          )
+        : Promise.resolve(pageOf([report])),
     );
-    vi.mocked(communityAdminApi.listGroupMessageReports).mockResolvedValue(pageOf([report]));
 
     renderPage();
 
     expect(await screen.findByText('Falha ao carregar a fila')).toBeInTheDocument();
+    vi.mocked(communityAdminApi.listGroupMessageReports).mockResolvedValue(pageOf([report]));
     await userEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }));
 
-    expect(await screen.findByText('1 Caso Pendente')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Resgate boosters grátis neste link', { exact: false }),
+    ).toBeInTheDocument();
   });
   it('pagina a fila de moderação', async () => {
     vi.mocked(communityAdminApi.listGroupMessageReports).mockResolvedValue({
@@ -198,6 +246,7 @@ describe('CommunityAdminPage', () => {
     await vi.waitFor(() =>
       expect(communityAdminApi.listGroupMessageReports).toHaveBeenLastCalledWith({
         status: 'PENDING',
+        severity: 'CRITICAL',
         page: 2,
         pageSize: 10,
       }),
@@ -240,9 +289,12 @@ describe('CommunityAdminPage', () => {
       id: report.id,
       reason: 'Mensagem sem problema',
     });
-    await vi.waitFor(() =>
-      expect(communityAdminApi.listGroupMessageReports).toHaveBeenCalledTimes(2),
-    );
+    await vi.waitFor(() => {
+      const mainListCalls = vi
+        .mocked(communityAdminApi.listGroupMessageReports)
+        .mock.calls.filter(([params]) => params.pageSize === 10);
+      expect(mainListCalls.length).toBeGreaterThanOrEqual(2);
+    });
   });
   it('CA6: remove a mensagem denunciada pelo diálogo, mostra a mensagem e recarrega a fila', async () => {
     vi.mocked(communityAdminApi.removeReportedMessage).mockResolvedValue({
@@ -318,5 +370,109 @@ describe('CommunityAdminPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Fechar aviso' }));
 
     expect(screen.queryByText('Denúncia dispensada com sucesso.')).not.toBeInTheDocument();
+  });
+
+  it('CA8: advertir o grupo ativo mostra o selo Advertido', async () => {
+    vi.mocked(communityAdminApi.warnGroup).mockResolvedValue({
+      ...groups[0]!,
+      status: 'WARNED',
+      description: null,
+      coverImageUrl: null,
+      createdAt: '2026-10-01T12:00:00Z',
+    });
+    renderPage();
+    const table = await screen.findByRole('table', { name: 'Grupos da comunidade' });
+    const [active] = within(table).getAllByRole('row').slice(1);
+
+    await userEvent.click(within(active!).getByRole('button', { name: /^Advertir/ }));
+    await userEvent.type(screen.getByRole('textbox', { name: 'Motivo' }), 'Spam repetido no grupo');
+    await userEvent.click(screen.getByRole('button', { name: 'Sim, Advertir Grupo' }));
+
+    expect(await screen.findByText('Grupo advertido com sucesso.')).toBeInTheDocument();
+    expect(vi.mocked(communityAdminApi.warnGroup).mock.calls[0]?.[0]).toEqual({
+      id: groups[0]!.id,
+      reason: 'Spam repetido no grupo',
+    });
+  });
+
+  it('R8: remove a mensagem e adverte o autor pelo diálogo de justificativa', async () => {
+    vi.mocked(communityAdminApi.removeAndWarn).mockResolvedValue({
+      id: report.id,
+      status: 'RESOLVED',
+    });
+    renderPage();
+    const card = await screen.findByRole('article', { name: 'Denúncia contra Diego' });
+
+    await userEvent.click(
+      within(card).getByRole('button', { name: 'Remover Mensagem & Advertir Usuário' }),
+    );
+    await userEvent.type(screen.getByRole('textbox', { name: 'Motivo' }), 'Ofensas repetidas');
+    await userEvent.click(screen.getByRole('button', { name: 'Sim, Remover e Advertir' }));
+
+    expect(await screen.findByText('Mensagem removida e autor advertido.')).toBeInTheDocument();
+    expect(vi.mocked(communityAdminApi.removeAndWarn).mock.calls[0]?.[0]).toEqual({
+      id: report.id,
+      reason: 'Ofensas repetidas',
+    });
+  });
+
+  it('R14: mostra a idade da conta, as advertências do autor e quem denunciou', async () => {
+    vi.mocked(communityAdminApi.listGroupMessageReports).mockResolvedValue(
+      pageOf([
+        {
+          ...report,
+          message: {
+            ...report.message!,
+            authorAccountAgeDays: 730,
+            authorWarnings: 2,
+            reportersCount: 3,
+          },
+        },
+      ]),
+    );
+    renderPage();
+    const card = await screen.findByRole('article', { name: 'Denúncia contra Diego' });
+
+    expect(within(card).getByText('Conta criada há 2 anos')).toBeInTheDocument();
+    expect(within(card).getByText('2 advertências prévias')).toBeInTheDocument();
+    expect(within(card).getByText(/Carla e outros 2 membros/)).toBeInTheDocument();
+  });
+
+  it('R13: filtra a fila por gravidade', async () => {
+    renderPage();
+    await screen.findByRole('article', { name: 'Denúncia contra Diego' });
+
+    await userEvent.click(screen.getByRole('button', { name: /^Spam/ }));
+
+    await vi.waitFor(() =>
+      expect(communityAdminApi.listGroupMessageReports).toHaveBeenLastCalledWith({
+        status: 'PENDING',
+        severity: 'SPAM',
+        page: 1,
+        pageSize: 10,
+      }),
+    );
+  });
+
+  it('R2: aplica sanção ao autor pela fila, com o SanctionDialog da página do usuário', async () => {
+    usersApiMock.warn.mockResolvedValue({ warningsCount: 1 });
+    renderPage();
+    const card = await screen.findByRole('article', { name: 'Denúncia contra Diego' });
+
+    await userEvent.click(within(card).getByRole('button', { name: 'Aplicar sanção ao autor' }));
+    const dialog = screen.getByRole('dialog', { name: 'Aplicar sanção' });
+    expect(within(dialog).getByText('Diego • 0 advertências anteriores')).toBeInTheDocument();
+    await userEvent.click(within(dialog).getByRole('radio', { name: /Advertir/ }));
+    await userEvent.type(
+      within(dialog).getByLabelText('Justificativa (obrigatória)'),
+      'Mensagens ofensivas no chat do grupo',
+    );
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Aplicar sanção' }));
+
+    expect(usersApiMock.warn).toHaveBeenCalledWith('author-1', {
+      reason: 'Mensagens ofensivas no chat do grupo',
+      reportId: report.id,
+    });
+    expect(await screen.findByText('Sanção aplicada ao autor da mensagem.')).toBeInTheDocument();
   });
 });
