@@ -10,7 +10,6 @@ export interface VoteOption {
   icon: IconName;
 }
 
-/** Os três botões do cartão, na ordem do frame 1038-1750. */
 export const VOTE_OPTIONS: VoteOption[] = [
   { vote: 'FOR', label: 'A favor', icon: 'thumbUp' },
   { vote: 'NEUTRAL', label: 'Neutro', icon: 'remove' },

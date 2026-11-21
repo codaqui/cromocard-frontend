@@ -21,7 +21,6 @@ export const catalogRoutes: RouteObject[] = [
   underConstructionRoute({ path: paths.categories, title: 'Categorias', story: 'CCD027' }),
 ];
 
-/** Páginas do Painel Cliente, só para quem está logado (CCD103, R1). */
 export const catalogCustomerRoutes: RouteObject[] = [
   {
     path: paths.suggestions,

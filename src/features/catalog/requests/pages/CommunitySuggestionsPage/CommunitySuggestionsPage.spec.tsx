@@ -178,16 +178,62 @@ describe('CommunitySuggestionsPage', () => {
     expect(await screen.findByText('Sem conexão com o servidor')).toBeInTheDocument();
   });
 
-  it('enquanto o voto é enviado, os botões daquela sugestão ficam desabilitados', async () => {
+  it('enquanto um voto é enviado, todos os botões ficam bloqueados e um segundo clique é ignorado', async () => {
     const user = userEvent.setup();
     vi.mocked(catalogRequestVotesApi.vote).mockReturnValue(new Promise(() => undefined));
     renderPage();
-    const card = await cardOf(/Gundam/);
+    const gundamCard = await cardOf(/Gundam/);
+    const lorcanaCard = await cardOf(/Disney Lorcana/);
 
-    await user.click(voteButton(card, 'A favor'));
+    await user.click(voteButton(gundamCard, 'A favor'));
+    await user.click(voteButton(lorcanaCard, 'Contra'));
 
-    expect(voteButton(card, 'Contra')).toBeDisabled();
-    expect(voteButton(await cardOf(/Disney Lorcana/), 'Contra')).toBeEnabled();
+    expect(voteButton(gundamCard, 'Contra')).toHaveAttribute('aria-disabled', 'true');
+    expect(voteButton(lorcanaCard, 'Contra')).toHaveAttribute('aria-disabled', 'true');
+    expect(within(gundamCard).getByRole('group')).toHaveAttribute('aria-busy', 'true');
+    expect(catalogRequestVotesApi.vote).toHaveBeenCalledTimes(1);
+  });
+
+  it('o botão clicado mantém o foco enquanto o voto é enviado', async () => {
+    const user = userEvent.setup();
+    vi.mocked(catalogRequestVotesApi.vote).mockReturnValue(new Promise(() => undefined));
+    renderPage();
+    const button = voteButton(await cardOf(/Gundam/), 'A favor');
+
+    await user.click(button);
+
+    expect(button).toHaveFocus();
+  });
+
+  it('a página que ficou vazia depois de um voto encerrado volta para a última página', async () => {
+    const user = userEvent.setup();
+    vi.mocked(catalogRequestVotesApi.list).mockImplementation(({ page = 1 }) =>
+      Promise.resolve(
+        page === 1
+          ? { data: [lorcana], meta: { page: 1, pageSize: 10, total: 11, totalPages: 2 } }
+          : { data: [], meta: { page, pageSize: 10, total: 10, totalPages: 1 } },
+      ),
+    );
+    renderPage();
+    await cardOf(/Disney Lorcana/);
+
+    await user.click(screen.getByRole('button', { name: 'Próximo' }));
+
+    expect(await cardOf(/Disney Lorcana/)).toBeInTheDocument();
+    expect(screen.queryByText('Nenhuma sugestão em votação')).not.toBeInTheDocument();
+  });
+
+  it('o chip "votos seus" só aparece quando a lista cabe numa página', async () => {
+    vi.mocked(catalogRequestVotesApi.list).mockResolvedValue({
+      data: [lorcana, gundam],
+      meta: { page: 1, pageSize: 10, total: 25, totalPages: 3 },
+    });
+
+    renderPage();
+    await cardOf(/Disney Lorcana/);
+
+    expect(screen.getByText('25 em votação')).toBeInTheDocument();
+    expect(screen.queryByText(/voto seu|votos seus/)).not.toBeInTheDocument();
   });
 
   it('CA9: sem sugestões pendentes mostra "Nenhuma sugestão em votação"', async () => {

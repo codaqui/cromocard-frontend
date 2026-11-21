@@ -22,7 +22,6 @@
   background: var(--color-surface);
 }
 
-/* Aviso de votação encerrada (frame 1038-2242): fundo elevado e borda âmbar. */
 .card.warning {
   background: var(--color-surface-raised);
 }

@@ -397,6 +397,31 @@ describe('CatalogRequestsPage', () => {
       expect(item).not.toHaveTextContent('@lucas_slab_collector');
     });
 
+    it('CA4: o selo de votos usa o singular quando há um só voto', async () => {
+      vi.mocked(catalogRequestsApi.list).mockResolvedValue(
+        pageOf([
+          {
+            ...fullCategory,
+            votes: {
+              for: 1,
+              neutral: 0,
+              against: 0,
+              total: 1,
+              goal: 200,
+              forPercent: 100,
+              goalPercent: 0.5,
+            },
+          },
+        ]),
+      );
+      renderPage();
+
+      const item = await cardOf(/Disney/);
+
+      expect(item).toHaveTextContent('1 voto100% a favor');
+      expect(item).not.toHaveTextContent('1 votos');
+    });
+
     it('CA5: a categoria lista as subcategorias a criar e o rodapé conta quantas', async () => {
       renderPage();
 

@@ -6,11 +6,11 @@ import {
 } from '../../catalog-requests.format';
 import { CATEGORY_TYPE_LABELS, requestTypeTexts } from '../../catalog-requests.labels';
 import type { CatalogRequest } from '../../catalog-requests.types';
-import { AlbumChecklist } from './AlbumChecklist';
-import { CardSuggestionExtras } from './CardSuggestionExtras';
+import { AlbumChecklist } from '../AlbumChecklist/AlbumChecklist';
+import { CardSuggestionExtras } from '../CardSuggestionExtras/CardSuggestionExtras';
 import styles from './CatalogRequestCard.module.css';
-import { CategoryQuorum } from './CategoryQuorum';
-import { SuggestionMedia } from './SuggestionMedia';
+import { CategoryQuorum } from '../CategoryQuorum/CategoryQuorum';
+import { SuggestionMedia } from '../SuggestionMedia/SuggestionMedia';
 
 interface Fact {
   label: string;
@@ -50,7 +50,6 @@ function cardFacts({ data, references }: CatalogRequest): Fact[] {
   ];
 }
 
-/** O resumo do checklist (total e as três raridades mais altas, L10) e a franquia da CCD064. */
 function albumFacts({ references, checklistSummary }: CatalogRequest): Fact[] {
   const summary: Fact[] = checklistSummary
     ? [

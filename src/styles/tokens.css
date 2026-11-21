@@ -68,6 +68,18 @@
   --color-link: var(--color-primary);
   --color-accent: var(--color-primary);
   --color-placeholder: var(--color-text-muted);
+  --color-primary-tint: color-mix(in srgb, var(--color-primary) 20%, transparent);
+  --color-primary-tint-strong: color-mix(in srgb, var(--color-primary) 25%, transparent);
+  --color-primary-tint-hover: color-mix(
+    in srgb,
+    var(--color-primary) 25%,
+    var(--color-surface-high)
+  );
+  --line-height-title: 1.15;
+  --size-page-content: 59.5rem;
+  --size-intro-text: 37rem;
+  --size-checklist-table: 32rem;
+  --size-vote-button-min: 6.5rem;
 
   --size-control: 2.5rem;
   --size-topbar: 4rem;

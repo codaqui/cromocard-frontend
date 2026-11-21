@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 import { Button } from '@/components/Button/Button';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
@@ -9,11 +7,12 @@ import { Pagination } from '@/components/Pagination/Pagination';
 import { Toast } from '@/components/Toast/Toast';
 
 import { closedVotingDetail, countLabel } from '../../catalog-request-votes.format';
-import { SUGGESTIONS_PAGE_SIZE, VOTING_CLOSED_TITLE } from '../../catalog-request-votes.labels';
-import { useVotingSuggestions } from '../../catalog-request-votes.queries';
+import { VOTING_CLOSED_TITLE } from '../../catalog-request-votes.labels';
+import type { useVotingSuggestions } from '../../catalog-request-votes.queries';
 import { SuggestionsHeader } from '../../components/SuggestionsHeader/SuggestionsHeader';
 import { SuggestionVoteCard } from '../../components/SuggestionVoteCard/SuggestionVoteCard';
 import { type SuggestionVote, useSuggestionVote } from '../../hooks/useSuggestionVote';
+import { useSuggestionsPage } from '../../hooks/useSuggestionsPage';
 import styles from './CommunitySuggestionsPage.module.css';
 
 type SuggestionsQuery = ReturnType<typeof useVotingSuggestions>;
@@ -23,6 +22,11 @@ interface ListProps {
   page: SuggestionsPage;
   voting: SuggestionVote;
   onPageChange: (page: number) => void;
+}
+
+function countMyVotes(page?: SuggestionsPage): number | undefined {
+  if (!page || page.meta.total > page.meta.pageSize) return undefined;
+  return page.data.filter(({ myVote }) => myVote !== null).length;
 }
 
 function SectionTitle({ total }: { total: number }) {
@@ -43,7 +47,7 @@ function SuggestionsList({ page: { data, meta }, voting, onPageChange }: ListPro
         <SuggestionVoteCard
           key={suggestion.id}
           suggestion={suggestion}
-          voting={voting.pendingId === suggestion.id}
+          voting={voting.isVoting}
           onVote={voting.vote}
         />
       ))}
@@ -86,13 +90,11 @@ function SuggestionsContent({
       </div>
     );
   }
-  if (query.data.data.length === 0) {
-    return <EmptySuggestions />;
-  }
+  if (query.data.meta.total === 0) return <EmptySuggestions />;
+  if (query.data.data.length === 0) return <LoadingState message="Carregando as sugestões…" />;
   return <SuggestionsList page={query.data} {...props} />;
 }
 
-/** Aviso do frame 1038-2242 (votação encerrada) ou de outra falha ao votar. */
 function VoteToast({ voting }: { voting: SuggestionVote }) {
   if (voting.closedCode) {
     return (
@@ -110,12 +112,10 @@ function VoteToast({ voting }: { voting: SuggestionVote }) {
   );
 }
 
-/** Página "Sugestões da comunidade" (CCD103, frames 1038-1750, 1038-2242 e 1038-2740). */
 export function CommunitySuggestionsPage() {
-  const [page, setPage] = useState(1);
-  const query = useVotingSuggestions({ page, pageSize: SUGGESTIONS_PAGE_SIZE });
+  const { query, setPage } = useSuggestionsPage();
   const voting = useSuggestionVote();
-  const myVotes = query.data?.data.filter(({ myVote }) => myVote !== null).length ?? 0;
+  const myVotes = countMyVotes(query.data);
 
   return (
     <section className={styles.page}>

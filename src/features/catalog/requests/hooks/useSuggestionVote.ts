@@ -8,7 +8,6 @@ import type { CatalogVote, VotingSuggestion } from '../catalog-request-votes.typ
 const isVotingClosed = (error: unknown) =>
   error instanceof ApiError && error.code === 'VOTING_CLOSED';
 
-/** Vota e, se a sugestão já foi analisada (R8), guarda qual foi para o aviso do frame 1038-2242. */
 export function useSuggestionVote() {
   const mutation = useCastVote();
   const [closedCode, setClosedCode] = useState<string | null>(null);
@@ -31,7 +30,7 @@ export function useSuggestionVote() {
 
   return {
     vote,
-    pendingId: mutation.isPending ? mutation.variables?.id : undefined,
+    isVoting: mutation.isPending,
     closedCode,
     failure,
     dismiss,

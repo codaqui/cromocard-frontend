@@ -80,23 +80,18 @@ const INTEGER = new Intl.NumberFormat('pt-BR');
 
 export const percentLabel = (value: number) => `${PERCENT.format(value)}%`;
 
-/** "126 cartas", "1 carta". */
 export const cardsLabel = (count: number) =>
   `${INTEGER.format(count)} ${count === 1 ? 'carta' : 'cartas'}`;
 
-/** "39 Cópias Globais", como no frame 228-1804. */
 export const populationLabel = (count: number) =>
   `${INTEGER.format(count)} ${count === 1 ? 'Cópia Global' : 'Cópias Globais'}`;
 
-/** Rótulo do resumo do checklist no plural: "Lendárias", "Comuns". */
 export const rarityPluralLabel = (name: string) =>
   name.endsWith('m') ? `${name.slice(0, -1)}ns` : `${name}s`;
 
-/** "340 / 200 Votos (170% da Meta)". */
 export const quorumHeadline = ({ total, goal, goalPercent }: QuorumVotes) =>
   `${INTEGER.format(total)} / ${INTEGER.format(goal)} Votos (${percentLabel(goalPercent)} da Meta)`;
 
-/** Rodapé do cartão de categoria: diz quantas subcategorias são criadas e que a votação acaba. */
 export function categoryApprovalNote(subcategories: number): string {
   if (subcategories === 0) return 'Ao aprovar, a categoria é criada e a votação é encerrada.';
   const created = subcategories === 1 ? 'a subcategoria' : `as ${subcategories} subcategorias`;

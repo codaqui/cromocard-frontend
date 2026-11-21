@@ -11,7 +11,6 @@ export interface VoteTally {
   total: number;
 }
 
-/** Sugestão de categoria aberta para votação (CCD103), com o voto de quem está logado. */
 export interface VotingSuggestion {
   id: string;
   code: string;

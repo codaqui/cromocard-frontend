@@ -16,7 +16,6 @@ export function useVotingSuggestions(params: ListVotingParams) {
   });
 }
 
-/** Depois do voto (ou da votação encerrada), a lista é buscada de novo: contagem e sugestões mudam. */
 export function useCastVote() {
   const queryClient = useQueryClient();
 

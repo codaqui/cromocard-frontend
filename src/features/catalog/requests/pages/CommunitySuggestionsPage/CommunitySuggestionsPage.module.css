@@ -3,7 +3,7 @@
   flex-direction: column;
   gap: var(--space-6);
   width: 100%;
-  max-width: 59.5rem;
+  max-width: var(--size-page-content);
   min-width: 0;
 }
 
@@ -35,8 +35,8 @@
 }
 
 .dot {
-  width: 0.375rem;
-  height: 0.375rem;
+  width: var(--size-status-dot);
+  height: var(--size-status-dot);
   border-radius: var(--radius-pill);
   background: var(--color-eyebrow);
 }
@@ -48,7 +48,6 @@
   gap: var(--space-3);
 }
 
-/* Estado vazio do frame 1038-2740: cartão com o ícone de votação. */
 .emptyCard {
   display: flex;
   flex-direction: column;

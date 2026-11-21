@@ -1,3 +1,4 @@
+import type { VoteTally } from './catalog-request-votes.types';
 import type { PaginationMeta, PaginationParams } from '@/types/api';
 
 export type CatalogRequestType = 'CARD' | 'ALBUM' | 'CATEGORY';
@@ -28,7 +29,6 @@ export interface ChecklistItem {
   number?: string;
   code?: string;
   name?: string;
-  /** Nome da raridade do seed, resolvido pela API. */
   rarity?: string;
   variants?: string;
 }
@@ -42,26 +42,18 @@ export interface SuggestedData {
   type?: 'ALBUM' | 'CARD';
   frontImageUrl?: string;
   backImageUrl?: string;
-  /** Carta (CCD103, R10). */
   illustrator?: string;
   estimatedPopulation?: number;
   justification?: string;
   sources?: SuggestionSource[];
-  /** Álbum (CCD103, R11, R13). */
   coverImageUrl?: string;
   checklist?: ChecklistItem[];
-  /** Categoria (CCD103, R12, R13). */
   description?: string;
   logoUrl?: string;
   subcategories?: string[];
 }
 
-/** Quórum da sugestão de categoria (CCD103, R5); percentuais com uma casa decimal. */
-export interface QuorumVotes {
-  for: number;
-  neutral: number;
-  against: number;
-  total: number;
+export interface QuorumVotes extends VoteTally {
   goal: number;
   forPercent: number;
   goalPercent: number;

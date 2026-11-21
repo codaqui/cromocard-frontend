@@ -37,7 +37,6 @@ export function useRejectRequest() {
   return useReview(catalogRequestsApi.reject);
 }
 
-/** Baixa a planilha do checklist do álbum sugerido (CCD103, R11). */
 export function useDownloadChecklist() {
   return useMutation({
     mutationFn: async (request: Pick<CatalogRequest, 'id' | 'code'>) =>

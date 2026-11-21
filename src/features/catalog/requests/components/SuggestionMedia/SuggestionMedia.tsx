@@ -4,8 +4,7 @@ import { Icon } from '@/components/Icon/Icon';
 
 import { itemNameOf } from '../../catalog-requests.format';
 import type { CatalogRequest } from '../../catalog-requests.types';
-import styles from './CatalogRequestCard.module.css';
-import extras from './CardExtras.module.css';
+import styles from './SuggestionMedia.module.css';
 
 function SentImages({ request }: { request: CatalogRequest }) {
   const images = [
@@ -15,7 +14,7 @@ function SentImages({ request }: { request: CatalogRequest }) {
 
   if (images.length === 0) return null;
   return (
-    <section className={styles.media} aria-label="Imagens enviadas">
+    <section data-media="" aria-label="Imagens enviadas">
       <h3 className={styles.mediaTitle}>Imagens enviadas</h3>
       <div className={styles.images}>
         {images.map(({ label, url }) => (
@@ -37,16 +36,15 @@ interface SuggestedImageProps {
   children?: ReactNode;
 }
 
-/** Capa do álbum ou logo da categoria (CCD103, R13), com o nome e o selo sobre a imagem. */
 function SuggestedImage({ title, url, name, tag, children }: SuggestedImageProps) {
   return (
-    <section className={styles.media} aria-label={title}>
+    <section data-media="" aria-label={title}>
       <h3 className={styles.mediaTitle}>{title}</h3>
-      <figure className={extras.cover}>
+      <figure className={styles.cover}>
         <img src={url} alt={`${title}: ${name}`} loading="lazy" />
         <figcaption>
           <span>{name}</span>
-          {tag && <span className={extras.coverTag}>{tag}</span>}
+          {tag && <span className={styles.coverTag}>{tag}</span>}
         </figcaption>
       </figure>
       {children}
@@ -66,7 +64,7 @@ function AlbumCover({ request }: { request: CatalogRequest }) {
       tag={tag || undefined}
     >
       {checklistSummary && (
-        <p className={extras.volume}>
+        <p className={styles.volume}>
           <span>
             <Icon name="bookOutline" size={16} />
             Volume Total:
@@ -93,7 +91,6 @@ function CategoryLogo({ request }: { request: CatalogRequest }) {
 
 const MEDIA = { CARD: SentImages, ALBUM: AlbumCover, CATEGORY: CategoryLogo };
 
-/** Coluna da imagem do cartão, conforme o tipo da sugestão. */
 export function SuggestionMedia({ request }: { request: CatalogRequest }) {
   const Media = MEDIA[request.type];
   return <Media request={request} />;

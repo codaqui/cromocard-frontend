@@ -3,6 +3,7 @@ import { Icon } from '@/components/Icon/Icon';
 import type { IconName } from '@/components/Icon/icon-paths';
 import { cn } from '@/utils/cn';
 
+import { votesLabel } from '../../catalog-request-votes.format';
 import {
   categoryApprovalNote,
   handleOf,
@@ -12,7 +13,6 @@ import {
 } from '../../catalog-requests.format';
 import { requestTypeTexts } from '../../catalog-requests.labels';
 import type { CatalogRequest, CatalogRequestType, QuorumVotes } from '../../catalog-requests.types';
-import extras from './CardExtras.module.css';
 import styles from './CatalogRequestCard.module.css';
 import { SuggestedDetails } from './SuggestedDetails';
 
@@ -30,10 +30,10 @@ const TYPE_ICONS: Record<CatalogRequestType, IconName> = {
 
 function VotesSeal({ votes }: { votes: QuorumVotes }) {
   return (
-    <span className={extras.seal}>
+    <span className={styles.seal}>
       <Icon name="howToVote" size={20} />
       <span>
-        <strong>{votes.total} votos</strong>
+        <strong>{votesLabel(votes.total)}</strong>
         {percentLabel(votes.forPercent)} a favor
       </span>
     </span>
@@ -64,7 +64,6 @@ function CardTopBar({ request }: { request: CatalogRequest }) {
   );
 }
 
-/** Na categoria, o rodapé conta as subcategorias e avisa que a votação acaba (CCD103, R6, R12). */
 function approvalNoteOf({ type, data }: CatalogRequest): string {
   if (type !== 'CATEGORY') return requestTypeTexts[type].approvalNote;
   return categoryApprovalNote(data.subcategories?.length ?? 0);

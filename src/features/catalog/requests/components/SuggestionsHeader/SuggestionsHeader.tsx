@@ -4,20 +4,18 @@ import { countLabel } from '../../catalog-request-votes.format';
 import styles from './SuggestionsHeader.module.css';
 
 interface SuggestionsHeaderProps {
-  /** Total de sugestões em votação; `undefined` enquanto carrega. */
   open?: number;
-  /** Quantas das sugestões da página o cliente já votou. */
-  myVotes: number;
+  myVotes?: number;
 }
 
-function HeaderChips({ open, myVotes }: Required<SuggestionsHeaderProps>) {
+function HeaderChips({ open, myVotes }: { open: number; myVotes?: number }) {
   return (
     <ul className={styles.chips} aria-label="Resumo da votação">
       <li className={styles.openChip}>
         <span className={styles.dot} aria-hidden="true" />
         {open} em votação
       </li>
-      {myVotes > 0 && (
+      {myVotes !== undefined && myVotes > 0 && (
         <li className={styles.chip}>
           <Icon name="howToVote" size={14} />
           {countLabel(myVotes, 'voto seu', 'votos seus')}
@@ -27,7 +25,6 @@ function HeaderChips({ open, myVotes }: Required<SuggestionsHeaderProps>) {
   );
 }
 
-/** Cabeçalho do frame 1038-1750: sobretítulo, título, descrição e os contadores. */
 export function SuggestionsHeader({ open, myVotes }: SuggestionsHeaderProps) {
   return (
     <header className={styles.header}>

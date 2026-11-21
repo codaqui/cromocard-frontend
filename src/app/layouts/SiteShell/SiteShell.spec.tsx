@@ -49,6 +49,20 @@ describe('SiteShell', () => {
     );
   });
 
+  it.each([
+    ['CUSTOMER', true],
+    ['SELLER', true],
+    ['ADMIN', false],
+  ] as const)(
+    'CCD103 R1: o item Sugestões para %s aparece = %s (o admin não vota)',
+    (role, shown) => {
+      renderShell({ id: '1', role });
+
+      const menu = screen.getByRole('navigation', { name: 'Menu principal' });
+      expect(within(menu).queryByRole('link', { name: 'Sugestões' }) !== null).toBe(shown);
+    },
+  );
+
   it('para o visitante, oferece Login, Cadastrar e os atalhos', () => {
     renderShell();
 
