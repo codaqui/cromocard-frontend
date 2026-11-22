@@ -22,6 +22,10 @@
   background: var(--color-surface);
 }
 
+.card.warning {
+  background: var(--color-surface-raised);
+}
+
 .card.success {
   color: var(--color-positive);
 }
@@ -97,6 +101,13 @@
   color: var(--color-danger);
 }
 
+.warning {
+  background:
+    linear-gradient(var(--color-warning-soft), var(--color-warning-soft)),
+    var(--color-surface-raised);
+  color: var(--color-warning);
+}
+
 .close {
   margin-left: auto;
   border: none;
@@ -105,4 +116,8 @@
   font-size: var(--font-size-lg);
   line-height: 1;
   cursor: pointer;
+}
+
+.card.tinted {
+  background: color-mix(in srgb, currentcolor 10%, var(--color-surface));
 }

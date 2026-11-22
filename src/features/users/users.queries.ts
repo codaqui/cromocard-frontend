@@ -2,7 +2,13 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import type { QueryClient } from '@tanstack/react-query';
 
 import { usersApi } from './users.api';
-import type { AdminUpdateUserInput, ReasonInput } from './users.schemas';
+import type {
+  AdminUpdateUserInput,
+  BlockUserInput,
+  ReasonInput,
+  SuspendUserInput,
+  WarnUserInput,
+} from './users.schemas';
 import type { ListUsersParams } from './users.types';
 
 export const usersKeys = {
@@ -71,11 +77,30 @@ export function useUpdateUser() {
   });
 }
 
+export function useWarnUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: WarnUserInput }) => usersApi.warn(id, input),
+    onSuccess: (_, { id }) => queryClient.invalidateQueries({ queryKey: usersKeys.detail(id) }),
+  });
+}
+
 export function useSuspendUser() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: ReasonInput }) => usersApi.suspend(id, input),
+    mutationFn: ({ id, input }: { id: string; input: SuspendUserInput }) =>
+      usersApi.suspend(id, input),
+    onSuccess: () => invalidateAllUsers(queryClient),
+  });
+}
+
+export function useBlockUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: BlockUserInput }) => usersApi.block(id, input),
     onSuccess: () => invalidateAllUsers(queryClient),
   });
 }

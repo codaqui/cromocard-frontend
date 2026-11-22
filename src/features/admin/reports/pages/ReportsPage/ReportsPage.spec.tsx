@@ -61,9 +61,33 @@ const catalogPreview: ReportPreview = {
   total: 1,
 };
 
+const sellerAuditPreview: ReportPreview = {
+  type: 'seller-audit',
+  title: 'Auditoria de Lojistas',
+  period: PERIOD,
+  columns: [
+    { key: 'legalName', label: 'Loja' },
+    { key: 'cnpj', label: 'CNPJ' },
+    { key: 'email', label: 'E-mail' },
+    { key: 'status', label: 'Status' },
+    { key: 'createdAt', label: 'Cadastro' },
+  ],
+  rows: [
+    {
+      legalName: 'Fábio TCG Store Ltda',
+      cnpj: '45.291.802/0001-93',
+      email: 'fabio@cromocard.dev',
+      status: 'UNDER_REVIEW',
+      createdAt: '2026-11-14T13:00:00.000Z',
+    },
+  ],
+  total: 4,
+};
+
 const previews: Record<ReportType, ReportPreview> = {
   signups: signupsPreview,
   catalog: catalogPreview,
+  'seller-audit': sellerAuditPreview,
 };
 
 function renderPage() {
@@ -140,12 +164,36 @@ describe('ReportsPage', () => {
     expect(reportsApi.preview).toHaveBeenCalledWith('signups', { period: '30d' });
   });
 
-  it('L9: Auditoria de Lojistas e Volume aparecem desabilitados, com "Em breve"', () => {
+  it('L9: só Volume Transacionado (CCD097) continua desabilitado, com "Em breve"', () => {
     renderPage();
 
-    expect(screen.getByRole('button', { name: /Auditoria de Lojistas/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /Auditoria de Lojistas/ })).toBeEnabled();
     expect(screen.getByRole('button', { name: /Volume Transacionado/ })).toBeDisabled();
-    expect(screen.getAllByText('Em breve')).toHaveLength(2);
+    expect(screen.getAllByText('Em breve')).toHaveLength(1);
+  });
+
+  it('CA9 (CCD094): Auditoria de Lojistas mostra a prévia com o status e exporta em CSV', async () => {
+    const file = new Blob(['Loja;CNPJ;E-mail;Status;Cadastro']);
+    vi.mocked(reportsApi.export).mockResolvedValue(file);
+    renderPage();
+
+    await userEvent.click(screen.getByRole('button', { name: /Auditoria de Lojistas/ }));
+    const panel = previewPanel();
+    expect(
+      await within(panel).findByRole('cell', { name: 'Fábio TCG Store Ltda' }),
+    ).toBeInTheDocument();
+    expect(within(panel).getByRole('cell', { name: 'Em análise' })).toBeInTheDocument();
+    expect(within(panel).getByText('Loja, CNPJ, e-mail, status, cadastro')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Exportar CSV' }));
+    const dialog = await screen.findByRole('alertdialog', { name: 'Exportar o relatório em CSV?' });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Exportar CSV' }));
+
+    expect(reportsApi.export).toHaveBeenCalledWith('seller-audit', 'csv', { period: '30d' });
+    expect(downloadFile).toHaveBeenCalledWith(
+      file,
+      'cromocard-seller-audit-2026-10-18-2026-11-16.csv',
+    );
   });
 
   it('R4/R13: trocar o relatório e o período refaz a consulta', async () => {

@@ -5,7 +5,6 @@ import { Button } from '@/components/Button/Button';
 import { DataTable, type DataTableColumn } from '@/components/DataTable/DataTable';
 import { Icon } from '@/components/Icon/Icon';
 import type { IconName } from '@/components/Icon/icon-paths';
-import type { UserRole } from '@/types/authenticated-user';
 import { cn } from '@/utils/cn';
 import { formatDate } from '@/utils/formatDate';
 import { formatLastAccess } from '@/utils/formatLastAccess';
@@ -14,13 +13,25 @@ import { formatPhone } from '@/utils/formatPhone';
 import {
   roleLabels,
   roleTones,
+  showsUnderAnalysisBadge,
   statusLabels,
   statusTones,
   toggleStatusCopyFor,
 } from '../../users.labels';
 import { initialsOf, shortIdOf } from '../../users.format';
-import type { UserStatus, UserSummary } from '../../users.types';
+import type { UserSummary } from '../../users.types';
 import styles from './UsersTable.module.css';
+
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
+
+function suspensionSuffix({ status, suspendedUntil }: UserSummary): string {
+  if (status !== 'SUSPENDED' || !suspendedUntil) return '';
+  const days = Math.max(
+    1,
+    Math.ceil((new Date(suspendedUntil).getTime() - Date.now()) / DAY_IN_MS),
+  );
+  return ` (${days}d)`;
+}
 
 interface UsersTableProps {
   users: UserSummary[];
@@ -37,8 +48,13 @@ interface RowActionsProps {
   onDelete: (user: UserSummary) => void;
 }
 
-function RoleBadge({ role }: { role: UserRole }) {
-  return <Badge tone={roleTones[role]}>{roleLabels[role]}</Badge>;
+function RoleBadge({ user }: { user: UserSummary }) {
+  return (
+    <div className={styles.roleCell}>
+      <Badge tone={roleTones[user.role]}>{roleLabels[user.role]}</Badge>
+      {showsUnderAnalysisBadge(user) && <Badge tone="warning">Em análise</Badge>}
+    </div>
+  );
 }
 
 function NameCell({ user }: { user: UserSummary }) {
@@ -81,11 +97,12 @@ function ContactCell({ user }: { user: UserSummary }) {
   );
 }
 
-function StatusBadge({ status }: { status: UserStatus }) {
+function StatusBadge({ user }: { user: UserSummary }) {
   return (
-    <span className={styles.status} data-tone={statusTones[status]}>
+    <span className={styles.status} data-tone={statusTones[user.status]}>
       <span className={styles.statusDot} aria-hidden="true" />
-      {statusLabels[status]}
+      {statusLabels[user.status]}
+      {suspensionSuffix(user)}
     </span>
   );
 }
@@ -148,8 +165,8 @@ function buildColumns(actions: Omit<RowActionsProps, 'user'>): DataTableColumn<U
   return [
     { key: 'name', header: 'Usuário', render: (user) => <NameCell user={user} /> },
     { key: 'contact', header: 'Contato', render: (user) => <ContactCell user={user} /> },
-    { key: 'role', header: 'Papel', render: (user) => <RoleBadge role={user.role} /> },
-    { key: 'status', header: 'Status', render: (user) => <StatusBadge status={user.status} /> },
+    { key: 'role', header: 'Papel', render: (user) => <RoleBadge user={user} /> },
+    { key: 'status', header: 'Status', render: (user) => <StatusBadge user={user} /> },
     {
       key: 'lastLogin',
       header: 'Último acesso',

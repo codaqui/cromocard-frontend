@@ -1,0 +1,45 @@
+.goal {
+  color: var(--color-warning);
+  font-size: var(--font-size-caption);
+}
+
+.bar {
+  overflow: hidden;
+  height: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-high);
+}
+
+.bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-eyebrow);
+}
+
+.subcategories {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.subcategories h3 {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: 400;
+}
+
+.subcategories ul {
+  display: contents;
+  list-style: none;
+}
+
+.subcategories li {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-xs);
+  background: var(--color-surface-raised);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+}

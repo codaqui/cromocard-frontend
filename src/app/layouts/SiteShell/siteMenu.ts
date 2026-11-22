@@ -1,12 +1,14 @@
 import type { IconName } from '@/components/Icon/icon-paths';
 import type { SearchScope } from '@/components/SearchBar/SearchBar';
 import { paths } from '@/routes/paths';
+import type { UserRole } from '@/types/authenticated-user';
 
 interface SiteMenuItem {
   to: string;
   label: string;
   icon: IconName;
   end?: boolean;
+  hiddenFor?: UserRole;
 }
 
 interface SiteLink {
@@ -20,7 +22,11 @@ export const siteMainMenu: SiteMenuItem[] = [
   { to: paths.categories, label: 'Categorias', icon: 'gridView' },
   { to: paths.albums, label: 'Álbuns', icon: 'bookOutline' },
   { to: paths.communities, label: 'Comunidades', icon: 'peopleOutline' },
+  { to: paths.suggestions, label: 'Sugestões', icon: 'howToVote', hiddenFor: 'ADMIN' },
 ];
+
+export const mainMenuFor = (role?: UserRole) =>
+  siteMainMenu.filter(({ hiddenFor }) => hiddenFor === undefined || hiddenFor !== role);
 
 export const siteSecondaryMenu: SiteMenuItem[] = [
   { to: paths.settings, label: 'Configurações', icon: 'settingsOutline' },

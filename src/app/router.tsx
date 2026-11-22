@@ -4,10 +4,10 @@ import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { NotFoundPage } from '@/components/NotFoundPage/NotFoundPage';
 import { adminBackofficeRoutes } from '@/features/admin';
 import { authRoutes, tokenLinkRoutes } from '@/features/auth';
-import { catalogBackofficeRoutes, catalogRoutes } from '@/features/catalog';
+import { catalogBackofficeRoutes, catalogCustomerRoutes, catalogRoutes } from '@/features/catalog';
 import { collectionRoutes } from '@/features/collection';
 import { communityBackofficeRoutes, communityRoutes } from '@/features/community';
-import { notificationsBackofficeRoutes, notificationsRoutes } from '@/features/notifications';
+import { notificationsRoutes } from '@/features/notifications';
 import { usersBackofficeRoutes, usersPublicRoutes, usersRoutes } from '@/features/users';
 import { RedirectIfAuthenticated } from '@/routes/guards/RedirectIfAuthenticated';
 import { RequireAuth } from '@/routes/guards/RequireAuth';
@@ -40,7 +40,12 @@ export const router = createBrowserRouter([
         children: [
           {
             element: <CustomerLayout />,
-            children: [...usersRoutes, ...collectionRoutes, ...notificationsRoutes],
+            children: [
+              ...usersRoutes,
+              ...collectionRoutes,
+              ...notificationsRoutes,
+              ...catalogCustomerRoutes,
+            ],
           },
         ],
       },
@@ -54,7 +59,6 @@ export const router = createBrowserRouter([
               { index: true, element: <Navigate to={paths.backoffice.dashboard} replace /> },
               ...adminBackofficeRoutes,
               ...usersBackofficeRoutes,
-              ...notificationsBackofficeRoutes,
               ...catalogBackofficeRoutes,
               ...communityBackofficeRoutes,
             ],

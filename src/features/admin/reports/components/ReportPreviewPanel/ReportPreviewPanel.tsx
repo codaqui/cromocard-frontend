@@ -17,8 +17,12 @@ interface ReportPreviewPanelProps {
   onExport: (format: ExportFormat) => void;
 }
 
+function lowerCaseUnlessAcronym(label: string): string {
+  return label === label.toUpperCase() ? label : label.toLowerCase();
+}
+
 function columnsLabel({ columns }: ReportPreview): string {
-  const text = columns.map(({ label }) => label.toLowerCase()).join(', ');
+  const text = columns.map(({ label }) => lowerCaseUnlessAcronym(label)).join(', ');
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
