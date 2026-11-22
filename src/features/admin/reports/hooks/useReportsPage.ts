@@ -40,7 +40,7 @@ function useExportFlow(type: ReportType, params: ReportPeriodParams) {
     setPendingFormat(null);
   };
 
-  const feedback = { toast, dismissToast, exportReport };
+  const feedback = { toast, dismissToast, showExported, exportReport };
   return { pendingFormat, request: setPendingFormat, confirm, cancel, ...feedback };
 }
 
