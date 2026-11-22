@@ -6,6 +6,7 @@ const BRASILIA_TIME_ZONE = 'America/Sao_Paulo';
 const KILOBYTE = 1024;
 const MEGABYTE = KILOBYTE * KILOBYTE;
 const CODE_LENGTH = 4;
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
 const dayFormatter = new Intl.DateTimeFormat('en-CA', { timeZone: BRASILIA_TIME_ZONE });
 const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
@@ -35,7 +36,7 @@ export function exportPeriodLabel({ filters }: ReportExport): string {
 }
 
 function dayLabel(date: Date, now: Date): string {
-  const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const yesterday = new Date(now.getTime() - DAY_IN_MS);
   if (dayOf(date) === dayOf(now)) return 'Hoje';
   if (dayOf(date) === dayOf(yesterday)) return 'Ontem';
   return dateFormatter.format(date);

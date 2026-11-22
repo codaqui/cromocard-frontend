@@ -1,15 +1,25 @@
-import { Badge } from '@/components/Badge/Badge';
 import { Icon } from '@/components/Icon/Icon';
+import type { IconName } from '@/components/Icon/icon-paths';
+import { cn } from '@/utils/cn';
 
 import {
   exportCode,
   exportPeriodLabel,
   formatAvailableUntil,
+  formatExportedAt,
+  formatFileSize,
   reportTitle,
   requesterLabel,
 } from '../../reports.history';
-import type { ReportExport } from '../../reports.types';
+import { FORMAT_LABELS } from '../../reports.labels';
+import type { ExportFormat, ReportExport } from '../../reports.types';
 import styles from './ReportsHistory.module.css';
+
+const FORMAT_ICONS: Record<ExportFormat, IconName> = { pdf: 'viewCarousel', csv: 'gridView' };
+
+export function CodeCell({ item }: { item: ReportExport }) {
+  return <span className={styles.code}>{exportCode(item.id)}</span>;
+}
 
 export function ReportCell({ item }: { item: ReportExport }) {
   return (
@@ -31,9 +41,27 @@ export function RequesterCell({ item }: { item: ReportExport }) {
   );
 }
 
+export function DateCell({ item }: { item: ReportExport }) {
+  return <span className={styles.mono}>{formatExportedAt(item.createdAt)}</span>;
+}
+
+export function FileCell({ item }: { item: ReportExport }) {
+  return (
+    <span className={cn(styles.format, styles[item.format])}>
+      <Icon name={FORMAT_ICONS[item.format]} size={12} />
+      {`${FORMAT_LABELS[item.format]} • ${formatFileSize(item.fileSize)}`}
+    </span>
+  );
+}
+
 export function AvailabilityCell({ item }: { item: ReportExport }) {
-  if (item.expired) return <Badge tone="danger">Expirado</Badge>;
-  return <Badge tone="info">{formatAvailableUntil(item.expiresAt)}</Badge>;
+  if (item.expired)
+    return <span className={cn(styles.availability, styles.expired)}>Expirado</span>;
+  return (
+    <span className={cn(styles.availability, styles.available)}>
+      {formatAvailableUntil(item.expiresAt)}
+    </span>
+  );
 }
 
 export function DownloadButton({

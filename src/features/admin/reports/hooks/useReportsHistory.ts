@@ -49,7 +49,20 @@ export function useReportsHistory(flow: ExportFlow) {
     download.mutate(item, { onError });
   };
 
-  return { page, setPage, exportsQuery, download, requestDownload, expiredExport };
+  const downloadError = isExpiredError(download.error) ? null : download.error;
+  const refresh = () => void exportsQuery.refetch();
+  const isRefreshing = exportsQuery.isFetching;
+
+  return {
+    page,
+    setPage,
+    exportsQuery,
+    downloadError,
+    requestDownload,
+    expiredExport,
+    refresh,
+    isRefreshing,
+  };
 }
 
 export type ReportsHistoryState = ReturnType<typeof useReportsHistory>;

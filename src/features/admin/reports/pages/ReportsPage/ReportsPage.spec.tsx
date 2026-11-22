@@ -389,10 +389,36 @@ describe('ReportsPage', () => {
 
     await userEvent.click(await screen.findByRole('button', { name: 'Baixar #REP-9482' }));
     const dialog = await screen.findByRole('alertdialog', { name: 'Este arquivo expirou' });
+    expect(within(historyPanel()).queryByRole('alert')).not.toBeInTheDocument();
     await userEvent.click(within(dialog).getByText('Fechar', { selector: 'button' }));
 
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(within(historyPanel()).queryByRole('alert')).not.toBeInTheDocument();
     expect(reportsApi.export).not.toHaveBeenCalled();
+  });
+
+  it('CCD107: "Atualizar histórico" busca a lista de novo e a mostra com o que mudou', async () => {
+    vi.mocked(reportsApi.listExports).mockResolvedValue(historyPage([exportItem]));
+    renderPage();
+    const panel = historyPanel();
+    await within(panel).findByRole('cell', { name: '#REP-9482' });
+    vi.mocked(reportsApi.listExports).mockResolvedValue(historyPage([exportItem, expiredItem]));
+
+    await userEvent.click(within(panel).getByRole('button', { name: 'Atualizar histórico' }));
+
+    expect(await within(panel).findByRole('cell', { name: '#REP-9469' })).toBeInTheDocument();
+    expect(reportsApi.listExports).toHaveBeenCalledTimes(2);
+  });
+
+  it('CCD107: a tabela do histórico é uma região que rola com o teclado', async () => {
+    vi.mocked(reportsApi.listExports).mockResolvedValue(historyPage([exportItem]));
+    renderPage();
+
+    const region = await within(historyPanel()).findByRole('region', {
+      name: 'Tabela Histórico de relatórios',
+    });
+
+    expect(region).toHaveAttribute('tabindex', '0');
   });
 
   it('mostra o erro de um download que falha por outro motivo', async () => {

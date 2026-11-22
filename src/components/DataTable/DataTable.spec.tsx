@@ -78,4 +78,36 @@ describe('DataTable', () => {
 
     expect(onRowClick).toHaveBeenCalledWith(sellers[1]);
   });
+
+  it('a área de rolagem é uma região nomeada pela legenda e alcançável pelo teclado', () => {
+    render(
+      <DataTable
+        caption="Vendedores recentes"
+        columns={columns}
+        rows={sellers}
+        getRowKey={(seller) => seller.id}
+      />,
+    );
+
+    const region = screen.getByRole('region', { name: 'Tabela Vendedores recentes' });
+    expect(region).toHaveAttribute('tabindex', '0');
+    expect(region.className).not.toMatch(/flat|pinned/);
+  });
+
+  it('flat e pinLastColumn marcam a tabela sem borda e com a última coluna fixa', () => {
+    render(
+      <DataTable
+        flat
+        pinLastColumn
+        caption="Vendedores recentes"
+        columns={columns}
+        rows={sellers}
+        getRowKey={(seller) => seller.id}
+      />,
+    );
+
+    const { className } = screen.getByRole('region', { name: 'Tabela Vendedores recentes' });
+    expect(className).toMatch(/flat/);
+    expect(className).toMatch(/pinned/);
+  });
 });

@@ -16,11 +16,25 @@ interface ReportsHistoryProps {
   flow: ExportFlow;
 }
 
-function HistoryHeader() {
+function RefreshButton({ history }: { history: ReportsHistoryState }) {
+  return (
+    <button
+      type="button"
+      className={styles.refresh}
+      aria-label="Atualizar histórico"
+      disabled={history.isRefreshing}
+      onClick={history.refresh}
+    >
+      <Icon name="refresh" size={18} />
+    </button>
+  );
+}
+
+function HistoryHeader({ history }: { history: ReportsHistoryState }) {
   return (
     <header className={styles.header}>
       <span className={styles.icon}>
-        <Icon name="restartAlt" size={18} />
+        <Icon name="history" size={18} />
       </span>
       <div className={styles.heading}>
         <h2 id="reports-history-title" className={styles.title}>
@@ -29,6 +43,7 @@ function HistoryHeader() {
         <p className={styles.subtitle}>Relatórios exportados pela equipe nos últimos 90 dias.</p>
       </div>
       <span className={styles.retention}>Arquivos disponíveis por 90 dias</span>
+      <RefreshButton history={history} />
     </header>
   );
 }
@@ -41,27 +56,27 @@ function HistoryTable({ history }: { history: ReportsHistoryState }) {
   if (meta.total === 0) return <p className={styles.empty}>{reportsMessages.historyEmpty}</p>;
   return (
     <>
-      <div className={styles.scroll}>
-        <DataTable
-          caption="Histórico de relatórios"
-          columns={historyColumns(requestDownload)}
-          rows={items}
-          getRowKey={(item) => item.id}
-        />
-      </div>
+      <DataTable
+        flat
+        pinLastColumn
+        caption="Histórico de relatórios"
+        columns={historyColumns(requestDownload)}
+        rows={items}
+        getRowKey={(item) => item.id}
+      />
       <Pagination {...meta} itemLabel="relatórios" onPageChange={setPage} />
     </>
   );
 }
 
 export function ReportsHistory({ history, flow }: ReportsHistoryProps) {
-  const { expiredExport, download } = history;
+  const { expiredExport, downloadError } = history;
   return (
     <section className={styles.panel} aria-labelledby="reports-history-title">
-      <HistoryHeader />
-      {download.error && (
+      <HistoryHeader history={history} />
+      {downloadError && (
         <p role="alert" className={styles.error}>
-          {download.error.message}
+          {downloadError.message}
         </p>
       )}
       <HistoryTable history={history} />
