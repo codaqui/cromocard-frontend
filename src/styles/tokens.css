@@ -68,6 +68,18 @@
   --color-link: var(--color-primary);
   --color-accent: var(--color-primary);
   --color-placeholder: var(--color-text-muted);
+  --color-primary-tint: color-mix(in srgb, var(--color-primary) 20%, transparent);
+  --color-primary-tint-strong: color-mix(in srgb, var(--color-primary) 25%, transparent);
+  --color-primary-tint-hover: color-mix(
+    in srgb,
+    var(--color-primary) 25%,
+    var(--color-surface-high)
+  );
+  --line-height-title: 1.15;
+  --size-page-content: 59.5rem;
+  --size-intro-text: 37rem;
+  --size-checklist-table: 32rem;
+  --size-vote-button-min: 6.5rem;
 
   --size-control: 2.5rem;
   --size-topbar: 4rem;
@@ -142,6 +154,9 @@
   --color-positive-soft: rgb(74 222 128 / 0.12);
   --color-info-contrast: #003061;
   --color-warning-text: #ffddb7;
+  --color-eyebrow: #47d6ff;
+  --font-size-card-title: 1.375rem;
+  --font-size-page-title: 3rem;
   --color-surface-glass: rgb(18 33 45 / 0.75);
   --color-surface-shade: rgb(2 15 27 / 0.5);
   --color-surface-glow: #0e2c3a;

@@ -133,7 +133,7 @@ function IdentityFields({ register, errors, card }: CardFieldsProps & { card?: C
           label="Franquia"
           required
           placeholder={SELECT_PLACEHOLDER}
-          options={useCategoryOptions('CARD', optionOfReference(card?.category))}
+          options={useCategoryOptions(optionOfReference(card?.category))}
           error={errors.categoryId?.message}
           {...register('categoryId')}
         />
@@ -162,7 +162,7 @@ function CodeFields({ register, errors }: CardFieldsProps) {
   );
 }
 
-function AlbumField({ register, errors, card }: CardFieldsProps & { card?: Card }) {
+function AlbumField({ form, card }: { form: CardFormState; card?: Card }) {
   return (
     <WideRow>
       <IconSelect
@@ -170,8 +170,8 @@ function AlbumField({ register, errors, card }: CardFieldsProps & { card?: Card 
         icon="menuBook"
         placeholder="Sem álbum (carta avulsa)"
         options={useAlbumOptions(optionOfAlbum(card?.album))}
-        error={errors.albumId?.message}
-        {...register('albumId')}
+        error={form.errors.albumId?.message}
+        {...form.albumField}
       />
     </WideRow>
   );
@@ -188,7 +188,7 @@ function CardDataPanel({ form, card }: { form: CardFormState; card?: Card }) {
       <div className={styles.fields}>
         <IdentityFields register={register} errors={errors} card={card} />
         <CodeFields register={register} errors={errors} />
-        <AlbumField register={register} errors={errors} card={card} />
+        <AlbumField form={form} card={card} />
         <NumberingField register={register} errors={errors} total={total} />
         <ClassificationFields register={register} errors={errors} card={card} />
         <DescriptionField error={errors.description?.message} {...register('description')} />

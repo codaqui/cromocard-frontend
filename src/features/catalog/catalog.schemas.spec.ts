@@ -40,7 +40,6 @@ const validCard = {
 
 const emptyCategory = {
   name: 'Futebol',
-  type: 'ALBUM',
   parentCategoryId: '',
   description: '',
   badge: '',
@@ -187,7 +186,6 @@ describe('categoryFormSchema', () => {
   it('R15: aceita categoria sem pai e sem descrição', () => {
     expect(categoryFormSchema.parse(emptyCategory)).toEqual({
       name: 'Futebol',
-      type: 'ALBUM',
       parentCategoryId: null,
       description: null,
       badge: null,
@@ -219,9 +217,9 @@ describe('categoryFormSchema', () => {
     ).toEqual(['Use no máximo 255 caracteres.']);
   });
 
-  it('R15: exige o tipo da categoria', () => {
-    const result = categoryFormSchema.safeParse({ ...emptyCategory, type: '' });
-
-    expect(messagesOf(result)).toEqual(['Escolha o tipo da categoria.']);
+  it('L11: a categoria não tem mais tipo, e o campo enviado é descartado', () => {
+    expect(categoryFormSchema.parse({ ...emptyCategory, type: 'ALBUM' })).not.toHaveProperty(
+      'type',
+    );
   });
 });

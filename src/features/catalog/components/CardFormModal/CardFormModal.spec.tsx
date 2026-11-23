@@ -9,7 +9,15 @@ import { catalogApi } from '../../catalog.api';
 import type * as CatalogImage from '../../catalog.image';
 import { readImageSize } from '../../catalog.image';
 import type { Card } from '../../catalog.types';
-import { album, card, cardCategory, language, pageOf, rarity } from '../../test/catalogFixtures';
+import {
+  album,
+  albumCategory,
+  card,
+  cardCategory,
+  language,
+  pageOf,
+  rarity,
+} from '../../test/catalogFixtures';
 import { CardFormModal } from './CardFormModal';
 
 vi.mock('../../catalog.api', () => ({
@@ -90,6 +98,33 @@ describe('CardFormModal', () => {
     vi.mocked(readImageSize).mockReset().mockResolvedValue({ width: 2400, height: 3360 });
     onSaved.mockReset();
     onClose.mockReset();
+  });
+
+  it('L11: escolher o álbum preenche a franquia dele; álbum sem franquia mantém a escolhida', async () => {
+    const football = { ...album, id: `${album.id.slice(0, -2)}99`, title: 'Brasileirão 2026' };
+    const withCategory = { ...football, categoryId: albumCategory.id, category: albumCategory };
+    vi.mocked(catalogApi.listAlbums).mockResolvedValue(pageOf([album, withCategory]));
+    vi.mocked(catalogApi.listCategories).mockResolvedValue(pageOf([cardCategory, albumCategory]));
+    renderModal();
+    await chooseOption('Franquia *', cardCategory.name);
+
+    await chooseOption('Álbum', album.title);
+    expect(screen.getByLabelText('Franquia *')).toHaveValue(cardCategory.id);
+    await chooseOption('Álbum', withCategory.title);
+    expect(screen.getByLabelText('Franquia *')).toHaveValue(albumCategory.id);
+  });
+
+  it('L11: o álbum da carta fora da primeira página volta com a franquia da carta', async () => {
+    const football = { ...album, id: `${album.id.slice(0, -2)}99`, title: 'Brasileirão 2026' };
+    const withCategory = { ...football, categoryId: albumCategory.id, category: albumCategory };
+    vi.mocked(catalogApi.listAlbums).mockResolvedValue(pageOf([withCategory]));
+    vi.mocked(catalogApi.listCategories).mockResolvedValue(pageOf([cardCategory, albumCategory]));
+    renderModal(card);
+
+    await chooseOption('Álbum', withCategory.title);
+    expect(screen.getByLabelText('Franquia *')).toHaveValue(albumCategory.id);
+    await chooseOption('Álbum', album.title);
+    expect(screen.getByLabelText('Franquia *')).toHaveValue(cardCategory.id);
   });
 
   it('CA2: envia a imagem, confirma e cadastra a carta com todos os campos de publicação', async () => {

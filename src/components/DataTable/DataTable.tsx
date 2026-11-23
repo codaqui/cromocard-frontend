@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 
+import { cn } from '@/utils/cn';
+
 import styles from './DataTable.module.css';
 
 export interface DataTableColumn<T> {
@@ -15,6 +17,8 @@ interface DataTableProps<T> {
   getRowKey: (row: T) => string;
   emptyMessage?: string;
   onRowClick?: (row: T) => void;
+  flat?: boolean;
+  pinLastColumn?: boolean;
 }
 
 function EmptyRow({ colSpan, message }: { colSpan: number; message: string }) {
@@ -41,7 +45,9 @@ function DataTableHead<T>({ columns }: { columns: DataTableColumn<T>[] }) {
   );
 }
 
-type DataTableBodyProps<T> = Omit<DataTableProps<T>, 'caption'> & { emptyMessage: string };
+type DataTableBodyProps<T> = Omit<DataTableProps<T>, 'caption' | 'flat' | 'pinLastColumn'> & {
+  emptyMessage: string;
+};
 
 function DataTableBody<T>({
   columns,
@@ -71,10 +77,17 @@ function DataTableBody<T>({
 export function DataTable<T>({
   caption,
   emptyMessage = 'Nenhum registro encontrado',
+  flat,
+  pinLastColumn,
   ...body
 }: DataTableProps<T>) {
   return (
-    <div className={styles.wrapper}>
+    <div
+      className={cn(styles.wrapper, flat && styles.flat, pinLastColumn && styles.pinned)}
+      role="region"
+      aria-label={`Tabela ${caption}`}
+      tabIndex={0}
+    >
       <table className={styles.table}>
         <caption className={styles.caption}>{caption}</caption>
         <DataTableHead columns={body.columns} />

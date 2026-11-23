@@ -1,7 +1,7 @@
 import { reasonSchema } from '@/lib/reason';
 import { z } from '@/lib/zod';
 
-import { ALBUM_STATUSES, CATEGORY_BADGES, CATEGORY_TYPES } from './catalog.types';
+import { ALBUM_STATUSES, CATEGORY_BADGES } from './catalog.types';
 
 const SMALLINT_MAX = 32767;
 const URL_MAX_LENGTH = 255;
@@ -121,7 +121,6 @@ export const cardFormSchema = z.object({
 
 export const categoryFormSchema = z.object({
   name: requiredText(CATEGORY_NAME_MAX_LENGTH, 'Informe o nome da categoria.'),
-  type: z.string().pipe(z.enum(CATEGORY_TYPES, { error: 'Escolha o tipo da categoria.' })),
   parentCategoryId: optionalReference,
   description: optionalText(CATEGORY_DESCRIPTION_MAX_LENGTH),
   badge: z

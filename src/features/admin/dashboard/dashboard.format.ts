@@ -27,6 +27,14 @@ const percentFormatter = new Intl.NumberFormat('pt-BR', {
   maximumFractionDigits: 0,
 });
 
+const variationFormatter = new Intl.NumberFormat('pt-BR', {
+  maximumFractionDigits: 1,
+  signDisplay: 'exceptZero',
+});
+
+export const formatVariation = (variation: number | null) =>
+  variation === null ? 'Novo' : `${variationFormatter.format(variation)}%`;
+
 export const formatPercent = (ratio: number) => percentFormatter.format(ratio);
 
 export const formatShare = (part: number, whole: number) =>

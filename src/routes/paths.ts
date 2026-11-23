@@ -17,6 +17,7 @@ export const paths = {
   help: '/ajuda',
   settings: '/configuracoes',
   notifications: '/notificacoes',
+  suggestions: '/sugestoes',
   backoffice: {
     root: '/backoffice',
     dashboard: '/backoffice/dashboard',

@@ -90,7 +90,7 @@ function useFranchiseSelect(): CatalogFilterSelectConfig<'categoryId'> {
     chipLabel: 'Franquia',
     placeholder: 'Todas as franquias',
     icon: 'gamepad',
-    options: useCategoryOptions('ALBUM'),
+    options: useCategoryOptions(),
   };
 }
 

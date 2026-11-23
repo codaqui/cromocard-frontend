@@ -7,13 +7,7 @@ import {
   useLanguages,
   useRarities,
 } from '../catalog.queries';
-import type {
-  AlbumReference,
-  CardAlbum,
-  CatalogReference,
-  Category,
-  CategoryType,
-} from '../catalog.types';
+import type { AlbumReference, Card, CardAlbum, CatalogReference, Category } from '../catalog.types';
 
 const OPTIONS_PAGE = { page: 1, pageSize: 100 };
 
@@ -34,8 +28,8 @@ function referenceOptionsOf(references: CatalogReference[] = []): SelectOption[]
   return references.map((reference) => ({ value: reference.id, label: reference.name }));
 }
 
-export function useCategoryOptions(type: CategoryType, current?: SelectOption): SelectOption[] {
-  const { data } = useCategoriesList({ ...OPTIONS_PAGE, type });
+export function useCategoryOptions(current?: SelectOption): SelectOption[] {
+  const { data } = useCategoriesList(OPTIONS_PAGE);
   return withCurrentOption(referenceOptionsOf(data?.data), current);
 }
 
@@ -63,19 +57,25 @@ export function selfAndDescendantIdsOf(categories: Category[], rootId?: string):
   return ids;
 }
 
-/** Só categorias do mesmo tipo podem ser a categoria pai; sem tipo escolhido, não há opções. */
-export function useParentCategoryOptions(
-  type: CategoryType | undefined,
-  category?: Category,
-): SelectOption[] {
-  const { data } = useCategoriesList({ ...OPTIONS_PAGE, type });
-  if (!type) return [];
-
+export function useParentCategoryOptions(category?: Category): SelectOption[] {
+  const { data } = useCategoriesList(OPTIONS_PAGE);
   const categories = data?.data ?? [];
   const blocked = selfAndDescendantIdsOf(categories, category?.id);
   const options = referenceOptionsOf(categories.filter(({ id }) => !blocked.has(id)));
-  const current = category?.type === type ? optionOfReference(category.parentCategory) : undefined;
-  return withCurrentOption(options, current);
+  return withCurrentOption(options, optionOfReference(category?.parentCategory));
+}
+
+/**
+ * Franquia do álbum escolhido, que a carta passa a ter (L11). O select só oferece os álbuns da
+ * primeira página e o da própria carta (L9); o da carta já tem a franquia dele na carta.
+ */
+export function useAlbumCategoryOf(card?: Card): (albumId: string) => string | null {
+  const { data } = useAlbumsList(OPTIONS_PAGE);
+  return (albumId) => {
+    const listed = data?.data.find(({ id }) => id === albumId);
+    if (listed) return listed.categoryId;
+    return card?.albumId === albumId ? card.categoryId : null;
+  };
 }
 
 /** `current` mantém a raridade da carta na lista enquanto as opções carregam, como no álbum. */

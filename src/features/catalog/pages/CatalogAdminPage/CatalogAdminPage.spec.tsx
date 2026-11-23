@@ -11,7 +11,7 @@ import {
   album,
   card,
   cardCategory,
-  categoriesByType,
+  listedCategories,
   pageOf,
   rarity,
 } from '../../test/catalogFixtures';
@@ -74,7 +74,7 @@ describe('CatalogAdminPage', () => {
     vi.mocked(catalogApi.listAlbums)
       .mockReset()
       .mockResolvedValue(pageOf([album]));
-    vi.mocked(catalogApi.listCategories).mockReset().mockImplementation(categoriesByType);
+    vi.mocked(catalogApi.listCategories).mockReset().mockImplementation(listedCategories);
     vi.mocked(catalogApi.listRarities).mockReset().mockResolvedValue([RARITY]);
     vi.mocked(catalogApi.listLanguages).mockReset().mockResolvedValue([]);
     vi.mocked(catalogApi.deleteItem).mockReset().mockResolvedValue(undefined);
@@ -202,19 +202,13 @@ describe('CatalogAdminPage', () => {
     expect(catalogApi.listCards).toHaveBeenLastCalledWith(LIST_PAGE);
   });
 
-  it('CA1: filtra as cartas por raridade e só oferece categorias de carta', async () => {
+  it('CA1, L11: filtra as cartas por raridade e oferece todas as franquias', async () => {
     renderPage();
     const categorySelect = await screen.findByLabelText('Franquia');
     await screen.findByRole('option', { name: 'Lendária' });
 
-    expect(
-      within(categorySelect).queryByRole('option', { name: 'Futebol' }),
-    ).not.toBeInTheDocument();
-    expect(catalogApi.listCategories).toHaveBeenCalledWith({
-      page: 1,
-      pageSize: 100,
-      type: 'CARD',
-    });
+    expect(await within(categorySelect).findByRole('option', { name: 'Futebol' })).toBeVisible();
+    expect(catalogApi.listCategories).toHaveBeenCalledWith({ page: 1, pageSize: 100 });
     await userEvent.selectOptions(screen.getByLabelText('Raridade'), RARITY.id);
 
     expect(catalogApi.listCards).toHaveBeenLastCalledWith({
@@ -296,16 +290,16 @@ describe('CatalogAdminPage', () => {
     expect(await screen.findByText('Álbum excluído do catálogo')).toBeInTheDocument();
   });
 
-  it('R15: a aba de categorias lista nome, tipo e categoria pai', async () => {
+  it('R15: a aba de categorias lista nome e categoria pai, sem a coluna Tipo (L11)', async () => {
     renderPage();
     await userEvent.click(screen.getByRole('tab', { name: /Categorias & Franquias/ }));
 
     const table = await screen.findByRole('table', { name: 'Categorias e franquias do catálogo' });
     expect(within(table).getByText('Futebol')).toBeInTheDocument();
-    expect(within(table).getByText('Álbum')).toBeInTheDocument();
+    expect(within(table).queryByText('Álbum')).not.toBeInTheDocument();
   });
 
-  it('CA14 e CA1: a aba mostra o nome com o slug e o selo, o tipo e a quantidade de cartas', async () => {
+  it('CA14 e CA1: a aba mostra o nome com o slug e o selo e a quantidade de cartas', async () => {
     const pokemon = {
       ...cardCategory,
       name: 'Pokémon',
@@ -322,7 +316,7 @@ describe('CatalogAdminPage', () => {
       within(table)
         .getAllByRole('columnheader')
         .map((header) => header.textContent),
-    ).toEqual(['Nome e slug', 'Categoria pai', 'Tipo', 'Cartas', 'Ações']);
+    ).toEqual(['Nome e slug', 'Categoria pai', 'Cartas', 'Ações']);
     const row = within(table).getByRole('row', { name: /Pokémon/ });
     expect(within(row).getByText('pokemon')).toBeInTheDocument();
     expect(within(row).getByText('Em alta')).toBeInTheDocument();
@@ -412,6 +406,14 @@ describe('CatalogAdminPage', () => {
     expect(screen.getByRole('dialog', { name: 'Editar álbum' })).toBeInTheDocument();
   });
 
+  it('R4: o lápis da linha abre a edição da categoria', async () => {
+    renderPage();
+    await userEvent.click(screen.getByRole('tab', { name: /Categorias & Franquias/ }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Editar Futebol' }));
+
+    expect(screen.getByRole('dialog', { name: 'Editar categoria' })).toBeInTheDocument();
+  });
+
   it('CA1: a busca vira chip e sai pelo chip', async () => {
     renderPage();
     await userEvent.type(
@@ -447,13 +449,12 @@ describe('CatalogAdminPage', () => {
     expect(catalogApi.listCards).toHaveBeenLastCalledWith(LIST_PAGE);
   });
 
-  it('R15: a aba de categorias filtra pelo tipo e mostra o filtro como chip', async () => {
+  it('L11: a aba de categorias não tem mais o filtro por tipo', async () => {
     renderPage();
     await userEvent.click(screen.getByRole('tab', { name: /Categorias & Franquias/ }));
-    await userEvent.selectOptions(await screen.findByLabelText('Tipo'), 'ALBUM');
+    await screen.findByRole('table', { name: 'Categorias e franquias do catálogo' });
 
-    expect(catalogApi.listCategories).toHaveBeenLastCalledWith({ ...LIST_PAGE, type: 'ALBUM' });
-    await userEvent.click(screen.getByRole('button', { name: 'Remover filtro Tipo: Álbum' }));
+    expect(screen.queryByLabelText('Tipo')).not.toBeInTheDocument();
     expect(catalogApi.listCategories).toHaveBeenLastCalledWith(LIST_PAGE);
   });
 

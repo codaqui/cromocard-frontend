@@ -34,3 +34,21 @@ export interface ExportReportInput {
   params: ReportPeriodParams;
   period: { from: string; to: string };
 }
+
+export interface ReportExportFilters {
+  period: PeriodPreset | null;
+  from: string;
+  to: string;
+}
+
+export interface ReportExport {
+  id: string;
+  type: ReportType;
+  format: ExportFormat;
+  fileSize: number | null;
+  filters: ReportExportFilters;
+  requestedBy: { name: string; username: string | null };
+  createdAt: string;
+  expiresAt: string;
+  expired: boolean;
+}

@@ -1,26 +1,14 @@
-import type { UseFormRegisterReturn } from 'react-hook-form';
-
 import { FormError } from '@/components/FormError/FormError';
 import type { ApiError } from '@/lib/api-error';
 
-import { categoryBadgeLabels, categoryTypeLabels } from '../../catalog.labels';
+import { categoryBadgeLabels } from '../../catalog.labels';
 import type { CategoryInput } from '../../catalog.schemas';
-import {
-  CATEGORY_BADGES,
-  CATEGORY_TYPES,
-  type Category,
-  type CategoryType,
-} from '../../catalog.types';
+import { CATEGORY_BADGES, type Category } from '../../catalog.types';
 import { useParentCategoryOptions } from '../../hooks/useCatalogFilterOptions';
 import { useCategoryForm } from '../../hooks/useCategoryForm';
 import { DescriptionField, IconInput, IconSelect, WideRow } from '../CatalogFields/CatalogFields';
 import type { ReportInvalid } from '../CatalogFormModal/CatalogFormModal';
 import styles from './CategoryForm.module.css';
-
-const categoryTypeOptions = CATEGORY_TYPES.map((type) => ({
-  value: type,
-  label: categoryTypeLabels[type],
-}));
 
 const categoryBadgeOptions = CATEGORY_BADGES.map((badge) => ({
   value: badge,
@@ -35,48 +23,17 @@ interface CategoryFormProps {
   onInvalidChange?: ReportInvalid;
 }
 
-interface ParentCategoryFieldProps {
-  type?: CategoryType;
-  category?: Category;
-  error?: string;
-  field: UseFormRegisterReturn<'parentCategoryId'>;
-}
+type CategoryFormState = ReturnType<typeof useCategoryForm>;
 
-function ParentCategoryField({ type, category, error, field }: ParentCategoryFieldProps) {
+function ParentCategoryField({ form, category }: { form: CategoryFormState; category?: Category }) {
   return (
     <IconSelect
       label="Categoria pai"
-      placeholder={type ? 'Nenhuma' : 'Escolha o tipo primeiro'}
-      options={useParentCategoryOptions(type, category)}
-      error={error}
-      {...field}
-      disabled={!type}
+      placeholder="Nenhuma"
+      options={useParentCategoryOptions(category)}
+      error={form.errors.parentCategoryId?.message}
+      {...form.register('parentCategoryId')}
     />
-  );
-}
-
-type CategoryFormState = ReturnType<typeof useCategoryForm>;
-
-function HierarchyFields({ form, category }: { form: CategoryFormState; category?: Category }) {
-  const { errors } = form;
-
-  return (
-    <>
-      <IconSelect
-        label="Tipo"
-        required
-        placeholder="Selecione"
-        options={categoryTypeOptions}
-        error={errors.type?.message}
-        {...form.registerType()}
-      />
-      <ParentCategoryField
-        type={form.type}
-        category={category}
-        error={errors.parentCategoryId?.message}
-        field={form.register('parentCategoryId')}
-      />
-    </>
   );
 }
 
@@ -110,7 +67,9 @@ export function CategoryForm({ formId, category, ...options }: CategoryFormProps
           {...register('name')}
         />
       </WideRow>
-      <HierarchyFields form={form} category={category} />
+      <WideRow>
+        <ParentCategoryField form={form} category={category} />
+      </WideRow>
       <DisplayFields form={form} />
       <DescriptionField error={errors.description?.message} {...register('description')} />
       <WideRow>

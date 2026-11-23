@@ -1,3 +1,4 @@
+import type { VoteTally } from './catalog-request-votes.types';
 import type { PaginationMeta, PaginationParams } from '@/types/api';
 
 export type CatalogRequestType = 'CARD' | 'ALBUM' | 'CATEGORY';
@@ -19,6 +20,19 @@ export interface SuggestedReferences {
   language?: string;
 }
 
+export interface SuggestionSource {
+  label: string;
+  url?: string;
+}
+
+export interface ChecklistItem {
+  number?: string;
+  code?: string;
+  name?: string;
+  rarity?: string;
+  variants?: string;
+}
+
 export interface SuggestedData {
   name?: string;
   title?: string;
@@ -28,6 +42,26 @@ export interface SuggestedData {
   type?: 'ALBUM' | 'CARD';
   frontImageUrl?: string;
   backImageUrl?: string;
+  illustrator?: string;
+  estimatedPopulation?: number;
+  justification?: string;
+  sources?: SuggestionSource[];
+  coverImageUrl?: string;
+  checklist?: ChecklistItem[];
+  description?: string;
+  logoUrl?: string;
+  subcategories?: string[];
+}
+
+export interface QuorumVotes extends VoteTally {
+  goal: number;
+  forPercent: number;
+  goalPercent: number;
+}
+
+export interface ChecklistSummary {
+  total: number;
+  rarities: { name: string; count: number }[];
 }
 
 export interface CatalogRequest {
@@ -41,6 +75,8 @@ export interface CatalogRequest {
   reviewedBy: RequestPerson | null;
   reviewedAt: string | null;
   createdAt: string;
+  votes: QuorumVotes | null;
+  checklistSummary: ChecklistSummary | null;
 }
 
 export interface CatalogRequestsMeta extends PaginationMeta {

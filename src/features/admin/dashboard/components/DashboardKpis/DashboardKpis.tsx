@@ -1,11 +1,15 @@
+import type { IconName } from '@/components/Icon/icon-paths';
+import type { Period } from '@/components/PeriodFilter/PeriodFilter';
 import { SELLER_REGISTRATIONS_ANCHOR } from '@/features/admin';
 
 import arrowIcon from '../../assets/arrow-forward.svg';
-import { formatCount, formatPercent, formatShare } from '../../dashboard.format';
+import { formatCount, formatPercent, formatVariation } from '../../dashboard.format';
 import type {
+  DashboardPeriodParams,
+  DashboardSummary,
   DashboardKpis as Kpis,
-  MonthlySignups,
   SellerCredentialing,
+  SignupGoal,
 } from '../../dashboard.types';
 import styles from './DashboardKpis.module.css';
 import { KpiTile, type KpiTileProps } from './KpiTile';
@@ -13,9 +17,12 @@ import { Sparkline } from './Sparkline';
 
 export const RECENT_SELLERS_ANCHOR = 'vendedores-recentes';
 
+const FULL_GOAL_PERCENT = 100;
+
 interface DashboardKpisProps {
-  kpis: Kpis;
-  signups: MonthlySignups[];
+  summary: DashboardSummary;
+  period: Period;
+  params: DashboardPeriodParams;
   credentialing?: SellerCredentialing;
 }
 
@@ -40,15 +47,6 @@ function MetricPair({ start, end }: { start: Metric; end: Metric }) {
   );
 }
 
-function SingleMetric({ label, value }: Metric) {
-  return (
-    <>
-      <p className={styles.footerText}>{label}</p>
-      <p className={styles.footerHighlight}>{value}</p>
-    </>
-  );
-}
-
 function SellersLink() {
   return (
     <>
@@ -61,57 +59,88 @@ function SellersLink() {
   );
 }
 
-const signupsIn = ({ customers, sellers }: MonthlySignups) => customers + sellers;
-
-function cardsPerUser({ totalCards, totalUsers }: Kpis): string {
-  if (totalCards === null || totalUsers === 0) return '—';
-  return formatCount(Math.round(totalCards / totalUsers));
+function variationIcon(variation: number | null): IconName | undefined {
+  if (variation === null) return undefined;
+  return variation < 0 ? 'trendingDown' : 'trendingUp';
 }
 
 function usersTile(kpis: Kpis): KpiTileProps {
   return {
     label: 'Total de usuários',
     value: formatCount(kpis.totalUsers),
-    unit: 'ativos',
-    description: 'Clientes e vendedores com conta ativa na plataforma.',
+    unit: 'usuários',
+    badge: formatVariation(kpis.usersVariation),
+    badgeTone: (kpis.usersVariation ?? 0) < 0 ? 'warning' : 'info',
+    badgeIcon: variationIcon(kpis.usersVariation),
+    description: 'Clientes e vendedores, sem administradores e sem contas excluídas.',
     glow: 'primary',
     footer: (
       <MetricPair
-        start={{ label: 'Novos clientes', value: formatCount(kpis.newUsers - kpis.newSellers) }}
-        end={{ label: 'Novos vendedores', value: formatCount(kpis.newSellers) }}
+        start={{ label: 'Colecionadores', value: formatCount(kpis.collectors) }}
+        end={{ label: 'Lojistas', value: formatCount(kpis.sellers) }}
       />
     ),
   };
 }
 
 function cardsTile(kpis: Kpis): KpiTileProps {
-  const cardsPending = kpis.totalCards === null;
+  const catalogOn = kpis.totalCards !== null;
   return {
-    label: 'Cartas cadastradas',
+    label: 'Cartas no catálogo',
     value: formatCount(kpis.totalCards),
-    unit: cardsPending ? undefined : 'cartas',
-    badge: 'Catálogo global',
-    description: cardsPending
-      ? 'A contagem aparece quando o catálogo estiver no ar.'
-      : 'Cartas do catálogo global, sem contar as excluídas.',
+    unit: catalogOn ? 'cartas' : undefined,
+    description: catalogOn
+      ? `+${formatCount(kpis.newCardsThisWeek)} novas cartas esta semana`
+      : 'A contagem aparece quando o catálogo estiver no ar.',
+    descriptionTone: catalogOn ? 'accent' : undefined,
+    descriptionIcon: catalogOn ? 'addCircle' : undefined,
     glow: 'accent',
-    footer: <SingleMetric label="Cartas por usuário" value={cardsPerUser(kpis)} />,
   };
 }
 
-const catalogTiles = (kpis: Kpis): KpiTileProps[] => [usersTile(kpis), cardsTile(kpis)];
+const presetDescription = {
+  today: 'Novos cadastros hoje.',
+  '7d': 'Novos cadastros nos últimos 7 dias.',
+  '1y': 'Novos cadastros nos últimos 12 meses.',
+};
 
-function periodFooter(signups: MonthlySignups[]) {
-  const total = signups.reduce((sum, month) => sum + signupsIn(month), 0);
-  const average = signups.length ? Math.round(total / signups.length) : 0;
-  const current = signups.at(-1);
+function goalDescription(goal: SignupGoal | null): string {
+  if (!goal) return 'Meta mensal não configurada.';
+  const monthly = `Meta mensal de ${formatCount(goal.monthly)} cadastros`;
+  if ((goal.percent ?? 0) > FULL_GOAL_PERCENT) return `${monthly} superada.`;
+  return goal.percent === FULL_GOAL_PERCENT ? `${monthly} atingida.` : `${monthly}.`;
+}
 
-  return (
-    <MetricPair
-      start={{ label: 'Média mensal', value: formatCount(average) }}
-      end={{ label: 'Mês atual', value: formatCount(current ? signupsIn(current) : 0) }}
-    />
-  );
+function signupsDescription({ kpis, goal }: DashboardSummary, period: Period): string {
+  if (kpis.newUsers === 0) return 'Nenhum cadastro no período.';
+  if (!('preset' in period)) return 'Novos cadastros no período selecionado.';
+  if (period.preset === '30d') return goalDescription(goal);
+  return presetDescription[period.preset];
+}
+
+function signupsTile({ summary, period, params }: DashboardKpisProps): KpiTileProps {
+  const percent = summary.goal?.percent ?? null;
+  const { newUsers } = summary.kpis;
+  return {
+    label: 'Novos cadastros',
+    value: newUsers === 0 ? '0' : `+${formatCount(newUsers)}`,
+    badge: percent === null ? undefined : `${formatCount(percent)}% da Meta`,
+    badgeTone: 'warning',
+    description: signupsDescription(summary, period),
+    glow: 'warning',
+    aside: <Sparkline params={params} />,
+  };
+}
+
+function newSellersTile(kpis: Kpis): KpiTileProps {
+  return {
+    label: 'Novos vendedores',
+    value: formatCount(kpis.newSellers),
+    unit: 'no período',
+    description: 'Vendedores que criaram conta no período selecionado.',
+    glow: 'primary',
+    footer: <SellersLink />,
+  };
 }
 
 function QueueLink({ onAnalyzeQueue }: Pick<SellerCredentialing, 'onAnalyzeQueue'>) {
@@ -146,33 +175,12 @@ function credentialingTile({ summary, onAnalyzeQueue }: SellerCredentialing): Kp
   };
 }
 
-function newSellersTile(kpis: Kpis): KpiTileProps {
-  return {
-    label: 'Novos vendedores',
-    value: formatCount(kpis.newSellers),
-    unit: 'no período',
-    description: 'Vendedores que criaram conta no período selecionado.',
-    glow: 'primary',
-    footer: <SellersLink />,
-  };
-}
+const sellersTile = ({ summary, credentialing }: DashboardKpisProps) =>
+  credentialing ? credentialingTile(credentialing) : newSellersTile(summary.kpis);
 
-function signupsTile(kpis: Kpis, signups: MonthlySignups[]): KpiTileProps {
-  return {
-    label: 'Novos cadastros',
-    value: `+${formatCount(kpis.newUsers)}`,
-    badge: `${formatShare(kpis.newSellers, kpis.newUsers)} vendedores`,
-    badgeTone: 'warning',
-    description: 'Clientes e vendedores cadastrados no período selecionado.',
-    glow: 'warning',
-    aside: <Sparkline signups={signups} />,
-    footer: periodFooter(signups),
-  };
-}
-
-export function DashboardKpis({ kpis, signups, credentialing }: DashboardKpisProps) {
-  const sellersTile = credentialing ? credentialingTile(credentialing) : newSellersTile(kpis);
-  const tiles = [...catalogTiles(kpis), signupsTile(kpis, signups), sellersTile];
+export function DashboardKpis(props: DashboardKpisProps) {
+  const { kpis } = props.summary;
+  const tiles = [usersTile(kpis), cardsTile(kpis), signupsTile(props), sellersTile(props)];
 
   return (
     <div className={styles.kpis}>

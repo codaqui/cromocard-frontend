@@ -130,6 +130,11 @@ export const api = {
     await http.post(url, body);
   },
 
+  async put<T>(url: string, body: unknown): Promise<T> {
+    const response = await http.put<ApiResponse<T>>(url, body);
+    return response.data.data;
+  },
+
   async patch<T>(url: string, body: unknown): Promise<T> {
     const response = await http.patch<ApiResponse<T>>(url, body);
     return response.data.data;

@@ -13,7 +13,7 @@ import type { UserRole } from '@/types/authenticated-user';
 import { cn } from '@/utils/cn';
 
 import styles from './SiteShell.module.css';
-import { searchScopes, siteLinks, siteMainMenu, siteSecondaryMenu } from './siteMenu';
+import { mainMenuFor, searchScopes, siteLinks, siteSecondaryMenu } from './siteMenu';
 
 function useAccountName(role: UserRole) {
   const { data } = useMe();
@@ -46,9 +46,11 @@ function ProfileItem() {
 }
 
 function SiteMenu() {
+  const { user } = useAuth();
+
   return (
     <nav className={styles.sidebar} aria-label="Menu principal">
-      {siteMainMenu.map((item) => (
+      {mainMenuFor(user?.role).map((item) => (
         <NavItem key={item.to} to={item.to} icon={item.icon} end={item.end}>
           {item.label}
         </NavItem>
