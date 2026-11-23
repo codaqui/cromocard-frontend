@@ -29,8 +29,7 @@ export const financeApi = {
   getSellerStats: (ids: string[]) =>
     api.get<SellerFinanceStats[]>(`${FINANCE_PATH}/sellers`, byIds(ids)),
 
-  getCardStats: (ids: string[]) =>
-    api.get<CardFinanceStats[]>(`${FINANCE_PATH}/cards`, byIds(ids)),
+  getCardStats: (ids: string[]) => api.get<CardFinanceStats[]>(`${FINANCE_PATH}/cards`, byIds(ids)),
 
   getGroupStats: (ids: string[]) =>
     api.get<GroupFinanceStats[]>(`${FINANCE_PATH}/groups`, byIds(ids)),

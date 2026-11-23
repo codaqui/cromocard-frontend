@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { sellerVerificationsApi } from '@/features/admin';
+import { financeApi, sellerVerificationsApi } from '@/features/admin';
 
 import { dashboardApi } from '../../dashboard.api';
 import type { DashboardSummary, SignupsEvolution } from '../../dashboard.types';
@@ -12,6 +12,10 @@ import { DashboardPage } from './DashboardPage';
 
 vi.mock('../../dashboard.api', () => ({
   dashboardApi: { getSummary: vi.fn(), getSignupsEvolution: vi.fn() },
+}));
+
+vi.mock('@/features/admin/finance/finance.api', () => ({
+  financeApi: { getSummary: vi.fn(), getLedger: vi.fn() },
 }));
 
 vi.mock('@/features/admin/seller-verifications/seller-verifications.api', () => ({
@@ -76,6 +80,15 @@ const sellerVerificationsPage = {
   meta: { page: 1, pageSize: 20, total: 1, totalPages: 1 },
 };
 
+const financeSummary = {
+  period: { from: '2026-09-30T03:00:00Z', to: '2026-10-29T13:00:00Z' },
+  custodyCents: 15000,
+  settledCents: 10000,
+  settledOrders: 2,
+  retainedCents: 8000,
+  hasMovement: true,
+};
+
 const sellerVerificationsSummary = { approved: 3, pending: 1, conversionRate: 0.75 };
 
 function renderPage() {
@@ -93,6 +106,7 @@ describe('DashboardPage', () => {
   beforeEach(() => {
     vi.mocked(dashboardApi.getSummary).mockReset().mockResolvedValue(summary);
     vi.mocked(dashboardApi.getSignupsEvolution).mockReset().mockResolvedValue(evolution);
+    vi.mocked(financeApi.getSummary).mockReset().mockResolvedValue(financeSummary);
     vi.mocked(sellerVerificationsApi.list).mockReset().mockResolvedValue(sellerVerificationsPage);
     vi.mocked(sellerVerificationsApi.getSummary)
       .mockReset()
@@ -186,6 +200,29 @@ describe('DashboardPage', () => {
       }),
     );
     expect(screen.getByLabelText('Filtrar por status')).toHaveValue('PENDING');
+  });
+
+  it('CCD097 CA1: mostra a custódia, o liquidado e o retido ao lado do gráfico', async () => {
+    renderPage();
+
+    const card = await screen.findByRole('region', { name: 'Valor em custódia' });
+    expect(card).toHaveTextContent(/R\$\s150,00/);
+    expect(card).toHaveTextContent('Liquidado no período');
+    expect(card).toHaveTextContent('2 pedidos liberados aos vendedores no período.');
+    expect(financeApi.getSummary).toHaveBeenCalledWith({ period: '30d' });
+    expect(
+      screen.queryByRole('region', { name: 'Composição dos cadastros' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('CCD097 CA2: no filtro Hoje, o card mostra "Liquidado hoje"', async () => {
+    renderPage();
+    await screen.findByRole('region', { name: 'Valor em custódia' });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Hoje' }));
+
+    expect(financeApi.getSummary).toHaveBeenLastCalledWith({ period: 'today' });
+    expect(await screen.findByText('Liquidado hoje')).toBeInTheDocument();
   });
 
   it('CA2: recalcula o dashboard ao escolher 7 dias', async () => {

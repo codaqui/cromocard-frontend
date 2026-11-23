@@ -6,6 +6,7 @@ import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
 import type { Period } from '@/components/PeriodFilter/PeriodFilter';
 import {
+  FinanceOverview,
   SellerRegistrationsTable,
   SellerVerificationPanel,
   useSellerVerificationDrawer,
@@ -18,7 +19,6 @@ import type { SellerVerificationStatus } from '@/types/seller-verification';
 import { DashboardHeader } from '../../components/DashboardHeader/DashboardHeader';
 import { DashboardKpis } from '../../components/DashboardKpis/DashboardKpis';
 import { SignupsEvolutionChart } from '../../components/SignupsEvolutionChart/SignupsEvolutionChart';
-import { SignupsMix } from '../../components/SignupsMix/SignupsMix';
 import { DEFAULT_DASHBOARD_PERIOD, toPeriodParams } from '../../dashboard.period';
 import { useDashboardSummary, useSignupsEvolution } from '../../dashboard.queries';
 import type {
@@ -114,7 +114,10 @@ function DashboardData({
       <DashboardKpis summary={summary} {...selection} credentialing={credentialing} />
       <div className={styles.insights}>
         <SignupsEvolution {...selection} />
-        <SignupsMix kpis={summary.kpis} />
+        <FinanceOverview
+          params={selection.params}
+          isToday={'preset' in selection.period && selection.period.preset === 'today'}
+        />
       </div>
       <SellerRegistrations {...sellerVerifications} />
     </>

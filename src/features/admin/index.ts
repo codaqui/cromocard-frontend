@@ -1,4 +1,5 @@
 export { adminBackofficeRoutes } from './admin.routes';
+export { FinanceOverview, financeApi } from './finance';
 export {
   SELLER_REGISTRATIONS_ANCHOR,
   SellerRegistrationsTable,
