@@ -7,13 +7,16 @@ import { LoadingState } from '@/components/LoadingState/LoadingState';
 import type { Period } from '@/components/PeriodFilter/PeriodFilter';
 import {
   FinanceOverview,
+  ListedVolumeCell,
+  ReputationCell,
   SellerRegistrationsTable,
   SellerVerificationPanel,
   useSellerVerificationDrawer,
   useSellerVerificationsList,
+  useSellerFinanceStats,
   useSellerVerificationsSummary,
 } from '@/features/admin';
-import type { SellerVerificationListItem } from '@/features/admin';
+import type { SellerFinanceStats, SellerVerificationListItem, StatsById } from '@/features/admin';
 import type { SellerVerificationStatus } from '@/types/seller-verification';
 
 import { DashboardHeader } from '../../components/DashboardHeader/DashboardHeader';
@@ -60,6 +63,22 @@ function SignupsEvolution({ params, period }: PeriodSelection) {
   return <SignupsEvolutionChart evolution={query.data} period={period} />;
 }
 
+function sellerFinanceColumns(stats: StatsById<SellerFinanceStats> = {}) {
+  const statsOf = (item: SellerVerificationListItem) => stats[item.seller.id];
+  return [
+    {
+      key: 'reputation',
+      header: 'Reputação',
+      render: (item: SellerVerificationListItem) => <ReputationCell stats={statsOf(item)} />,
+    },
+    {
+      key: 'listedVolume',
+      header: 'Volume anunciado',
+      render: (item: SellerVerificationListItem) => <ListedVolumeCell stats={statsOf(item)} />,
+    },
+  ];
+}
+
 interface SellerRegistrationsProps {
   statusFilter: SellerVerificationStatus | 'ALL';
   onStatusFilterChange: (status: SellerVerificationStatus | 'ALL') => void;
@@ -73,6 +92,7 @@ function SellerRegistrations({ statusFilter, onValidate, ...props }: SellerRegis
     page: 1,
     pageSize: 20,
   });
+  const financeStats = useSellerFinanceStats(query.data?.data.map(({ seller }) => seller.id) ?? []);
 
   if (query.isPending) return <LoadingState message="Carregando vendedores…" />;
   if (query.isError) {
@@ -86,6 +106,7 @@ function SellerRegistrations({ statusFilter, onValidate, ...props }: SellerRegis
       statusFilter={statusFilter}
       onValidate={onValidate}
       onRefresh={() => void query.refetch()}
+      extraColumns={sellerFinanceColumns(financeStats.data)}
       {...props}
     />
   );

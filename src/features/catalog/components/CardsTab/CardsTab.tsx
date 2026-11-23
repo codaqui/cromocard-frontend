@@ -1,4 +1,11 @@
 import type { SelectOption } from '@/components/Select/Select';
+import {
+  AveragePriceCell,
+  type CardFinanceStats,
+  PopulationCell,
+  type StatsById,
+  useCardFinanceStats,
+} from '@/features/admin';
 
 import { filtersStateOf, listSummary, selectChips } from '../../catalog.filter-chips';
 import { formatEdition } from '../../catalog.format';
@@ -77,9 +84,27 @@ type CardFilterName = keyof typeof initialFilters;
 
 type CardFilterSelect = CatalogFilterSelectConfig<CardFilterName>;
 
-function cardsTableWith(dialogs: CatalogItemDialogs<Card>): CatalogTable<Card> {
+function financeColumns(stats: StatsById<CardFinanceStats> = {}): CatalogTable<Card>['columns'] {
+  return [
+    {
+      key: 'population',
+      header: 'População',
+      render: (card) => <PopulationCell stats={stats[card.id]} />,
+    },
+    {
+      key: 'averagePrice',
+      header: 'Preço médio',
+      render: (card) => <AveragePriceCell stats={stats[card.id]} />,
+    },
+  ];
+}
+
+function cardsTableWith(
+  dialogs: CatalogItemDialogs<Card>,
+  stats?: StatsById<CardFinanceStats>,
+): CatalogTable<Card> {
   const actions = catalogActionsColumn<Card>('card', (card) => card.name, dialogs);
-  return { ...cardsTable, columns: [...cardsTable.columns, actions] };
+  return { ...cardsTable, columns: [...cardsTable.columns, ...financeColumns(stats), actions] };
 }
 
 function renderCardForm(dialogs: CatalogItemDialogs<Card>) {
@@ -150,6 +175,7 @@ export function CardsTab({ pageSize, notify }: CatalogTabProps) {
   const list = useCatalogListFilters(initialFilters, pageSize);
   const cardsQuery = useCardsList(list.params);
   const dialogs = useCatalogItemDialogs<Card>(notify);
+  const stats = useCardFinanceStats(cardsQuery.data?.data.map(({ id }) => id) ?? []);
 
   return (
     <div className={styles.tab}>
@@ -157,7 +183,7 @@ export function CardsTab({ pageSize, notify }: CatalogTabProps) {
       <CardFilters list={list} summary={listSummary(cardsQuery.data?.meta.total, cardsFound)} />
       <CatalogListResult
         query={cardsQuery}
-        table={cardsTableWith(dialogs)}
+        table={cardsTableWith(dialogs, stats.data)}
         onPageChange={list.changePage}
       />
     </div>

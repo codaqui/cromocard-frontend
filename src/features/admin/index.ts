@@ -1,5 +1,17 @@
 export { adminBackofficeRoutes } from './admin.routes';
-export { FinanceOverview, financeApi } from './finance';
+export {
+  AveragePriceCell,
+  FinanceOverview,
+  GroupVolumeCell,
+  ListedVolumeCell,
+  PopulationCell,
+  ReputationCell,
+  financeApi,
+  useCardFinanceStats,
+  useGroupFinanceStats,
+  useSellerFinanceStats,
+} from './finance';
+export type { CardFinanceStats, GroupFinanceStats, SellerFinanceStats, StatsById } from './finance';
 export {
   SELLER_REGISTRATIONS_ANCHOR,
   SellerRegistrationsTable,

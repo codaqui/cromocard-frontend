@@ -29,6 +29,14 @@ export function splitCurrency(cents: number): { whole: string; fraction: string 
   return { whole: formatted.slice(0, comma), fraction: formatted.slice(comma) };
 }
 
+const wholeCurrencyFormatter = new Intl.NumberFormat('pt-BR', {
+  style: 'currency',
+  currency: 'BRL',
+  maximumFractionDigits: 0,
+});
+
+export const formatWholeCurrency = (cents: number) => wholeCurrencyFormatter.format(cents / 100);
+
 export const formatCount = (value: number) => countFormatter.format(value);
 
 export const formatLedgerTime = (iso: string) =>
@@ -42,3 +50,18 @@ export function formatLedgerDay(iso: string): string {
 
 export const orderCode = (orderId: string) =>
   `#PED-${orderId.replaceAll('-', '').slice(-ORDER_CODE_LENGTH).toUpperCase()}`;
+
+const plural = (count: number, one: string, many: string) =>
+  `${formatCount(count)} ${count === 1 ? one : many}`;
+
+export const activeListingsLabel = (count: number) =>
+  count === 0 ? 'Nenhum anúncio ativo' : plural(count, 'anúncio ativo', 'anúncios ativos');
+
+export const activeNegotiationsLabel = (count: number) =>
+  plural(count, 'negociação ativa', 'negociações ativas');
+
+export const formatPopulation = (units: number) => `${formatCount(units)} un.`;
+
+const ratingFormatter = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 });
+
+export const formatRating = (rating: number | null) => ratingFormatter.format(rating ?? 0);
