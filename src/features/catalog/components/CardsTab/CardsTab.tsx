@@ -101,7 +101,7 @@ function franchiseSelect(options: SelectOption[]): CardFilterSelect {
 
 function useCardFilterSelects(): CardFilterSelect[] {
   return [
-    franchiseSelect(useCategoryOptions('CARD')),
+    franchiseSelect(useCategoryOptions()),
     {
       name: 'albumId',
       label: 'Álbum',

@@ -7,7 +7,7 @@ import { renderWithProviders } from '@/test/renderWithProviders';
 
 import { catalogApi } from '../../catalog.api';
 import type { Category } from '../../catalog.types';
-import { albumCategory, cardCategory, categoriesByType } from '../../test/catalogFixtures';
+import { albumCategory, cardCategory, listedCategories } from '../../test/catalogFixtures';
 import { CategoryFormModal } from './CategoryFormModal';
 
 vi.mock('../../catalog.api', () => ({
@@ -52,15 +52,14 @@ describe('CategoryFormModal', () => {
   beforeEach(() => {
     vi.mocked(catalogApi.createCategory).mockReset().mockResolvedValue(cardCategory);
     vi.mocked(catalogApi.updateCategory).mockReset().mockResolvedValue(cardCategory);
-    vi.mocked(catalogApi.listCategories).mockImplementation(categoriesByType);
+    vi.mocked(catalogApi.listCategories).mockImplementation(listedCategories);
     onSaved.mockReset();
   });
 
-  it('R15: cadastra a categoria com tipo, categoria pai e descrição', async () => {
+  it('R15: cadastra a categoria com categoria pai e descrição, sem tipo (L11)', async () => {
     renderModal();
     expect(screen.getByRole('dialog', { name: 'Nova categoria' })).toBeInTheDocument();
     await userEvent.type(screen.getByLabelText('Nome *'), 'Copa do Mundo');
-    await userEvent.selectOptions(screen.getByLabelText('Tipo *'), 'CARD');
     await within(parentSelect()).findByRole('option', { name: cardCategory.name });
     await userEvent.selectOptions(parentSelect(), cardCategory.id);
     await userEvent.type(screen.getByLabelText('Descrição'), 'Seleções das copas');
@@ -74,7 +73,6 @@ describe('CategoryFormModal', () => {
     );
     expect(catalogApi.createCategory).toHaveBeenCalledWith({
       name: 'Copa do Mundo',
-      type: 'CARD',
       parentCategoryId: cardCategory.id,
       description: 'Seleções das copas',
       badge: null,
@@ -96,7 +94,6 @@ describe('CategoryFormModal', () => {
   it('CA14: envia o selo escolhido e, sem escolher, envia nulo', async () => {
     renderModal();
     await userEvent.type(screen.getByLabelText('Nome *'), 'One Piece');
-    await userEvent.selectOptions(screen.getByLabelText('Tipo *'), 'CARD');
     await userEvent.selectOptions(screen.getByLabelText('Selo de exibição'), 'TRENDING');
     await saveAndConfirm();
 
@@ -157,7 +154,6 @@ describe('CategoryFormModal', () => {
     );
     renderModal();
     await userEvent.type(screen.getByLabelText('Nome *'), 'Pokemon');
-    await userEvent.selectOptions(screen.getByLabelText('Tipo *'), 'CARD');
     await saveAndConfirm();
 
     expect(await screen.findByText('Já existe uma categoria com este nome')).toBeInTheDocument();
@@ -165,54 +161,34 @@ describe('CategoryFormModal', () => {
     expect(onSaved).not.toHaveBeenCalled();
   });
 
-  it('R15: sem tipo escolhido, a categoria pai fica bloqueada', () => {
+  it('L11: não há campo Tipo, e a categoria pai oferece todas as categorias', async () => {
     renderModal();
 
-    expect(parentSelect()).toBeDisabled();
-    expect(within(parentSelect()).getByRole('option')).toHaveTextContent('Escolha o tipo primeiro');
-  });
-
-  it('L9: a categoria pai só oferece categorias do mesmo tipo', async () => {
-    renderModal();
-    await userEvent.selectOptions(screen.getByLabelText('Tipo *'), 'ALBUM');
-
+    expect(screen.queryByLabelText('Tipo *')).not.toBeInTheDocument();
+    expect(parentSelect()).toBeEnabled();
     await within(parentSelect()).findByRole('option', { name: albumCategory.name });
-    expect(
-      within(parentSelect()).queryByRole('option', { name: cardCategory.name }),
-    ).not.toBeInTheDocument();
-  });
-
-  it('L9: trocar o tipo limpa a categoria pai escolhida', async () => {
-    renderModal();
-    await userEvent.selectOptions(screen.getByLabelText('Tipo *'), 'CARD');
-    await within(parentSelect()).findByRole('option', { name: cardCategory.name });
-    await userEvent.selectOptions(parentSelect(), cardCategory.id);
-
-    await userEvent.selectOptions(screen.getByLabelText('Tipo *'), 'ALBUM');
-
-    expect(parentSelect()).toHaveValue('');
+    expect(within(parentSelect()).getByRole('option', { name: cardCategory.name })).toBeVisible();
   });
 
   it('R15: na edição, nem a categoria nem as subcategorias dela aparecem como pai', async () => {
-    vi.mocked(catalogApi.listCategories).mockImplementation((params) =>
-      categoriesByType(params).then((page) => ({ ...page, data: [...page.data, childCategory] })),
+    vi.mocked(catalogApi.listCategories).mockImplementation(() =>
+      listedCategories().then((page) => ({ ...page, data: [...page.data, childCategory] })),
     );
     renderModal(cardCategory);
     expect(screen.getByText(`Altere os dados de ${cardCategory.name}.`)).toBeInTheDocument();
-    await vi.waitFor(() => expect(parentSelect()).toBeEnabled());
+    await within(parentSelect()).findByRole('option', { name: albumCategory.name });
 
     const options = within(parentSelect()).getAllByRole('option');
-    expect(options.map((option) => option.textContent)).toEqual(['Nenhuma']);
+    expect(options.map((option) => option.textContent)).toEqual(['Nenhuma', albumCategory.name]);
   });
 
-  it('R15: recusa a categoria sem nome e sem tipo e conta os campos no rodapé', async () => {
+  it('R15: recusa a categoria sem nome e conta o campo no rodapé', async () => {
     renderModal();
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar categoria' }));
 
     expect(await screen.findByText('Informe o nome da categoria.')).toBeInTheDocument();
-    expect(screen.getByText('Escolha o tipo da categoria.')).toBeInTheDocument();
     expect(
-      screen.getByText('Corrija os 2 campos destacados para cadastrar a categoria.'),
+      screen.getByText('Corrija o campo destacado para cadastrar a categoria.'),
     ).toBeInTheDocument();
   });
 
