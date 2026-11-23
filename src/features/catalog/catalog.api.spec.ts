@@ -31,6 +31,8 @@ const albumInput: AlbumInput = {
 const cardInput: CardInput = {
   name: 'Pelé',
   number: '10',
+  code: 'CRD-POK-0004',
+  variants: 'Shadowless, Holofoil',
   description: null,
   frontImageUrl: 'https://hml-api.cromocard.com.br/uploads/cards/pele.webp',
   backImageUrl: null,
@@ -102,6 +104,28 @@ describe('catalogApi: cartas', () => {
   it('R13: baixa o modelo do CSV', () => {
     void catalogApi.downloadImportTemplate();
     expect(callsOf('getBlob')[0]).toEqual(['/admin/catalog/cards/import/template']);
+  });
+});
+
+describe('catalogApi: CCD105', () => {
+  it('R9: lista as cartas filtradas pelo ano', () => {
+    void catalogApi.listCards({ ...PAGE, year: '1999' });
+
+    expect(callsOf('getPage')[0]).toEqual(['/admin/catalog/cards', { ...PAGE, year: '1999' }]);
+  });
+
+  it('R7: busca o resumo do catálogo', () => {
+    void catalogApi.getSummary();
+
+    expect(callsOf('get')[0]).toEqual(['/admin/catalog/summary']);
+  });
+
+  it('R10: envia as cartas selecionadas e o motivo para a exclusão em lote', () => {
+    const input = { ids: ['carta-1', 'carta-2'], reason: 'Duplicadas' };
+
+    void catalogApi.bulkDeleteCards(input);
+
+    expect(callsOf('post')[0]).toEqual(['/admin/catalog/cards/bulk-delete', input]);
   });
 });
 

@@ -43,12 +43,16 @@ const FRONT_IMAGE_URL = 'https://hml-api.cromocard.com.br/uploads/cards/nova.web
 const CREATE = 'Cadastrar Carta no Catálogo';
 const onSaved = vi.fn();
 
-function renderModal(editing?: Card) {
+const onClose = vi.fn();
+
+function renderModal(editing?: Card, source?: Card) {
   renderWithProviders({
     routes: [
       {
         path: '/',
-        element: <CardFormModal card={editing} onClose={vi.fn()} onSaved={onSaved} />,
+        element: (
+          <CardFormModal card={editing} source={source} onClose={onClose} onSaved={onSaved} />
+        ),
       },
     ],
     initialPath: '/',
@@ -93,6 +97,7 @@ describe('CardFormModal', () => {
     vi.mocked(catalogApi.listLanguages).mockResolvedValue([language]);
     vi.mocked(readImageSize).mockReset().mockResolvedValue({ width: 2400, height: 3360 });
     onSaved.mockReset();
+    onClose.mockReset();
   });
 
   it('L11: escolher o álbum preenche a franquia dele; álbum sem franquia mantém a escolhida', async () => {
@@ -306,6 +311,97 @@ describe('CardFormModal', () => {
     await vi.waitFor(() =>
       expect(screen.getByRole('button', { name: 'Salvar alterações' })).toBeEnabled(),
     );
+  });
+
+  it('CA1: duplicar abre o formulário com os dados da carta de origem, sem numeração, código e imagens', async () => {
+    renderModal(undefined, card);
+
+    expect(screen.getByRole('dialog', { name: 'Duplicar carta' })).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        `Dados copiados de ${card.name}. Informe a numeração, o código e as imagens da nova carta.`,
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText('Nome da carta *')).toHaveValue(card.name);
+    expect(await screen.findByLabelText('Franquia *')).toHaveValue(cardCategory.id);
+    expect(screen.getByLabelText('Álbum')).toHaveValue(album.id);
+    expect(screen.getByLabelText('Raridade *')).toHaveValue(rarity.id);
+    expect(screen.getByLabelText('Idioma *')).toHaveValue(language.id);
+    expect(screen.getByLabelText('Variantes')).toHaveValue('Holofoil, Shadowless');
+    expect(screen.getByLabelText('Descrição')).toHaveValue('Lenda do futebol.');
+    expect(screen.getByLabelText('Numeração')).toHaveValue('');
+    expect(screen.getByLabelText('Código')).toHaveValue('');
+    expect(screen.getByLabelText('Escolher imagem da frente')).toBeInTheDocument();
+  });
+
+  it('CA2: a carta duplicada é cadastrada como nova, com a numeração, o código e a imagem novos', async () => {
+    renderModal(undefined, card);
+    await userEvent.type(screen.getByLabelText('Numeração'), '11');
+    await userEvent.type(screen.getByLabelText('Código'), 'CRD-FUT-0011');
+    await userEvent.upload(screen.getByLabelText('Escolher imagem da frente'), frontImage());
+    await screen.findByRole('img', { name: 'Prévia: Imagem da frente' });
+    await saveAndConfirm();
+
+    await vi.waitFor(() =>
+      expect(onSaved).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Carta cadastrada no catálogo' }),
+      ),
+    );
+    expect(catalogApi.updateCard).not.toHaveBeenCalled();
+    expect(vi.mocked(catalogApi.createCard).mock.calls[0]?.[0]).toMatchObject({
+      name: card.name,
+      number: '11',
+      code: 'CRD-FUT-0011',
+      variants: 'Holofoil, Shadowless',
+      albumId: album.id,
+      categoryId: cardCategory.id,
+      rarityId: rarity.id,
+      languageId: language.id,
+      frontImageUrl: FRONT_IMAGE_URL,
+      backImageUrl: null,
+    });
+  });
+
+  it('CA5: código em uso volta ao campo Código dizendo de qual carta ele é', async () => {
+    vi.mocked(catalogApi.createCard).mockRejectedValue(
+      new ApiError({
+        status: 409,
+        code: 'CARD_CODE_TAKEN',
+        message: 'Já existe uma carta com este código',
+        details: [{ field: 'code', message: 'Este código já está em uso por Charizard.' }],
+      }),
+    );
+    renderModal();
+    await fillNewCard();
+    await userEvent.type(screen.getByLabelText('Código'), 'CRD-POK-0004');
+    await saveAndConfirm();
+
+    expect(
+      await screen.findByText('Este código já está em uso por Charizard.'),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText('Código')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('R6: cancelar a duplicação fecha o formulário sem cadastrar a carta', async () => {
+    renderModal(undefined, card);
+    await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+
+    expect(onClose).toHaveBeenCalled();
+    expect(catalogApi.createCard).not.toHaveBeenCalled();
+  });
+
+  it('L12: ano de lançamento e rascunho aparecem desabilitados até a CCD106', () => {
+    renderModal(undefined, card);
+
+    expect(screen.getByLabelText('Ano de lançamento')).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Salvar como Rascunho' })).toBeDisabled();
+  });
+
+  it('L12: a edição não mostra o botão de rascunho', () => {
+    renderModal(card);
+
+    expect(screen.queryByRole('button', { name: 'Salvar como Rascunho' })).not.toBeInTheDocument();
   });
 
   it('R12: imagem abaixo de 1200×1600 px não é enviada e o campo explica o mínimo', async () => {

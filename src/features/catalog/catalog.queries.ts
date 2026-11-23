@@ -5,6 +5,7 @@ import { downloadFile } from '@/lib/download-file';
 import { catalogApi } from './catalog.api';
 import type { AlbumInput, CardInput, CategoryInput } from './catalog.schemas';
 import type {
+  BulkDeleteCardsInput,
   CatalogItemRef,
   ListAlbumsParams,
   ListCardsParams,
@@ -21,6 +22,7 @@ export const catalogKeys = {
   cards: (params: ListCardsParams) => [...catalogKeys.lists(), 'cards', params] as const,
   categories: (params: ListCategoriesParams) =>
     [...catalogKeys.lists(), 'categories', params] as const,
+  summary: () => [...catalogKeys.lists(), 'summary'] as const,
   rarities: () => [...catalogKeys.all, 'rarities'] as const,
   languages: () => [...catalogKeys.all, 'languages'] as const,
   uploads: () => [...catalogKeys.all, 'upload'] as const,
@@ -59,6 +61,14 @@ export function useCategoriesList(params: ListCategoriesParams) {
     queryFn: () => catalogApi.listCategories(params),
     placeholderData: keepPreviousData,
   });
+}
+
+export function useCatalogSummary() {
+  return useQuery({ queryKey: catalogKeys.summary(), queryFn: catalogApi.getSummary });
+}
+
+export function useBulkDeleteCards() {
+  return useCatalogMutation((input: BulkDeleteCardsInput) => catalogApi.bulkDeleteCards(input));
 }
 
 export function useRarities() {

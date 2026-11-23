@@ -3,7 +3,10 @@ import { api } from '@/lib/http';
 import type { AlbumInput, CardInput, CategoryInput } from './catalog.schemas';
 import type {
   Album,
+  BulkDeleteCardsInput,
+  BulkDeleteCardsResult,
   Card,
+  CatalogSummary,
   CatalogReference,
   Category,
   CardImportResult,
@@ -42,6 +45,9 @@ export const catalogApi = {
   listCards: (params: ListCardsParams) => api.getPage<Card>(CARDS_PATH, params),
   createCard: (input: CardInput) => api.post<Card>(CARDS_PATH, input),
   updateCard: (id: string, input: CardInput) => api.patch<Card>(`${CARDS_PATH}/${id}`, input),
+  bulkDeleteCards: (input: BulkDeleteCardsInput) =>
+    api.post<BulkDeleteCardsResult>(`${CARDS_PATH}/bulk-delete`, input),
+  getSummary: () => api.get<CatalogSummary>(`${BASE_PATH}/summary`),
   importCards: (file: File) => api.post<CardImportResult>(`${CARDS_PATH}/import`, fileForm(file)),
   downloadImportTemplate: () => api.getBlob(`${CARDS_PATH}/import/template`),
 

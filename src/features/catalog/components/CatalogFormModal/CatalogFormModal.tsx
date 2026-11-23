@@ -17,6 +17,7 @@ export interface CatalogFormModalTexts {
   subtitle: string;
   submitLabel: string;
   note?: string;
+  draftLabel?: string;
   invalidNote: (count: number) => string;
   confirmMessage: string;
 }
@@ -45,6 +46,7 @@ interface CatalogFormActionsProps {
   ids: CatalogFormIds;
   save: SaveControls;
   submitLabel: string;
+  draftLabel?: string;
   onClose: () => void;
 }
 
@@ -61,7 +63,7 @@ function useCatalogFormIds(isReviewing: boolean): CatalogFormIds {
   return ids;
 }
 
-function EditStepActions({ ids, submitLabel, onClose }: CatalogFormActionsProps) {
+function EditStepActions({ ids, submitLabel, draftLabel, onClose }: CatalogFormActionsProps) {
   const isUploading = useIsMutating({ mutationKey: catalogKeys.uploads() }) > 0;
 
   return (
@@ -69,6 +71,11 @@ function EditStepActions({ ids, submitLabel, onClose }: CatalogFormActionsProps)
       <Button variant="secondary" onClick={onClose}>
         Cancelar
       </Button>
+      {draftLabel && (
+        <Button variant="secondary" disabled>
+          {draftLabel}
+        </Button>
+      )}
       <Button id={ids.saveId} type="submit" form={ids.formId} disabled={isUploading}>
         <Icon name="checkCircle" size={18} />
         {submitLabel}
@@ -130,6 +137,15 @@ function dialogPropsOf({ title, subtitle }: CatalogFormModalTexts, size: ModalSi
   return { title, subtitle, size, variant: 'framed' as const, icon: 'cube' as const };
 }
 
+interface FooterSource extends Pick<CatalogFormActionsProps, 'ids' | 'save' | 'onClose'> {
+  texts: CatalogFormModalTexts;
+  invalidNote?: string;
+}
+
+function footerOf({ texts: { submitLabel, draftLabel, note }, ...rest }: FooterSource) {
+  return <CatalogFormFooter {...rest} {...{ submitLabel, draftLabel, note }} />;
+}
+
 export function CatalogFormModal({
   texts,
   size = 'default',
@@ -139,7 +155,6 @@ export function CatalogFormModal({
 }: CatalogFormModalProps) {
   const ids = useCatalogFormIds(save.isReviewing);
   const { invalidNote, reportInvalid } = useInvalidNote(texts);
-  const { submitLabel, note } = texts;
 
   return (
     <Modal
@@ -147,7 +162,7 @@ export function CatalogFormModal({
       {...dialogPropsOf(texts, size)}
       dismissible={!save.isSaving}
       onClose={onClose}
-      footer={<CatalogFormFooter {...{ ids, save, submitLabel, note, invalidNote, onClose }} />}
+      footer={footerOf({ texts, ids, save, invalidNote, onClose })}
     >
       <div hidden={save.isReviewing}>{children(ids.formId, reportInvalid)}</div>
       <p id={ids.messageId} className={styles.confirm} hidden={!save.isReviewing}>

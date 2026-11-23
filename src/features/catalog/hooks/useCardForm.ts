@@ -20,6 +20,8 @@ import { useReportInvalid } from './useReportInvalid';
 const cardFields = [
   'name',
   'number',
+  'code',
+  'variants',
   'description',
   'frontImageUrl',
   'backImageUrl',
@@ -38,6 +40,8 @@ function cardFormDefaults(card?: Card): CardFormValues {
   return {
     name: card?.name ?? '',
     number: card?.number ?? '',
+    code: card?.code ?? '',
+    variants: card?.variants ?? '',
     description: card?.description ?? '',
     frontImageUrl: card?.frontImageUrl ?? '',
     backImageUrl: card?.backImageUrl ?? '',
@@ -46,6 +50,10 @@ function cardFormDefaults(card?: Card): CardFormValues {
     rarityId: card?.rarityId ?? '',
     languageId: card?.languageId ?? '',
   };
+}
+
+export function duplicateOf(source: Card): Card {
+  return { ...source, number: null, code: null, frontImageUrl: null, backImageUrl: null };
 }
 
 export function numberTakenMessage(apiError: ApiError, number: string): string {

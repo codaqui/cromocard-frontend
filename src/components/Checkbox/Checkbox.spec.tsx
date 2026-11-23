@@ -60,4 +60,15 @@ describe('Checkbox', () => {
       'Aparece no menu da Home',
     );
   });
+
+  it('com o rótulo oculto, continua com nome acessível e marca pelo clique', async () => {
+    const onChange = vi.fn();
+    render(<Checkbox hideLabel label="Selecionar Pikachu" onChange={onChange} />);
+
+    const checkbox = screen.getByRole('checkbox', { name: 'Selecionar Pikachu' });
+    await userEvent.click(checkbox);
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(checkbox).toBeChecked();
+  });
 });

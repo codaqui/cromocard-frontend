@@ -34,6 +34,7 @@ interface ConfirmDialogProps {
   cancelLabel?: string;
   actionsLayout?: 'end' | 'spread';
   variant?: 'default' | 'compact';
+  plainReasonLabel?: boolean;
 }
 
 interface ConfirmDialogActionsProps {
@@ -105,6 +106,7 @@ interface ConfirmDialogFieldsProps {
   requireReason: boolean;
   reasonLabel: string;
   reasonMaxLength: number;
+  plainReasonLabel: boolean;
   confirmationText?: string;
   extraFields?: ReactNode;
   errorMessage?: string;
@@ -114,13 +116,20 @@ interface ConfirmDialogFieldsProps {
 
 type ReasonFieldProps = Pick<
   ConfirmDialogFieldsProps,
-  'reasonLabel' | 'reasonMaxLength' | 'register' | 'errors'
+  'reasonLabel' | 'reasonMaxLength' | 'plainReasonLabel' | 'register' | 'errors'
 >;
 
-function ReasonField({ reasonLabel, reasonMaxLength, register, errors }: ReasonFieldProps) {
+function ReasonField({
+  reasonLabel,
+  reasonMaxLength,
+  plainReasonLabel,
+  register,
+  errors,
+}: ReasonFieldProps) {
   return (
     <Textarea
       label={reasonLabel}
+      plainLabel={plainReasonLabel}
       maxLength={reasonMaxLength}
       error={errors.reason?.message}
       {...register('reason')}
@@ -193,6 +202,8 @@ const confirmDialogDefaults = {
   canConfirm: true,
   cancelLabel: 'Cancelar',
   actionsLayout: 'end',
+  variant: 'default',
+  plainReasonLabel: false,
 } satisfies Partial<ConfirmDialogProps>;
 
 function useConfirmDialog(props: Omit<ConfirmDialogProps, 'open'>) {

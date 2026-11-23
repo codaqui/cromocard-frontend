@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { type ReactNode, useId } from 'react';
 import type { Control, FieldErrors, UseFormRegister } from 'react-hook-form';
 
 import { describedByOf } from '@/components/FormField/field-ids';
@@ -110,11 +110,25 @@ function NameField({ register, errors }: CardFieldsProps) {
   );
 }
 
+function PairRow({ children }: { children: ReactNode }) {
+  return (
+    <WideRow>
+      <div className={styles.pair}>{children}</div>
+    </WideRow>
+  );
+}
+
+function ReleaseYearField() {
+  return (
+    <IconInput label="Ano de lançamento" icon="calendar" iconEnd disabled placeholder="AAAA" />
+  );
+}
+
 function IdentityFields({ register, errors, card }: CardFieldsProps & { card?: Card }) {
   return (
     <>
       <NameField register={register} errors={errors} />
-      <WideRow>
+      <PairRow>
         <IconSelect
           label="Franquia"
           required
@@ -123,8 +137,28 @@ function IdentityFields({ register, errors, card }: CardFieldsProps & { card?: C
           error={errors.categoryId?.message}
           {...register('categoryId')}
         />
-      </WideRow>
+        <ReleaseYearField />
+      </PairRow>
     </>
+  );
+}
+
+function CodeFields({ register, errors }: CardFieldsProps) {
+  return (
+    <PairRow>
+      <IconInput
+        label="Código"
+        placeholder="Ex.: CRD-POK-0005"
+        error={errors.code?.message}
+        {...register('code')}
+      />
+      <IconInput
+        label="Variantes"
+        placeholder="Ex.: Shadowless, Holofoil"
+        error={errors.variants?.message}
+        {...register('variants')}
+      />
+    </PairRow>
   );
 }
 
@@ -153,6 +187,7 @@ function CardDataPanel({ form, card }: { form: CardFormState; card?: Card }) {
     <CatalogFormPanel icon="shield" title="Dados da carta">
       <div className={styles.fields}>
         <IdentityFields register={register} errors={errors} card={card} />
+        <CodeFields register={register} errors={errors} />
         <AlbumField form={form} card={card} />
         <NumberingField register={register} errors={errors} total={total} />
         <ClassificationFields register={register} errors={errors} card={card} />

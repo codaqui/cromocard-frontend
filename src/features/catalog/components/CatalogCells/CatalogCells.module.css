@@ -76,6 +76,12 @@
   font-size: var(--font-size-xs);
 }
 
+/* A primeira variante em destaque, como "Shadowless" no frame 208-2895. */
+.tag:first-child {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
 .editionTitle {
   font-size: var(--font-size-sm);
 }

@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import type { PaginationMeta } from '@/types/api';
 import { cn } from '@/utils/cn';
 
@@ -11,6 +13,7 @@ interface CatalogPaginationProps {
   meta: PaginationMeta;
   shown: number;
   onPageChange: (page: number) => void;
+  children?: ReactNode;
 }
 
 interface StepButtonProps {
@@ -35,7 +38,9 @@ function StepButton({ label, icon, target, disabled, onPageChange }: StepButtonP
   );
 }
 
-function PageNumbers({ meta, onPageChange }: Omit<CatalogPaginationProps, 'shown'>) {
+type PageProps = Pick<CatalogPaginationProps, 'meta' | 'onPageChange'>;
+
+function PageNumbers({ meta, onPageChange }: PageProps) {
   return pageSlots(meta.page, meta.totalPages).map((slot, index) =>
     slot === 'gap' ? (
       <span key={`gap-${index}`} className={styles.gap} aria-hidden="true">
@@ -74,7 +79,7 @@ function forwardSteps({ page, totalPages }: PaginationMeta): Step[] {
   ];
 }
 
-function PageControls({ meta, onPageChange }: Omit<CatalogPaginationProps, 'shown'>) {
+function PageControls({ meta, onPageChange }: PageProps) {
   const renderStep = (step: Step) => (
     <StepButton key={step.label} {...step} onPageChange={onPageChange} />
   );
@@ -88,7 +93,7 @@ function PageControls({ meta, onPageChange }: Omit<CatalogPaginationProps, 'show
   );
 }
 
-function RangeLabel({ meta, shown }: Omit<CatalogPaginationProps, 'onPageChange'>) {
+function RangeLabel({ meta, shown }: Pick<CatalogPaginationProps, 'meta' | 'shown'>) {
   const from = shown === 0 ? 0 : (meta.page - 1) * meta.pageSize + 1;
   const to = from === 0 ? 0 : from + shown - 1;
 
@@ -103,10 +108,13 @@ function RangeLabel({ meta, shown }: Omit<CatalogPaginationProps, 'onPageChange'
   );
 }
 
-export function CatalogPagination({ meta, shown, onPageChange }: CatalogPaginationProps) {
+export function CatalogPagination({ meta, shown, onPageChange, children }: CatalogPaginationProps) {
   return (
     <nav className={styles.footer} aria-label="Paginação">
-      <RangeLabel meta={meta} shown={shown} />
+      <div className={styles.summary}>
+        <RangeLabel meta={meta} shown={shown} />
+        {children}
+      </div>
       {meta.total > 0 && <PageControls meta={meta} onPageChange={onPageChange} />}
     </nav>
   );

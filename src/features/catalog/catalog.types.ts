@@ -43,6 +43,8 @@ export interface Card {
   id: string;
   name: string;
   number: string | null;
+  code: string | null;
+  variants: string | null;
   description: string | null;
   frontImageUrl: string | null;
   backImageUrl: string | null;
@@ -84,6 +86,30 @@ export interface ListCardsParams extends SearchParams {
   albumId?: string;
   categoryId?: string;
   rarityId?: string;
+  year?: string;
+}
+
+export interface CatalogSummary {
+  albums: number;
+  licensedAlbums: number;
+  pendingAlbumRequests: number;
+  albumYears: number[];
+}
+
+export interface BulkDeleteCardsInput {
+  ids: string[];
+  reason: string;
+}
+
+export interface SkippedCard {
+  id: string;
+  name: string;
+  number: string | null;
+}
+
+export interface BulkDeleteCardsResult {
+  deleted: string[];
+  skipped: SkippedCard[];
 }
 
 export type ListCategoriesParams = SearchParams;

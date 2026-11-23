@@ -5,13 +5,13 @@ import { DeleteCatalogItemDialog } from '../DeleteCatalogItemDialog/DeleteCatalo
 
 interface CatalogDialogsProps<T> {
   dialogs: CatalogItemDialogs<T>;
-  renderForm: (item: T | undefined) => ReactNode;
+  renderForm: (item: T | undefined, source?: T) => ReactNode;
 }
 
 export function CatalogDialogs<T>({ dialogs, renderForm }: CatalogDialogsProps<T>) {
   return (
     <>
-      {dialogs.form && renderForm(dialogs.form.item)}
+      {dialogs.form && renderForm(dialogs.form.item, dialogs.form.source)}
       {dialogs.deleting && (
         <DeleteCatalogItemDialog
           item={dialogs.deleting}
