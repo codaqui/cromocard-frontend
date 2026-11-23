@@ -1,6 +1,6 @@
 import type { PeriodPreset } from '@/components/PeriodFilter/PeriodFilter';
 
-export type ReportType = 'signups' | 'catalog' | 'seller-audit';
+export type ReportType = 'signups' | 'catalog' | 'seller-audit' | 'volume';
 export type ExportFormat = 'csv' | 'pdf';
 
 export interface ReportPeriodParams {
