@@ -3,13 +3,17 @@ import { z } from '@/lib/zod';
 
 import { DEADLINE_HOURS_OPTIONS } from './seller-verifications.types';
 
+export const PENDING_NOTICE_MESSAGE_MAX_LENGTH = 500;
+
 export const sendPendingNoticeSchema = z.object({
   templateKey: z.string().trim().min(1).max(60).optional(),
   message: z
     .string()
     .trim()
     .min(1, { error: 'Escreva o corpo da mensagem' })
-    .max(2000, { error: 'A mensagem pode ter no máximo 2000 caracteres' }),
+    .max(PENDING_NOTICE_MESSAGE_MAX_LENGTH, {
+      error: `A mensagem pode ter no máximo ${PENDING_NOTICE_MESSAGE_MAX_LENGTH} caracteres`,
+    }),
   deadlineHours: z.literal(DEADLINE_HOURS_OPTIONS),
 });
 
