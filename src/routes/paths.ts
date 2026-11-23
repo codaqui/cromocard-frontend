@@ -18,6 +18,9 @@ export const paths = {
   settings: '/configuracoes',
   notifications: '/notificacoes',
   suggestions: '/sugestoes',
+  cardProfile: '/cartas/:id',
+  listingDetail: '/anuncios/:id',
+  newListing: '/anuncios/novo',
   backoffice: {
     root: '/backoffice',
     dashboard: '/backoffice/dashboard',
@@ -57,4 +60,12 @@ export function searchPathFor(term: string, scope: string): string {
 
 export function userDetailPathFor(id: string): string {
   return `${paths.backoffice.users}/${id}`;
+}
+
+export function cardProfilePathFor(id: string): string {
+  return `/cartas/${id}`;
+}
+
+export function listingDetailPathFor(id: string): string {
+  return `/anuncios/${id}`;
 }
