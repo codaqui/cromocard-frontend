@@ -46,10 +46,18 @@
 }
 
 .sortSelect {
+  min-height: var(--size-control);
   border: 0;
   background: transparent;
   color: var(--color-text);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-caption);
+}
+
+.actionColumn {
+  visibility: hidden;
+  padding: 0 var(--space-4);
+  font-size: var(--font-size-caption);
+  white-space: nowrap;
 }
 
 .sortSelect option {
@@ -177,6 +185,10 @@
 }
 
 @media (max-width: 48rem) {
+  .sortSelect {
+    font-size: var(--font-size-md);
+  }
+
   .section {
     padding: var(--space-4);
   }

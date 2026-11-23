@@ -97,6 +97,11 @@
   .top {
     grid-template-columns: minmax(0, 1fr);
   }
+
+  .top > :first-child {
+    justify-self: center;
+    width: min(100%, var(--size-dialog));
+  }
 }
 
 @media (max-width: 48rem) {

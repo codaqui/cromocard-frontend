@@ -98,6 +98,7 @@ function ListingsColumns() {
       <span>Vendedor</span>
       <span>Condição</span>
       <span>Preço</span>
+      <span className={styles.actionColumn}>Ver anúncio</span>
     </div>
   );
 }
