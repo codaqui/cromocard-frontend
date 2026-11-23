@@ -28,6 +28,7 @@ function buildUser(overrides: Partial<UserSummary> = {}): UserSummary {
     phone: null,
     lastLoginAt: null,
     lastLoginIp: null,
+    suspendedUntil: null,
     ...overrides,
   };
 }

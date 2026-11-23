@@ -17,6 +17,10 @@ const VALUE_LABELS: Record<string, string> = {
   ADMIN: 'Administrador',
   CARD: 'Carta',
   ALBUM: 'Álbum',
+  UNDER_REVIEW: 'Em análise',
+  PENDING: 'Pendente',
+  APPROVED: 'Aprovado',
+  REJECTED: 'Reprovado',
 };
 
 const ISO_DATE_TIME = /^\d{4}-\d{2}-\d{2}T/;

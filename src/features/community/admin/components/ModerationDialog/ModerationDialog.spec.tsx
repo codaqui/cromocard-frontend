@@ -42,8 +42,12 @@ const report: GroupMessageReport = {
     id: 'message-1',
     content: 'Compre agora!',
     createdAt: '2026-11-07T18:01:44Z',
+    authorId: 'author-1',
     authorName: 'Diego',
     groupName: 'Leilões Noturnos Pokémon SP',
+    authorAccountAgeDays: 10,
+    authorWarnings: 0,
+    reportersCount: 1,
   },
 };
 
@@ -127,6 +131,16 @@ describe('ModerationDialog', () => {
       });
     },
   );
+
+  it('R3: remover e advertir limita o motivo a 255 caracteres; remover só, a 500', () => {
+    renderDialog({ kind: 'report', action: 'removeAndWarn', report });
+    expect(screen.getByRole('textbox', { name: 'Motivo' })).toHaveAttribute('maxLength', '255');
+  });
+
+  it('R3: remover a mensagem sem advertir mantém o limite de 500 caracteres', () => {
+    renderDialog({ kind: 'report', action: 'removeMessage', report });
+    expect(screen.getByRole('textbox', { name: 'Motivo' })).toHaveAttribute('maxLength', '500');
+  });
 
   it('exige o motivo antes de confirmar', async () => {
     renderDialog({ kind: 'group', action: 'suspend', group });

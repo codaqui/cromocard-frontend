@@ -1,6 +1,6 @@
 import type { PeriodPreset } from '@/components/PeriodFilter/PeriodFilter';
 
-export type ReportType = 'signups' | 'catalog';
+export type ReportType = 'signups' | 'catalog' | 'seller-audit';
 export type ExportFormat = 'csv' | 'pdf';
 
 export interface ReportPeriodParams {
@@ -33,4 +33,22 @@ export interface ExportReportInput {
   format: ExportFormat;
   params: ReportPeriodParams;
   period: { from: string; to: string };
+}
+
+export interface ReportExportFilters {
+  period: PeriodPreset | null;
+  from: string;
+  to: string;
+}
+
+export interface ReportExport {
+  id: string;
+  type: ReportType;
+  format: ExportFormat;
+  fileSize: number | null;
+  filters: ReportExportFilters;
+  requestedBy: { name: string; username: string | null };
+  createdAt: string;
+  expiresAt: string;
+  expired: boolean;
 }

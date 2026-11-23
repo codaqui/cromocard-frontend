@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatCount, formatPeriodRange, monthName } from './dashboard.format';
+import {
+  formatCount,
+  formatPercent,
+  formatPeriodRange,
+  formatShare,
+  monthName,
+} from './dashboard.format';
 
 describe('dashboard.format', () => {
   it('mostra o intervalo no horário de Brasília, com o ano no fim', () => {
@@ -18,6 +24,18 @@ describe('dashboard.format', () => {
   it('formata contagens e o total de cartas ainda sem catálogo', () => {
     expect(formatCount(48920)).toBe('48.920');
     expect(formatCount(null)).toBe('—');
+  });
+
+  it('formata a conversão em porcentagem e a fatia de um total vazio como 0%', () => {
+    expect(formatPercent(0.75)).toBe('75%');
+    expect(formatShare(2, 4)).toBe('50%');
+    expect(formatShare(0, 0)).toBe('0%');
+  });
+
+  it('corta o dia pelo horário de Brasília, não pelo UTC', () => {
+    expect(formatPeriodRange('2026-11-01T02:59:59.000Z', '2026-11-01T03:00:00.000Z')).toBe(
+      '31 Out - 01 Nov, 2026',
+    );
   });
 
   it('dá o nome do mês', () => {

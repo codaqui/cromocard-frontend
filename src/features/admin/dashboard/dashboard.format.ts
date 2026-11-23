@@ -2,12 +2,12 @@ const BRASILIA_TIME_ZONE = 'America/Sao_Paulo';
 
 const numberFormatter = new Intl.NumberFormat('pt-BR');
 
-const dayMonthFormatter = new Intl.DateTimeFormat('pt-BR', {
-  day: '2-digit',
-  month: 'short',
-  year: 'numeric',
-  timeZone: BRASILIA_TIME_ZONE,
-});
+const brasiliaPart = (options: Intl.DateTimeFormatOptions) =>
+  new Intl.DateTimeFormat('pt-BR', { ...options, timeZone: BRASILIA_TIME_ZONE });
+
+const dayFormatter = brasiliaPart({ day: '2-digit' });
+const shortMonthNameFormatter = brasiliaPart({ month: 'short' });
+const yearFormatter = brasiliaPart({ year: 'numeric' });
 
 const monthNameFormatter = new Intl.DateTimeFormat('pt-BR', { month: 'long', timeZone: 'UTC' });
 
@@ -27,17 +27,25 @@ const percentFormatter = new Intl.NumberFormat('pt-BR', {
   maximumFractionDigits: 0,
 });
 
+const variationFormatter = new Intl.NumberFormat('pt-BR', {
+  maximumFractionDigits: 1,
+  signDisplay: 'exceptZero',
+});
+
+export const formatVariation = (variation: number | null) =>
+  variation === null ? 'Novo' : `${variationFormatter.format(variation)}%`;
+
+export const formatPercent = (ratio: number) => percentFormatter.format(ratio);
+
 export const formatShare = (part: number, whole: number) =>
-  percentFormatter.format(whole === 0 ? 0 : part / whole);
+  formatPercent(whole === 0 ? 0 : part / whole);
 
 function dateParts(iso: string) {
-  const parts = dayMonthFormatter.formatToParts(new Date(iso));
-  const part = (type: Intl.DateTimeFormatPartTypes) =>
-    parts.find((item) => item.type === type)?.value ?? '';
+  const date = new Date(iso);
   return {
-    day: part('day'),
-    month: capitalize(part('month').replace('.', '')),
-    year: part('year'),
+    day: dayFormatter.format(date),
+    month: capitalize(shortMonthNameFormatter.format(date).replace('.', '')),
+    year: yearFormatter.format(date),
   };
 }
 

@@ -1,10 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { PREVIEW_SIZE, reportsApi } from './reports.api';
+import { EXPORTS_PAGE_SIZE, PREVIEW_SIZE, reportsApi } from './reports.api';
 
 const http = vi.hoisted(() => ({
   getWithMeta: vi.fn(),
   getBlob: vi.fn(),
+  getPage: vi.fn(),
 }));
 
 vi.mock('@/lib/http', () => ({ api: http }));
@@ -13,6 +14,21 @@ describe('reportsApi', () => {
   beforeEach(() => {
     http.getWithMeta.mockReset();
     http.getBlob.mockReset();
+    http.getPage.mockReset();
+  });
+
+  it('CCD107: lista o histórico de exportações da página pedida', async () => {
+    await reportsApi.listExports({ page: 2, pageSize: EXPORTS_PAGE_SIZE });
+
+    expect(http.getPage).toHaveBeenCalledWith('/admin/reports/exports', { page: 2, pageSize: 10 });
+  });
+
+  it('CCD107: baixa de novo o arquivo de uma exportação', async () => {
+    await reportsApi.downloadExport('0198f0c2-7a3b-7c1d-8e2f-1a2b3c4d9482');
+
+    expect(http.getBlob).toHaveBeenCalledWith(
+      '/admin/reports/exports/0198f0c2-7a3b-7c1d-8e2f-1a2b3c4d9482/file',
+    );
   });
 
   it('CA1: busca a prévia com as primeiras linhas e junta o total do meta', async () => {

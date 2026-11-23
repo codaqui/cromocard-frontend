@@ -31,6 +31,7 @@ export const REPORT_CARDS: ReportCardInfo[] = [
   },
   {
     id: 'seller-audit',
+    type: 'seller-audit',
     title: 'Auditoria de Lojistas',
     description: 'Cadastros de vendedores por status no período.',
     columnsCount: 5,
@@ -48,6 +49,7 @@ export const REPORT_CARDS: ReportCardInfo[] = [
 export const SAMPLE_COLUMN_KEYS: Record<ReportType, string[]> = {
   signups: ['name', 'role', 'createdAt'],
   catalog: ['name', 'franchise', 'createdAt'],
+  'seller-audit': ['legalName', 'status', 'createdAt'],
 };
 
 const PRESET_LABELS: Record<PeriodPreset, string> = {
@@ -57,8 +59,12 @@ const PRESET_LABELS: Record<PeriodPreset, string> = {
   '1y': 'Último ano',
 };
 
+export function presetLabel(preset: PeriodPreset): string {
+  return PRESET_LABELS[preset];
+}
+
 export function periodLabel(period: Period, range: string): string {
-  return 'preset' in period ? PRESET_LABELS[period.preset] : range;
+  return 'preset' in period ? presetLabel(period.preset) : range;
 }
 
 export const FORMAT_LABELS: Record<ExportFormat, string> = { pdf: 'PDF', csv: 'CSV' };
@@ -67,6 +73,12 @@ export const reportsMessages = {
   empty: 'Não foram encontrados dados para os filtros selecionados.',
   exported: 'Relatório exportado',
   exportedDetail: (title: string, format: ExportFormat) =>
-    `${title} (${FORMAT_LABELS[format]}) foi baixado.`,
+    `${title} (${FORMAT_LABELS[format]}) foi baixado e está no topo do histórico.`,
+  keptInHistory: 'O arquivo fica no histórico por 90 dias.',
+  historyEmpty:
+    'Ainda não há relatórios exportados. Os relatórios que a equipe exportar aparecem aqui por 90 dias.',
+  expiredTitle: 'Este arquivo expirou',
+  expiredDetail: (code: string, report: string) =>
+    `O relatório ${code} (${report}) passou dos 90 dias e foi apagado. Você pode gerar de novo com os mesmos filtros.`,
   comingSoon: 'Em breve',
 };

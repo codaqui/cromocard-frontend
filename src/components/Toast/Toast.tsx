@@ -5,7 +5,7 @@ import { cn } from '@/utils/cn';
 
 import styles from './Toast.module.css';
 
-type ToastTone = 'success' | 'danger';
+type ToastTone = 'success' | 'danger' | 'warning';
 
 type ToastPlacement = 'top' | 'bottom';
 
@@ -16,25 +16,33 @@ interface ToastProps {
   tone?: ToastTone;
   /** `top`: no alto, à direita, abaixo da barra, como no frame 832-1149. */
   placement?: ToastPlacement;
+  tinted?: boolean;
   durationMs?: number;
   onDismiss: () => void;
 }
 
 const DEFAULT_DURATION_MS = 5000;
 
-const toneIcon = { success: 'check', danger: 'errorCircle' } as const;
+const toneIcon = { success: 'check', danger: 'errorCircle', warning: 'infoOutline' } as const;
 
 interface ToastMessageProps {
   message: string;
   detail?: string;
-  tone: ToastTone;
+  tone?: ToastTone;
+  tinted?: boolean;
   onDismiss: () => void;
 }
 
 /** Com a segunda linha, o aviso vira o cartão do Figma: ícone, borda na cor do tom e título claro. */
-function ToastMessage({ message, detail, tone, onDismiss }: ToastMessageProps) {
+function ToastMessage({
+  message,
+  detail,
+  tone = 'success',
+  tinted = false,
+  onDismiss,
+}: ToastMessageProps) {
   return (
-    <div className={cn(styles.toast, styles[tone], detail && styles.card)}>
+    <div className={cn(styles.toast, styles[tone], detail && styles.card, tinted && styles.tinted)}>
       {detail && (
         <span className={styles.icon} aria-hidden="true">
           <Icon name={toneIcon[tone]} size={20} />
@@ -53,11 +61,10 @@ function ToastMessage({ message, detail, tone, onDismiss }: ToastMessageProps) {
 
 export function Toast({
   message,
-  detail,
-  tone = 'success',
   placement = 'bottom',
   durationMs = DEFAULT_DURATION_MS,
   onDismiss,
+  ...look
 }: ToastProps) {
   const dismiss = useEffectEvent(onDismiss);
 
@@ -70,11 +77,9 @@ export function Toast({
   return (
     <div
       className={cn(styles.region, styles[placement])}
-      role={tone === 'danger' ? 'alert' : 'status'}
+      role={look.tone === 'danger' ? 'alert' : 'status'}
     >
-      {message && (
-        <ToastMessage message={message} detail={detail} tone={tone} onDismiss={onDismiss} />
-      )}
+      {message && <ToastMessage message={message} {...look} onDismiss={onDismiss} />}
     </div>
   );
 }

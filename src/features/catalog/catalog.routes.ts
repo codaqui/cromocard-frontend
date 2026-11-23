@@ -20,3 +20,14 @@ export const catalogRoutes: RouteObject[] = [
   underConstructionRoute({ path: paths.search, title: 'Pesquisar', story: 'CCD002' }),
   underConstructionRoute({ path: paths.categories, title: 'Categorias', story: 'CCD027' }),
 ];
+
+export const catalogCustomerRoutes: RouteObject[] = [
+  {
+    path: paths.suggestions,
+    lazy: async () => ({
+      Component: (
+        await import('./requests/pages/CommunitySuggestionsPage/CommunitySuggestionsPage')
+      ).CommunitySuggestionsPage,
+    }),
+  },
+];

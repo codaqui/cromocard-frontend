@@ -49,6 +49,7 @@ function buildUser(overrides: Partial<UserSummary> = {}): UserSummary {
     phone: null,
     lastLoginAt: null,
     lastLoginIp: null,
+    suspendedUntil: null,
     ...overrides,
   };
 }
@@ -57,6 +58,7 @@ function buildDetail(overrides: Partial<UserDetail> = {}): UserDetail {
   return {
     ...buildUser(),
     cpf: null,
+    warningsCount: 0,
     oauthProvider: null,
     activationPending: false,
     addresses: [],

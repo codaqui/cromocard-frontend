@@ -1,15 +1,10 @@
 import { api } from '@/lib/http';
 
-import type {
-  DashboardPeriodParams,
-  DashboardSummary,
-  RecentSeller,
-  RecentSellersParams,
-} from './dashboard.types';
+import type { DashboardPeriodParams, DashboardSummary, SignupsEvolution } from './dashboard.types';
 
 export const dashboardApi = {
   getSummary: (params: DashboardPeriodParams) =>
     api.get<DashboardSummary>('/admin/dashboard', params),
-  listRecentSellers: (params: RecentSellersParams) =>
-    api.getPage<RecentSeller>('/admin/dashboard/recent-sellers', params),
+  getSignupsEvolution: (params: DashboardPeriodParams) =>
+    api.get<SignupsEvolution>('/admin/dashboard/signups-evolution', params),
 };
