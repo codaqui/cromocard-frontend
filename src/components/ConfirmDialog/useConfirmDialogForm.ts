@@ -7,6 +7,7 @@ import { z } from '@/lib/zod';
 
 interface ConfirmDialogFormOptions {
   requireReason: boolean;
+  reasonRequiredMessage?: string;
   reasonMaxLength?: number;
   confirmationText?: string;
   onConfirm: (reason?: string) => void;
@@ -20,13 +21,20 @@ function matches(expected: string) {
   });
 }
 
+function requiredReason(maxLength: number, blankMessage?: string) {
+  const reason = reasonSchemaUpTo(maxLength);
+  if (!blankMessage) return reason;
+  return z.string().trim().min(1, { error: blankMessage }).pipe(reason);
+}
+
 function buildSchema({
   requireReason,
+  reasonRequiredMessage,
   reasonMaxLength = REASON_MAX_LENGTH,
   confirmationText,
 }: ConfirmDialogFormOptions) {
   return z.object({
-    reason: requireReason ? reasonSchemaUpTo(reasonMaxLength) : optionalText,
+    reason: requireReason ? requiredReason(reasonMaxLength, reasonRequiredMessage) : optionalText,
     confirmation: confirmationText ? matches(confirmationText) : optionalText,
   });
 }

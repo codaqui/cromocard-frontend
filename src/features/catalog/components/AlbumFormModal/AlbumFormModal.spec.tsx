@@ -7,7 +7,7 @@ import { renderWithProviders } from '@/test/renderWithProviders';
 
 import { catalogApi } from '../../catalog.api';
 import type { Album } from '../../catalog.types';
-import { album, albumCategory, cardCategory, categoriesByType } from '../../test/catalogFixtures';
+import { album, albumCategory, cardCategory, listedCategories } from '../../test/catalogFixtures';
 import { AlbumFormModal } from './AlbumFormModal';
 
 vi.mock('../../catalog.api', () => ({
@@ -42,11 +42,11 @@ describe('AlbumFormModal', () => {
   beforeEach(() => {
     vi.mocked(catalogApi.createAlbum).mockReset().mockResolvedValue(album);
     vi.mocked(catalogApi.updateAlbum).mockReset().mockResolvedValue(album);
-    vi.mocked(catalogApi.listCategories).mockImplementation(categoriesByType);
+    vi.mocked(catalogApi.listCategories).mockImplementation(listedCategories);
     onSaved.mockReset();
   });
 
-  it('R5: cadastra o álbum com o ano como número e só oferece categorias de álbum', async () => {
+  it('R5, L11: cadastra o álbum com o ano como número e oferece todas as franquias', async () => {
     renderModal();
     expect(screen.getByRole('dialog', { name: 'Novo álbum' })).toBeInTheDocument();
     expect(
@@ -56,9 +56,7 @@ describe('AlbumFormModal', () => {
     await userEvent.type(screen.getByLabelText('Ano'), '2030');
     const categorySelect = screen.getByLabelText('Franquia');
     await screen.findByRole('option', { name: albumCategory.name });
-    expect(
-      within(categorySelect).queryByRole('option', { name: cardCategory.name }),
-    ).not.toBeInTheDocument();
+    expect(within(categorySelect).getByRole('option', { name: cardCategory.name })).toBeVisible();
     await userEvent.selectOptions(categorySelect, albumCategory.id);
     await saveAndConfirm();
 

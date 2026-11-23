@@ -5,6 +5,7 @@ import { ExportConfirmDialog } from '../../components/ExportConfirmDialog/Export
 import { ReportPreviewPanel } from '../../components/ReportPreviewPanel/ReportPreviewPanel';
 import { ReportsHistory } from '../../components/ReportsHistory/ReportsHistory';
 import { ReportTypeGrid } from '../../components/ReportTypeGrid/ReportTypeGrid';
+import { useReportsHistory } from '../../hooks/useReportsHistory';
 import { type ExportFlow, useReportsPage } from '../../hooks/useReportsPage';
 import { reportsMessages } from '../../reports.labels';
 import type { ReportPreview } from '../../reports.types';
@@ -52,6 +53,7 @@ function ExportFeedback({ flow, preview, period }: ExportFeedbackProps) {
 
 export function ReportsPage() {
   const { type, setType, period, setPeriod, preview, exportFlow } = useReportsPage();
+  const history = useReportsHistory(exportFlow);
 
   return (
     <div className={styles.page}>
@@ -65,7 +67,7 @@ export function ReportsPage() {
           onExport={exportFlow.request}
         />
       </div>
-      <ReportsHistory />
+      <ReportsHistory history={history} flow={exportFlow} />
       <ExportFeedback flow={exportFlow} preview={preview.data} period={period} />
     </div>
   );

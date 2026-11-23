@@ -1,1 +1,1 @@
-export { notificationsBackofficeRoutes, notificationsRoutes } from './notifications.routes';
+export { notificationsRoutes } from './notifications.routes';

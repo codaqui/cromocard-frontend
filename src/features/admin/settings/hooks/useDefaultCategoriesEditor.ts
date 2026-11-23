@@ -8,11 +8,11 @@ import { moveCategory, pinnedFirst, togglePinned } from '../settings.order';
 import type { CategoryOption, DefaultCategory } from '../settings.types';
 
 function draftOf(
-  { id, name, type, slug, badge, cardsCount }: CategoryOption,
+  { id, name, slug, badge, cardsCount }: CategoryOption,
   position: number,
 ): DefaultCategory {
   const emptyBack = { backImageUrl: null, isPinned: false, displayOrder: position };
-  return { id, name, type, slug, badge, cardsCount, ...emptyBack };
+  return { id, name, slug, badge, cardsCount, ...emptyBack };
 }
 
 export function useDefaultCategoriesDraft(loaded: DefaultCategory[]) {
