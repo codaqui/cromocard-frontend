@@ -84,6 +84,7 @@ function ListPage<T>({ page, table, onPageChange, footer }: ListPageProps<T>) {
         columns={table.columns}
         rows={rows}
         getRowKey={(row) => row.id}
+        pinLastColumn
       />
       <CatalogPagination meta={meta} shown={rows.length} onPageChange={onPageChange}>
         {footer}
