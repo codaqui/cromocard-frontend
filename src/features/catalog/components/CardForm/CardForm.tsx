@@ -137,7 +137,7 @@ function AlbumField({ form, card }: { form: CardFormState; card?: Card }) {
         placeholder="Sem álbum (carta avulsa)"
         options={useAlbumOptions(optionOfAlbum(card?.album))}
         error={form.errors.albumId?.message}
-        {...form.registerAlbum()}
+        {...form.albumField}
       />
     </WideRow>
   );

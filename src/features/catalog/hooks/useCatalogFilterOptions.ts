@@ -1,7 +1,7 @@
 import type { SelectOption } from '@/components/Select/Select';
 
 import { useAlbumsList, useCategoriesList, useLanguages, useRarities } from '../catalog.queries';
-import type { AlbumReference, CardAlbum, CatalogReference, Category } from '../catalog.types';
+import type { AlbumReference, Card, CardAlbum, CatalogReference, Category } from '../catalog.types';
 
 const OPTIONS_PAGE = { page: 1, pageSize: 100 };
 
@@ -54,10 +54,17 @@ export function useParentCategoryOptions(category?: Category): SelectOption[] {
   return withCurrentOption(options, optionOfReference(category?.parentCategory));
 }
 
-/** Franquia do álbum escolhido, que a carta passa a ter (L11). */
-export function useAlbumCategoryOf(): (albumId: string) => string | null {
+/**
+ * Franquia do álbum escolhido, que a carta passa a ter (L11). O select só oferece os álbuns da
+ * primeira página e o da própria carta (L9); o da carta já tem a franquia dele na carta.
+ */
+export function useAlbumCategoryOf(card?: Card): (albumId: string) => string | null {
   const { data } = useAlbumsList(OPTIONS_PAGE);
-  return (albumId) => data?.data.find(({ id }) => id === albumId)?.categoryId ?? null;
+  return (albumId) => {
+    const listed = data?.data.find(({ id }) => id === albumId);
+    if (listed) return listed.categoryId;
+    return card?.albumId === albumId ? card.categoryId : null;
+  };
 }
 
 /** `current` mantém a raridade da carta na lista enquanto as opções carregam, como no álbum. */

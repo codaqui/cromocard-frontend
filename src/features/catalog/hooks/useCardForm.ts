@@ -2,9 +2,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { type ChangeEvent, type FormEvent, useEffect } from 'react';
 import {
   type UseFormGetValues,
-  type UseFormRegister,
   type UseFormSetError,
-  type UseFormSetValue,
+  type UseFormReturn,
   useForm,
   useWatch,
 } from 'react-hook-form';
@@ -69,16 +68,19 @@ function useNumberTakenError(
 }
 
 /** Escolher o álbum preenche a franquia dele, que a carta precisa ter (L11). */
-function useAlbumRegistration(
-  register: UseFormRegister<CardFormValues>,
-  setValue: UseFormSetValue<CardFormValues>,
+function useAlbumField(
+  {
+    register,
+    setValue,
+  }: Pick<UseFormReturn<CardFormValues, unknown, CardInput>, 'register' | 'setValue'>,
+  card?: Card,
 ) {
-  const categoryOfAlbum = useAlbumCategoryOf();
+  const categoryOfAlbum = useAlbumCategoryOf(card);
   const fillAlbumCategory = (event: ChangeEvent<HTMLSelectElement>) => {
     const categoryId = categoryOfAlbum(event.target.value);
     if (categoryId) setValue('categoryId', categoryId, { shouldValidate: true });
   };
-  return () => register('albumId', { onChange: fillAlbumCategory });
+  return register('albumId', { onChange: fillAlbumCategory });
 }
 
 export function useCardForm({
@@ -96,15 +98,17 @@ export function useCardForm({
   const apiFormError = useApiFieldErrors(apiError, cardFields, setError);
   const isNumberTaken = useNumberTakenError(apiError, setError, getValues);
   useReportInvalid(formState.errors, onInvalidChange);
-  const registerAlbum = useAlbumRegistration(register, setValue);
+  const albumField = useAlbumField({ register, setValue }, card);
+  const albumId = useWatch({ control, name: 'albumId' });
+  const submit = (event: FormEvent) => void handleSubmit(onSubmit)(event);
 
   return {
     register,
-    registerAlbum,
+    albumField,
     control,
-    albumId: useWatch({ control, name: 'albumId' }),
+    albumId,
     errors: formState.errors,
     formError: isNumberTaken ? undefined : apiFormError,
-    submit: (event: FormEvent) => void handleSubmit(onSubmit)(event),
+    submit,
   };
 }
