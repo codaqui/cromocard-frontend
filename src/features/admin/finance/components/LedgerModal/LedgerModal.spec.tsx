@@ -86,6 +86,26 @@ describe('LedgerModal', () => {
     expect(financeApi.getLedger).toHaveBeenLastCalledWith({ page: 2 });
   });
 
+  it('usa o singular com uma movimentação só', async () => {
+    vi.mocked(financeApi.getLedger).mockResolvedValue({
+      data: [entries[0]!],
+      meta: { ...meta, total: 1, totalPages: 1 },
+    });
+    renderModal();
+
+    const dialog = await screen.findByRole('dialog', { name: 'Livro Razão de Hoje' });
+    expect(
+      await within(dialog).findByText('Mostrando 1 de 1 movimentação de hoje'),
+    ).toBeInTheDocument();
+  });
+
+  it('mostra o erro da API', async () => {
+    vi.mocked(financeApi.getLedger).mockRejectedValue(new Error('Livro razão indisponível'));
+    renderModal();
+
+    expect(await screen.findByText('Livro razão indisponível')).toBeInTheDocument();
+  });
+
   it('fecha pelo botão Fechar', async () => {
     const onClose = renderModal();
     await screen.findByRole('row', { name: /lucas\.tcg/ });
