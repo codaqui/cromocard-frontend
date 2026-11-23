@@ -72,7 +72,8 @@ function useAlbumField(
   {
     register,
     setValue,
-  }: Pick<UseFormReturn<CardFormValues, unknown, CardInput>, 'register' | 'setValue'>,
+    control,
+  }: Pick<UseFormReturn<CardFormValues, unknown, CardInput>, 'register' | 'setValue' | 'control'>,
   card?: Card,
 ) {
   const categoryOfAlbum = useAlbumCategoryOf(card);
@@ -80,7 +81,9 @@ function useAlbumField(
     const categoryId = categoryOfAlbum(event.target.value);
     if (categoryId) setValue('categoryId', categoryId, { shouldValidate: true });
   };
-  return register('albumId', { onChange: fillAlbumCategory });
+  const albumField = register('albumId', { onChange: fillAlbumCategory });
+  const albumId = useWatch({ control, name: 'albumId' });
+  return { albumField, albumId };
 }
 
 export function useCardForm({
@@ -98,15 +101,13 @@ export function useCardForm({
   const apiFormError = useApiFieldErrors(apiError, cardFields, setError);
   const isNumberTaken = useNumberTakenError(apiError, setError, getValues);
   useReportInvalid(formState.errors, onInvalidChange);
-  const albumField = useAlbumField({ register, setValue }, card);
-  const albumId = useWatch({ control, name: 'albumId' });
+  const album = useAlbumField({ register, setValue, control }, card);
   const submit = (event: FormEvent) => void handleSubmit(onSubmit)(event);
 
   return {
     register,
-    albumField,
+    ...album,
     control,
-    albumId,
     errors: formState.errors,
     formError: isNumberTaken ? undefined : apiFormError,
     submit,
