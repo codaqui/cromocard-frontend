@@ -15,7 +15,7 @@ vi.mock('../../dashboard.api', () => ({
 }));
 
 vi.mock('@/features/admin/finance/finance.api', () => ({
-  financeApi: { getSummary: vi.fn(), getLedger: vi.fn() },
+  financeApi: { getSummary: vi.fn(), getLedger: vi.fn(), getSellerStats: vi.fn() },
 }));
 
 vi.mock('@/features/admin/seller-verifications/seller-verifications.api', () => ({
@@ -107,6 +107,11 @@ describe('DashboardPage', () => {
     vi.mocked(dashboardApi.getSummary).mockReset().mockResolvedValue(summary);
     vi.mocked(dashboardApi.getSignupsEvolution).mockReset().mockResolvedValue(evolution);
     vi.mocked(financeApi.getSummary).mockReset().mockResolvedValue(financeSummary);
+    vi.mocked(financeApi.getSellerStats)
+      .mockReset()
+      .mockResolvedValue([
+        { id: 'seller-1', listedVolumeCents: 0, activeListings: 0, rating: 4, reviews: 2 },
+      ]);
     vi.mocked(sellerVerificationsApi.list).mockReset().mockResolvedValue(sellerVerificationsPage);
     vi.mocked(sellerVerificationsApi.getSummary)
       .mockReset()
@@ -223,6 +228,17 @@ describe('DashboardPage', () => {
 
     expect(financeApi.getSummary).toHaveBeenLastCalledWith({ period: 'today' });
     expect(await screen.findByText('Liquidado hoje')).toBeInTheDocument();
+  });
+
+  it('CCD097 CA5: mostra a reputação e o volume anunciado de cada vendedor', async () => {
+    renderPage();
+
+    const row = await screen.findByRole('row', { name: /Fábio TCG Store/ });
+    expect(await within(row).findByLabelText('Nota 4 de 5, 2 avaliações')).toBeInTheDocument();
+    expect(row).toHaveTextContent('Nenhum anúncio ativo');
+    expect(financeApi.getSellerStats).toHaveBeenCalledWith(['seller-1']);
+    expect(screen.getByRole('columnheader', { name: 'Reputação' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Volume anunciado' })).toBeInTheDocument();
   });
 
   it('CA2: recalcula o dashboard ao escolher 7 dias', async () => {

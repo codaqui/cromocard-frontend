@@ -3,6 +3,11 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { financeApi } from './finance.api';
 import type { FinancePeriodParams, LedgerParams } from './finance.types';
 
+export type StatsById<T> = Record<string, T | undefined>;
+
+const indexById = <T extends { id: string }>(items: T[]): StatsById<T> =>
+  Object.fromEntries(items.map((item) => [item.id, item]));
+
 export const financeKeys = {
   all: ['admin', 'finance'] as const,
   summary: (params: FinancePeriodParams) => [...financeKeys.all, 'summary', params] as const,
@@ -33,6 +38,7 @@ export function useSellerFinanceStats(ids: string[]) {
     queryKey: financeKeys.stats('sellers', ids),
     queryFn: () => financeApi.getSellerStats(ids),
     enabled: ids.length > 0,
+    select: indexById,
   });
 }
 
@@ -41,6 +47,7 @@ export function useCardFinanceStats(ids: string[]) {
     queryKey: financeKeys.stats('cards', ids),
     queryFn: () => financeApi.getCardStats(ids),
     enabled: ids.length > 0,
+    select: indexById,
   });
 }
 
@@ -49,5 +56,6 @@ export function useGroupFinanceStats(ids: string[]) {
     queryKey: financeKeys.stats('groups', ids),
     queryFn: () => financeApi.getGroupStats(ids),
     enabled: ids.length > 0,
+    select: indexById,
   });
 }

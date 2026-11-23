@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { type ReactNode, useId } from 'react';
 import { Link } from 'react-router';
 
 import { Badge } from '@/components/Badge/Badge';
@@ -30,6 +30,20 @@ interface SellerRegistrationsTableProps {
   onStatusFilterChange: (status: SellerVerificationStatus | 'ALL') => void;
   onValidate: (item: SellerVerificationListItem) => void;
   onRefresh: () => void;
+  extraColumns?: SellerExtraColumn[];
+}
+
+export interface SellerExtraColumn {
+  key: string;
+  header: string;
+  render: (item: SellerVerificationListItem) => ReactNode;
+}
+
+type OnValidate = (item: SellerVerificationListItem) => void;
+
+interface RowsProps {
+  onValidate: OnValidate;
+  extraColumns: SellerExtraColumn[];
 }
 
 const initials = (name: string) =>
@@ -85,16 +99,17 @@ function RowActions({
 function SellerRow({
   item,
   onValidate,
-}: {
-  item: SellerVerificationListItem;
-  onValidate: (item: SellerVerificationListItem) => void;
-}) {
+  extraColumns,
+}: RowsProps & { item: SellerVerificationListItem }) {
   return (
     <tr>
       <td>
         <SellerIdentity item={item} />
       </td>
       <td className={styles.cnpj}>{item.cnpj}</td>
+      {extraColumns.map((column) => (
+        <td key={column.key}>{column.render(item)}</td>
+      ))}
       <td>
         <StatusBadge status={item.status} />
       </td>
@@ -173,12 +188,17 @@ function Toolbar({
   );
 }
 
-function RegistrationsHead() {
+function RegistrationsHead({ extraColumns }: Pick<RowsProps, 'extraColumns'>) {
   return (
     <thead>
       <tr>
         <th scope="col">Vendedor / Loja</th>
         <th scope="col">CNPJ</th>
+        {extraColumns.map((column) => (
+          <th key={column.key} scope="col">
+            {column.header}
+          </th>
+        ))}
         <th scope="col">Status da análise</th>
         <th scope="col">Cadastro</th>
         <th scope="col" className={styles.actionsCell}>
@@ -191,22 +211,19 @@ function RegistrationsHead() {
 
 function RegistrationsBody({
   items,
-  onValidate,
-}: {
-  items: SellerVerificationListItem[];
-  onValidate: (item: SellerVerificationListItem) => void;
-}) {
+  ...rows
+}: RowsProps & { items: SellerVerificationListItem[] }) {
   return (
     <tbody>
       {items.length === 0 && (
         <tr>
-          <td colSpan={5} className={styles.empty}>
+          <td colSpan={5 + rows.extraColumns.length} className={styles.empty}>
             {EMPTY_MESSAGE}
           </td>
         </tr>
       )}
       {items.map((item) => (
-        <SellerRow key={item.id} item={item} onValidate={onValidate} />
+        <SellerRow key={item.id} item={item} {...rows} />
       ))}
     </tbody>
   );
@@ -215,16 +232,12 @@ function RegistrationsBody({
 function RegistrationsTable({
   titleId,
   items,
-  onValidate,
-}: {
-  titleId: string;
-  items: SellerVerificationListItem[];
-  onValidate: (item: SellerVerificationListItem) => void;
-}) {
+  ...rows
+}: RowsProps & { titleId: string; items: SellerVerificationListItem[] }) {
   return (
     <table className={styles.table} aria-labelledby={titleId}>
-      <RegistrationsHead />
-      <RegistrationsBody items={items} onValidate={onValidate} />
+      <RegistrationsHead extraColumns={rows.extraColumns} />
+      <RegistrationsBody items={items} {...rows} />
     </table>
   );
 }
@@ -239,12 +252,24 @@ function ShowingCount({ shown, total }: { shown: number; total: number }) {
 
 type CardBodyProps = SellerRegistrationsTableProps & { titleId: string };
 
-function CardBody({ titleId, items, meta, onValidate, ...toolbar }: CardBodyProps) {
+function CardBody({
+  titleId,
+  items,
+  meta,
+  onValidate,
+  extraColumns = [],
+  ...toolbar
+}: CardBodyProps) {
   return (
     <>
       <Toolbar titleId={titleId} {...toolbar} />
       <div className={styles.scroll}>
-        <RegistrationsTable titleId={titleId} items={items} onValidate={onValidate} />
+        <RegistrationsTable
+          titleId={titleId}
+          items={items}
+          onValidate={onValidate}
+          extraColumns={extraColumns}
+        />
       </div>
       <ShowingCount shown={items.length} total={meta.total} />
     </>

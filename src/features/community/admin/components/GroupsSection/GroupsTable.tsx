@@ -1,5 +1,6 @@
 import { Icon } from '@/components/Icon/Icon';
 import type { IconName } from '@/components/Icon/icon-paths';
+import { GroupVolumeCell, type GroupFinanceStats, type StatsById } from '@/features/admin';
 import { cn } from '@/utils/cn';
 
 import { formatGroupCode, formatMembers } from '../../community-admin.format';
@@ -14,11 +15,13 @@ import styles from './GroupsSection.module.css';
 interface GroupsTableProps {
   groups: AdminGroupSummary[];
   onAction: OnCommunityAction;
+  financeStats?: StatsById<GroupFinanceStats>;
 }
 
 interface GroupRowProps {
   group: AdminGroupSummary;
   onAction: OnCommunityAction;
+  stats?: GroupFinanceStats;
 }
 
 function GroupIdentity({ group }: { group: AdminGroupSummary }) {
@@ -103,7 +106,7 @@ function GroupActions({ group, onAction }: GroupRowProps) {
   );
 }
 
-function GroupRow({ group, onAction }: GroupRowProps) {
+function GroupRow({ group, onAction, stats }: GroupRowProps) {
   return (
     <tr className={cn(groupStatusLooks[group.status].dimmed && styles.suspendedRow)}>
       <td>
@@ -111,6 +114,9 @@ function GroupRow({ group, onAction }: GroupRowProps) {
       </td>
       <td>
         <GroupMembers group={group} />
+      </td>
+      <td>
+        <GroupVolumeCell stats={stats} />
       </td>
       <td className={styles.centered}>
         <GroupStatusBadge group={group} />
@@ -128,6 +134,7 @@ function GroupsTableHead() {
       <tr>
         <th scope="col">Grupo</th>
         <th scope="col">Membros / Líder</th>
+        <th scope="col">Volume custodiado</th>
         <th scope="col" className={styles.centered}>
           Status Operacional
         </th>
@@ -139,7 +146,7 @@ function GroupsTableHead() {
   );
 }
 
-export function GroupsTable({ groups, onAction }: GroupsTableProps) {
+export function GroupsTable({ groups, onAction, financeStats }: GroupsTableProps) {
   return (
     <div className={styles.tableWrapper}>
       <table className={styles.table}>
@@ -147,7 +154,12 @@ export function GroupsTable({ groups, onAction }: GroupsTableProps) {
         <GroupsTableHead />
         <tbody>
           {groups.map((group) => (
-            <GroupRow key={group.id} group={group} onAction={onAction} />
+            <GroupRow
+              key={group.id}
+              group={group}
+              onAction={onAction}
+              stats={financeStats?.[group.id]}
+            />
           ))}
         </tbody>
       </table>

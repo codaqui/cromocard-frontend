@@ -1,5 +1,12 @@
 import type { DataTableColumn } from '@/components/DataTable/DataTable';
 import type { SelectOption } from '@/components/Select/Select';
+import {
+  AveragePriceCell,
+  type CardFinanceStats,
+  PopulationCell,
+  type StatsById,
+  useCardFinanceStats,
+} from '@/features/admin';
 
 import { filtersStateOf, listSummary, selectChips } from '../../catalog.filter-chips';
 import { formatEdition } from '../../catalog.format';
@@ -103,18 +110,39 @@ const statusSelect: CatalogFilterSelectConfig<'status'> = {
 
 const noop = () => undefined;
 
+function financeColumns(stats: StatsById<CardFinanceStats> = {}): CatalogTable<Card>['columns'] {
+  return [
+    {
+      key: 'population',
+      header: 'População',
+      render: (card) => <PopulationCell stats={stats[card.id]} />,
+    },
+    {
+      key: 'averagePrice',
+      header: 'Preço médio',
+      render: (card) => <AveragePriceCell stats={stats[card.id]} />,
+    },
+  ];
+}
+
 interface CardsTableSource {
   dialogs: CatalogItemDialogs<Card>;
   selection: CardSelection;
   rows: Card[];
+  stats?: StatsById<CardFinanceStats>;
 }
 
-function cardsTableOf({ dialogs, selection, rows }: CardsTableSource): CatalogTable<Card> {
+function cardsTableOf({ dialogs, selection, rows, stats }: CardsTableSource): CatalogTable<Card> {
   const actions = catalogActionsColumn<Card>('card', (card) => card.name, dialogs);
   return {
     caption: 'Cartas do catálogo',
     emptyTitle: 'Nenhuma carta encontrada',
-    columns: [cardSelectionColumn(selection, rows), ...cardColumns, actions],
+    columns: [
+      cardSelectionColumn(selection, rows),
+      ...cardColumns,
+      ...financeColumns(stats),
+      actions,
+    ],
   };
 }
 
@@ -224,6 +252,7 @@ export function CardsTab({ pageSize, notify }: CatalogTabProps) {
   const selection = useCardSelection();
   const bulk = useBulkDeletion(selection, notify);
   const rows = cardsQuery.data?.data ?? [];
+  const stats = useCardFinanceStats(rows.map(({ id }) => id));
 
   return (
     <div className={styles.tab}>
@@ -232,7 +261,7 @@ export function CardsTab({ pageSize, notify }: CatalogTabProps) {
       <CardFilters list={list} summary={listSummary(cardsQuery.data?.meta.total, cardsFound)} />
       <CatalogListResult
         query={cardsQuery}
-        table={cardsTableOf({ dialogs, selection, rows })}
+        table={cardsTableOf({ dialogs, selection, rows, stats: stats.data })}
         onPageChange={list.changePage}
         footer={selectionBarOf(bulk, selection)}
       />
