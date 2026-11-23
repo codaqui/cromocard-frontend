@@ -1,6 +1,22 @@
 import { reasonSchema } from '@/lib/reason';
 import { z } from '@/lib/zod';
 
+import { DEADLINE_HOURS_OPTIONS } from './seller-verifications.types';
+
+export const PENDING_NOTICE_MESSAGE_MAX_LENGTH = 500;
+
+export const sendPendingNoticeSchema = z.object({
+  templateKey: z.string().trim().min(1).max(60).optional(),
+  message: z
+    .string()
+    .trim()
+    .min(1, { error: 'Escreva o corpo da mensagem' })
+    .max(PENDING_NOTICE_MESSAGE_MAX_LENGTH, {
+      error: `A mensagem pode ter no máximo ${PENDING_NOTICE_MESSAGE_MAX_LENGTH} caracteres`,
+    }),
+  deadlineHours: z.literal(DEADLINE_HOURS_OPTIONS),
+});
+
 export const approveSchema = z.object({
   reason: reasonSchema.optional(),
 });
@@ -20,3 +36,4 @@ export const addNoteSchema = z.object({
 export type ApproveInput = z.infer<typeof approveSchema>;
 export type RejectInput = z.infer<typeof rejectSchema>;
 export type AddNoteInput = z.infer<typeof addNoteSchema>;
+export type SendPendingNoticeInput = z.infer<typeof sendPendingNoticeSchema>;

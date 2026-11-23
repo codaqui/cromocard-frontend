@@ -9,7 +9,12 @@ import {
 import { usersKeys } from '@/features/users';
 
 import { sellerVerificationsApi } from './seller-verifications.api';
-import type { AddNoteInput, ApproveInput, RejectInput } from './seller-verifications.schemas';
+import type {
+  AddNoteInput,
+  ApproveInput,
+  RejectInput,
+  SendPendingNoticeInput,
+} from './seller-verifications.schemas';
 import type {
   ListSellerVerificationsParams,
   SellerVerificationPeriodParams,
@@ -22,6 +27,7 @@ export const sellerVerificationsKeys = {
   summary: (params: SellerVerificationPeriodParams) =>
     [...sellerVerificationsKeys.all, 'summary', params] as const,
   detail: (id: string) => [...sellerVerificationsKeys.all, 'detail', id] as const,
+  pendingTemplates: () => [...sellerVerificationsKeys.all, 'pending-templates'] as const,
 };
 
 function invalidateSellerVerifications(queryClient: QueryClient) {
@@ -93,5 +99,22 @@ export function useRejectSellerVerification() {
     mutationFn: ({ id, input }: { id: string; input: RejectInput }) =>
       sellerVerificationsApi.reject(id, input),
     onSuccess: () => invalidateAfterDecision(queryClient),
+  });
+}
+
+export function usePendingTemplates() {
+  return useQuery({
+    queryKey: sellerVerificationsKeys.pendingTemplates(),
+    queryFn: sellerVerificationsApi.getPendingTemplates,
+  });
+}
+
+export function useSendPendingNotice() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: SendPendingNoticeInput }) =>
+      sellerVerificationsApi.sendPendingNotice(id, input),
+    onSuccess: () => invalidateSellerVerifications(queryClient),
   });
 }
