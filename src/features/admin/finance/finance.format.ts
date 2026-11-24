@@ -61,7 +61,3 @@ export const activeNegotiationsLabel = (count: number) =>
   plural(count, 'negociação ativa', 'negociações ativas');
 
 export const formatPopulation = (units: number) => `${formatCount(units)} un.`;
-
-const ratingFormatter = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 });
-
-export const formatRating = (rating: number | null) => ratingFormatter.format(rating ?? 0);

@@ -45,8 +45,6 @@ export interface SellerFinanceStats {
   id: string;
   listedVolumeCents: number;
   activeListings: number;
-  rating: number | null;
-  reviews: number;
 }
 
 export interface CardFinanceStats {

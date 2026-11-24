@@ -5,43 +5,12 @@ import {
   activeNegotiationsLabel,
   formatCurrency,
   formatPopulation,
-  formatRating,
   formatWholeCurrency,
 } from '../../finance.format';
 import type { CardFinanceStats, GroupFinanceStats, SellerFinanceStats } from '../../finance.types';
 import styles from './FinanceCells.module.css';
 
-const STARS = 5;
 const NO_DATA = '—';
-
-function Stars({ rating }: { rating: number }) {
-  const filled = Math.round(rating);
-
-  return (
-    <span className={styles.stars} aria-hidden="true">
-      {Array.from({ length: STARS }, (_, index) => (
-        <span key={index} className={cn(index < filled && styles.filled)}>
-          {index < filled ? '★' : '☆'}
-        </span>
-      ))}
-    </span>
-  );
-}
-
-export function ReputationCell({ stats }: { stats?: SellerFinanceStats }) {
-  if (!stats) return <span className={styles.muted}>{NO_DATA}</span>;
-  const rating = formatRating(stats.rating);
-
-  return (
-    <span
-      className={styles.reputation}
-      aria-label={`Nota ${rating} de ${STARS}, ${stats.reviews} avaliações`}
-    >
-      <Stars rating={stats.rating ?? 0} />
-      <span className={styles.rating}>{rating}</span>
-    </span>
-  );
-}
 
 export function ListedVolumeCell({ stats }: { stats?: SellerFinanceStats }) {
   if (!stats) return <span className={styles.muted}>{NO_DATA}</span>;

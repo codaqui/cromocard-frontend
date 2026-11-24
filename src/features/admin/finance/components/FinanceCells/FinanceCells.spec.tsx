@@ -6,34 +6,23 @@ import {
   GroupVolumeCell,
   ListedVolumeCell,
   PopulationCell,
-  ReputationCell,
 } from './FinanceCells';
 
-const seller = { id: 's1', listedVolumeCents: 0, activeListings: 0, rating: null, reviews: 0 };
+const seller = { id: 's1', listedVolumeCents: 0, activeListings: 0 };
 
 describe('FinanceCells', () => {
-  it('CA5: mostra a média das notas e o volume anunciado do vendedor', () => {
+  it('CA5: mostra o volume anunciado do vendedor', () => {
     render(
-      <>
-        <ReputationCell stats={{ ...seller, rating: 4.25, reviews: 8 }} />
-        <ListedVolumeCell stats={{ ...seller, listedVolumeCents: 125000, activeListings: 3 }} />
-      </>,
+      <ListedVolumeCell stats={{ ...seller, listedVolumeCents: 125000, activeListings: 3 }} />,
     );
 
-    expect(screen.getByLabelText('Nota 4,3 de 5, 8 avaliações')).toHaveTextContent('★★★★☆4,3');
     expect(screen.getByText(/R\$\s1\.250/)).toBeInTheDocument();
     expect(screen.getByText('3 anúncios ativos')).toBeInTheDocument();
   });
 
-  it('vendedor sem anúncio nem avaliação mostra R$ 0 e "Nenhum anúncio ativo", como no Figma', () => {
-    render(
-      <>
-        <ReputationCell stats={seller} />
-        <ListedVolumeCell stats={seller} />
-      </>,
-    );
+  it('vendedor sem anúncio mostra R$ 0 e "Nenhum anúncio ativo", como no Figma', () => {
+    render(<ListedVolumeCell stats={seller} />);
 
-    expect(screen.getByLabelText('Nota 0 de 5, 0 avaliações')).toHaveTextContent('☆☆☆☆☆0');
     expect(screen.getByText(/R\$\s0$/)).toBeInTheDocument();
     expect(screen.getByText('Nenhum anúncio ativo')).toBeInTheDocument();
   });

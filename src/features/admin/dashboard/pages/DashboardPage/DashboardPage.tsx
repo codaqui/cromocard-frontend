@@ -8,7 +8,6 @@ import type { Period } from '@/components/PeriodFilter/PeriodFilter';
 import {
   FinanceOverview,
   ListedVolumeCell,
-  ReputationCell,
   SellerRegistrationsTable,
   SellerVerificationPanel,
   useSellerVerificationDrawer,
@@ -66,11 +65,6 @@ function SignupsEvolution({ params, period }: PeriodSelection) {
 function sellerFinanceColumns(stats: StatsById<SellerFinanceStats> = {}) {
   const statsOf = (item: SellerVerificationListItem) => stats[item.seller.id];
   return [
-    {
-      key: 'reputation',
-      header: 'Reputação',
-      render: (item: SellerVerificationListItem) => <ReputationCell stats={statsOf(item)} />,
-    },
     {
       key: 'listedVolume',
       header: 'Volume anunciado',

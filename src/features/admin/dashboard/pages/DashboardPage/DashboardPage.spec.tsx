@@ -109,9 +109,7 @@ describe('DashboardPage', () => {
     vi.mocked(financeApi.getSummary).mockReset().mockResolvedValue(financeSummary);
     vi.mocked(financeApi.getSellerStats)
       .mockReset()
-      .mockResolvedValue([
-        { id: 'seller-1', listedVolumeCents: 0, activeListings: 0, rating: 4, reviews: 2 },
-      ]);
+      .mockResolvedValue([{ id: 'seller-1', listedVolumeCents: 0, activeListings: 0 }]);
     vi.mocked(sellerVerificationsApi.list).mockReset().mockResolvedValue(sellerVerificationsPage);
     vi.mocked(sellerVerificationsApi.getSummary)
       .mockReset()
@@ -230,14 +228,13 @@ describe('DashboardPage', () => {
     expect(await screen.findByText('Liquidado hoje')).toBeInTheDocument();
   });
 
-  it('CCD097 CA5: mostra a reputação e o volume anunciado de cada vendedor', async () => {
+  it('CCD097 CA5: mostra o volume anunciado de cada vendedor, sem coluna de reputação', async () => {
     renderPage();
 
     const row = await screen.findByRole('row', { name: /Fábio TCG Store/ });
-    expect(await within(row).findByLabelText('Nota 4 de 5, 2 avaliações')).toBeInTheDocument();
-    expect(row).toHaveTextContent('Nenhum anúncio ativo');
+    expect(await within(row).findByText('Nenhum anúncio ativo')).toBeInTheDocument();
     expect(financeApi.getSellerStats).toHaveBeenCalledWith(['seller-1']);
-    expect(screen.getByRole('columnheader', { name: 'Reputação' })).toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'Reputação' })).not.toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'Volume anunciado' })).toBeInTheDocument();
   });
 
