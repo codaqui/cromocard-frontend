@@ -22,7 +22,7 @@ function LoginOptions() {
 
   return (
     <>
-      <Link to={loginPath} className={cn(styles.action, styles.secondary)}>
+      <Link to={paths.googleLogin} className={cn(styles.action, styles.secondary)}>
         Continuar com Google
       </Link>
       <p className={styles.separator}>ou</p>

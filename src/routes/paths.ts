@@ -3,6 +3,7 @@ import type { UserRole } from '@/types/authenticated-user';
 export const paths = {
   home: '/',
   login: '/login',
+  googleLogin: '/login/google',
   register: '/cadastro',
   forgotPassword: '/esqueci-senha',
   resetPassword: '/redefinir-senha',

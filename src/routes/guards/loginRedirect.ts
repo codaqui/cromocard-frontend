@@ -17,18 +17,33 @@ function isInternalPath(path: string | null): path is string {
 }
 
 const PENDING_REDIRECT_KEY = 'cromocard:redirect-after-login';
+export const PENDING_REDIRECT_MAX_AGE_MS = 30 * 60 * 1000;
+
+interface PendingRedirect {
+  path: string;
+  savedAt: number;
+}
 
 export function rememberRedirectAfterLogin(path: string): void {
+  const pending: PendingRedirect = { path, savedAt: Date.now() };
   try {
-    sessionStorage.setItem(PENDING_REDIRECT_KEY, path);
+    sessionStorage.setItem(PENDING_REDIRECT_KEY, JSON.stringify(pending));
   } catch {
     return;
   }
 }
 
+function isFresh(pending: Partial<PendingRedirect>): pending is PendingRedirect {
+  const age = Date.now() - (pending.savedAt ?? 0);
+  return typeof pending.path === 'string' && age <= PENDING_REDIRECT_MAX_AGE_MS;
+}
+
 function pendingRedirect(): string | null {
   try {
-    return sessionStorage.getItem(PENDING_REDIRECT_KEY);
+    const pending = JSON.parse(
+      sessionStorage.getItem(PENDING_REDIRECT_KEY) ?? '{}',
+    ) as Partial<PendingRedirect> | null;
+    return pending && isFresh(pending) ? pending.path : null;
   } catch {
     return null;
   }

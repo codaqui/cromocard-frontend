@@ -148,7 +148,9 @@ describe('CardProfilePage', () => {
     await userEvent.click(screen.getByRole('link', { name: 'Criar conta grátis' }));
 
     expect(await screen.findByText('Tela de cadastro')).toBeVisible();
-    expect(sessionStorage.getItem('cromocard:redirect-after-login')).toBe(`/cartas/${CARD_ID}`);
+    expect(sessionStorage.getItem('cromocard:redirect-after-login')).toContain(
+      `"path":"/cartas/${CARD_ID}"`,
+    );
   });
 
   it('CA6: o cliente logado não vê o aviso e não abre o modal', async () => {

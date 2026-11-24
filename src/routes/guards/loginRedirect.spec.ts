@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   forgetRedirectAfterLogin,
   pathAfterLogin,
+  PENDING_REDIRECT_MAX_AGE_MS,
   rememberRedirectAfterLogin,
 } from './loginRedirect';
 
@@ -22,6 +23,20 @@ describe('pathAfterLogin', () => {
     rememberRedirectAfterLogin('/cartas/2');
 
     expect(pathAfterLogin('', 'CUSTOMER')).toBe('/cartas/2');
+  });
+
+  it('L16: descarta a página guardada há mais de 30 minutos', () => {
+    vi.spyOn(Date, 'now').mockReturnValue(0);
+    rememberRedirectAfterLogin('/cartas/2');
+    vi.spyOn(Date, 'now').mockReturnValue(PENDING_REDIRECT_MAX_AGE_MS + 1);
+
+    expect(pathAfterLogin('', 'CUSTOMER')).toBe('/profile');
+  });
+
+  it('ignora valor guardado em formato inválido', () => {
+    sessionStorage.setItem('cromocard:redirect-after-login', 'null');
+
+    expect(pathAfterLogin('', 'CUSTOMER')).toBe('/profile');
   });
 
   it('esquece a página guardada e cai no destino do papel', () => {
