@@ -22,4 +22,20 @@ describe('card-profile.format', () => {
     expect(badgesOf(looseCard)).toEqual([]);
     expect(subtitleOf(looseCard)).toBe('');
   });
+
+  it('R17: identifica cada selo pelo tipo, mesmo sem a raridade', () => {
+    const card: CardProfile = {
+      ...looseCard,
+      identification: {
+        ...looseCard.identification,
+        album: { id: 'a', title: 'Copa 2026' },
+        category: { id: 'c', name: 'Seleções' },
+      },
+    };
+
+    expect(badgesOf(card)).toEqual([
+      { kind: 'album', label: 'Copa 2026' },
+      { kind: 'category', label: 'Seleções' },
+    ]);
+  });
 });

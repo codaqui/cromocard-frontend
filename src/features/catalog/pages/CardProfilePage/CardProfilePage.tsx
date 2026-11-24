@@ -8,6 +8,7 @@ import { LoginRequiredDialog } from '@/features/auth';
 import { CardListingsList } from '@/features/marketplace';
 import { ApiError } from '@/lib/api-error';
 import { paths } from '@/routes/paths';
+import { cn } from '@/utils/cn';
 
 import { badgesOf, breadcrumbOf, galleryImagesOf, subtitleOf } from '../../card-profile.format';
 import { useCardProfile } from '../../card-profile.queries';
@@ -35,9 +36,9 @@ function CardHeading({ card }: { card: CardProfile }) {
   return (
     <div className={styles.heading}>
       <ul className={styles.badges} aria-label="Selos">
-        {badgesOf(card).map((badge) => (
-          <li key={badge} className={styles.badge}>
-            {badge}
+        {badgesOf(card).map(({ kind, label }) => (
+          <li key={kind} className={cn(styles.badge, kind === 'rarity' && styles.rarity)}>
+            {label}
           </li>
         ))}
       </ul>
@@ -69,6 +70,22 @@ function CardProfileOverlays({ actions }: { actions: CardProfileActions }) {
   );
 }
 
+function CardDetails({ card, actions }: { card: CardProfile; actions: CardProfileActions }) {
+  return (
+    <div className={styles.details}>
+      <CardHeading card={card} />
+      <CardMarketStats
+        market={card.market}
+        isGuest={!actions.user}
+        onSeeListings={actions.onSeeListings}
+        onAddToCollection={actions.onAddToCollection}
+        onFavorite={actions.onFavorite}
+      />
+      <CardIdentification identification={card.identification} />
+    </div>
+  );
+}
+
 function CardProfileContent({ card }: { card: CardProfile }) {
   const actions = useCardProfileActions();
 
@@ -79,11 +96,7 @@ function CardProfileContent({ card }: { card: CardProfile }) {
       </nav>
       <div className={styles.top}>
         <CardGallery name={card.name} images={galleryImagesOf(card)} />
-        <div className={styles.details}>
-          <CardHeading card={card} />
-          <CardMarketStats market={card.market} isGuest={!actions.user} {...actions} />
-          <CardIdentification identification={card.identification} />
-        </div>
+        <CardDetails card={card} actions={actions} />
       </div>
       <PriceHistoryPlaceholder />
       <CardListingsList

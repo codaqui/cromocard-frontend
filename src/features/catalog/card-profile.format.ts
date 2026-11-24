@@ -1,16 +1,24 @@
 import type { CardProfile } from './card-profile.types';
 
-export const EMPTY_VALUE = '—';
+export type CardBadgeKind = 'rarity' | 'album' | 'category';
+
+export interface CardBadge {
+  kind: CardBadgeKind;
+  label: string;
+}
 
 export function galleryImagesOf({ images }: CardProfile): string[] {
   return [images.front, images.back, ...images.photos].filter((url): url is string => url !== null);
 }
 
-export function badgesOf({ identification }: CardProfile): string[] {
+export function badgesOf({ identification }: CardProfile): CardBadge[] {
   const { rarity, album, category } = identification;
-  return [rarity?.name, album?.title, category?.name].filter(
-    (label): label is string => label !== undefined,
-  );
+  const candidates: { kind: CardBadgeKind; label: string | undefined }[] = [
+    { kind: 'rarity', label: rarity?.name },
+    { kind: 'album', label: album?.title },
+    { kind: 'category', label: category?.name },
+  ];
+  return candidates.filter((badge): badge is CardBadge => badge.label !== undefined);
 }
 
 export function subtitleOf({ identification }: CardProfile): string {

@@ -49,7 +49,7 @@
   text-transform: uppercase;
 }
 
-.badge:first-child {
+.rarity {
   background: var(--color-warning-soft);
   color: var(--color-warning);
 }
