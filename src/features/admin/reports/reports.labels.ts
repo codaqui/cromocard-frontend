@@ -39,6 +39,7 @@ export const REPORT_CARDS: ReportCardInfo[] = [
   },
   {
     id: 'volume',
+    type: 'volume',
     title: 'Volume Transacionado & Custódia',
     description: 'Valor em custódia e liquidado por dia no período.',
     columnsCount: 4,
@@ -50,6 +51,7 @@ export const SAMPLE_COLUMN_KEYS: Record<ReportType, string[]> = {
   signups: ['name', 'role', 'createdAt'],
   catalog: ['name', 'franchise', 'createdAt'],
   'seller-audit': ['legalName', 'status', 'createdAt'],
+  volume: ['day', 'received', 'released'],
 };
 
 const PRESET_LABELS: Record<PeriodPreset, string> = {

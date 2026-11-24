@@ -1,0 +1,52 @@
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.end {
+  align-items: flex-end;
+}
+
+.muted {
+  color: var(--color-label);
+}
+
+.amount {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.caption {
+  font-size: var(--font-size-xs);
+  color: var(--color-label);
+}
+
+.mono {
+  font-family: var(--font-family-mono);
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.window {
+  font-size: var(--font-size-xs);
+  color: var(--color-primary);
+}
+
+.volume {
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.negotiations {
+  font-size: var(--font-size-caption);
+  color: var(--color-label);
+}
+
+.idle .volume {
+  color: var(--color-label);
+}
+
+.idle .negotiations {
+  color: var(--color-danger);
+}
