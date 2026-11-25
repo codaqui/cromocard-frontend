@@ -178,6 +178,10 @@
   --color-notice-info-background: #0c2432;
   --color-notice-info-border: #2f8fad;
   --color-notice-info-badge: #18485b;
+  --font-size-notice-title: 1.0625rem;
+  --line-height-notice: 1.25;
+  --size-notice-text: 34rem;
+  --line-height-badge: 1.5;
 
   --font-family: 'Plus Jakarta Sans Variable', 'Inter', system-ui, sans-serif;
   --font-size-caption: 0.8125rem;

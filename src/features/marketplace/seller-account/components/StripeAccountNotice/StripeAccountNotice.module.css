@@ -25,17 +25,18 @@
   flex-direction: column;
   gap: var(--space-1);
   min-width: 0;
-  max-width: var(--size-intro-text);
+  max-width: var(--size-notice-text);
 }
 
 .title {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-notice-title);
   font-weight: 700;
 }
 
 .help {
   color: var(--color-text-muted);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-notice);
 }
 
 .action {
@@ -43,13 +44,13 @@
 }
 
 .badge {
-  padding: var(--space-1) var(--space-2);
+  padding: 0 var(--space-2);
   border-radius: var(--radius-xs);
   background: var(--color-notice-info-badge);
   color: var(--color-eyebrow);
   font-size: var(--font-size-xs);
   font-weight: 700;
-  letter-spacing: var(--letter-spacing-caps);
+  line-height: var(--line-height-badge);
   text-transform: uppercase;
 }
 
