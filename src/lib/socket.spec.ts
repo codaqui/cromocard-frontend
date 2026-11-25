@@ -3,7 +3,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 type Listener = (...args: unknown[]) => void;
 type AuthCallback = (send: (data: object) => void) => void;
 
-/** Socket falso do `socket.io-client`: guarda as opções e deixa o teste disparar os eventos do servidor. */
 function fakeSocket(options: { auth: AuthCallback }) {
   const listeners = new Map<string, Listener[]>();
   return {

@@ -4,7 +4,6 @@ const LOCAL_WS_URL = 'http://localhost:3001';
 
 const envSchema = z.object({
   API_URL: z.url().transform((url) => url.replace(/\/+$/, '')),
-  /** Servidor de tempo real (Socket.IO, ADR-012): o processo ws, na porta 3001 no ambiente local. */
   WS_URL: z.url().transform((url) => url.replace(/\/+$/, '')),
   GOOGLE_CLIENT_ID: z.string().min(1).optional(),
 });
