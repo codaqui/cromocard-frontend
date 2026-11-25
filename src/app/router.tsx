@@ -7,6 +7,7 @@ import { authRoutes, tokenLinkRoutes } from '@/features/auth';
 import { catalogBackofficeRoutes, catalogCustomerRoutes, catalogRoutes } from '@/features/catalog';
 import { collectionRoutes } from '@/features/collection';
 import { communityBackofficeRoutes, communityRoutes } from '@/features/community';
+import { sellerRoutes } from '@/features/marketplace';
 import { notificationsRoutes } from '@/features/notifications';
 import { usersBackofficeRoutes, usersPublicRoutes, usersRoutes } from '@/features/users';
 import { RedirectIfAuthenticated } from '@/routes/guards/RedirectIfAuthenticated';
@@ -48,6 +49,10 @@ export const router = createBrowserRouter([
             ],
           },
         ],
+      },
+      {
+        element: <RequireRole role="SELLER" />,
+        children: [{ element: <CustomerLayout />, children: sellerRoutes }],
       },
       {
         path: paths.backoffice.root,

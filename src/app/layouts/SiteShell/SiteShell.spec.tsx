@@ -65,6 +65,23 @@ describe('SiteShell', () => {
     },
   );
 
+  it.each([
+    ['SELLER', true],
+    ['CUSTOMER', false],
+    ['ADMIN', false],
+  ] as const)(
+    'CCD108 R2: o grupo Vendedor com a Visão geral para %s aparece = %s',
+    (role, shown) => {
+      renderShell({ id: '1', role });
+
+      const menu = screen.getByRole('navigation', { name: 'Menu principal' });
+      expect(within(menu).queryByText('Vendedor') !== null).toBe(shown);
+      expect(within(menu).queryByRole('link', { name: 'Visão geral' })?.getAttribute('href')).toBe(
+        shown ? paths.seller.overview : undefined,
+      );
+    },
+  );
+
   it('para o visitante, oferece Login, Cadastrar e os atalhos', () => {
     renderShell();
 

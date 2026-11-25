@@ -13,7 +13,7 @@ import type { UserRole } from '@/types/authenticated-user';
 import { cn } from '@/utils/cn';
 
 import styles from './SiteShell.module.css';
-import { mainMenuFor, searchScopes, siteLinks, siteSecondaryMenu } from './siteMenu';
+import { mainMenuFor, searchScopes, sellerMenuFor, siteLinks, siteSecondaryMenu } from './siteMenu';
 
 function useAccountName(role: UserRole) {
   const { data } = useMe();
@@ -45,6 +45,23 @@ function ProfileItem() {
   );
 }
 
+function SellerMenu({ role }: { role?: UserRole }) {
+  const items = sellerMenuFor(role);
+  if (items.length === 0) return null;
+
+  return (
+    <>
+      <hr className={styles.divider} />
+      <p className={styles.menuGroup}>Vendedor</p>
+      {items.map((item) => (
+        <NavItem key={item.to} to={item.to} icon={item.icon} end={item.end}>
+          {item.label}
+        </NavItem>
+      ))}
+    </>
+  );
+}
+
 function SiteMenu() {
   const { user } = useAuth();
 
@@ -55,6 +72,7 @@ function SiteMenu() {
           {item.label}
         </NavItem>
       ))}
+      <SellerMenu role={user?.role} />
       <ProfileItem />
       <hr className={styles.divider} />
       {siteSecondaryMenu.map((item) => (
