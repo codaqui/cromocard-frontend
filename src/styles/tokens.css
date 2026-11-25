@@ -173,6 +173,11 @@
   --color-alert: #93000a;
   --color-alert-text: #ffdad6;
   --color-glow-overview: rgb(0 210 255 / 0.1);
+  --color-notice-warning-background: #1a2221;
+  --color-notice-warning-border: #a18123;
+  --color-notice-info-background: #0c2432;
+  --color-notice-info-border: #2f8fad;
+  --color-notice-info-badge: #18485b;
 
   --font-family: 'Plus Jakarta Sans Variable', 'Inter', system-ui, sans-serif;
   --font-size-caption: 0.8125rem;
