@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { chatApi } from '../../chat.api';
 import type { Contact, ContactResult } from '../../chat.types';
-import { conversation } from '../../test/chat-fixtures';
+import { conversation } from '@/test/chat/chat-fixtures';
 import { NewConversationModal } from './NewConversationModal';
 
 vi.mock('../../chat.api', () => ({

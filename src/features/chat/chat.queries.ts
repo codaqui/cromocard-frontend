@@ -33,13 +33,12 @@ export function useConversations(params: ListConversationsParams) {
   });
 }
 
-export function useMessages(conversationId: string | null) {
+export function useMessages(conversationId: string) {
   return useInfiniteQuery({
-    queryKey: chatKeys.messages(conversationId ?? ''),
-    queryFn: ({ pageParam }) => chatApi.messages(conversationId ?? '', pageParam),
+    queryKey: chatKeys.messages(conversationId),
+    queryFn: ({ pageParam }) => chatApi.messages(conversationId, pageParam),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (last: MessagesPage) => last.meta.nextCursor ?? undefined,
-    enabled: conversationId !== null,
   });
 }
 

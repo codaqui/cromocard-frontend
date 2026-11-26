@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
-import { bruno, conversation } from '../../test/chat-fixtures';
+import { bruno, conversation } from '@/test/chat/chat-fixtures';
 import { ConversationListItem } from './ConversationListItem';
 
 function renderItem(props: Partial<Parameters<typeof ConversationListItem>[0]> = {}) {

@@ -6,8 +6,8 @@ import { renderWithProviders } from '@/test/renderWithProviders';
 
 import { chatApi } from '../../chat.api';
 import type { ConversationSummary } from '../../chat.types';
-import { ANA_ID, bruno, conversation, message } from '../../test/chat-fixtures';
-import { createFakeSocket, type FakeSocket } from '../../test/fake-socket';
+import { ANA_ID, bruno, conversation, message } from '@/test/chat/chat-fixtures';
+import { createFakeSocket, type FakeSocket } from '@/test/chat/fake-socket';
 import { MessagesPage } from './MessagesPage';
 
 let socket: FakeSocket;

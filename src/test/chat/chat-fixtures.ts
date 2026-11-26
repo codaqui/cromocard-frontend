@@ -1,4 +1,4 @@
-import type { ChatMessage, ConversationSummary } from '../chat.types';
+import type { ChatMessage, ConversationSummary } from '@/features/chat';
 
 export const ANA_ID = 'ana';
 

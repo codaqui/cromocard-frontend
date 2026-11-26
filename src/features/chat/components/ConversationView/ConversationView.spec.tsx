@@ -5,7 +5,7 @@ import { RouterProvider } from 'react-router/dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { chatApi } from '../../chat.api';
-import { ANA_ID, conversation, message } from '../../test/chat-fixtures';
+import { ANA_ID, conversation, message } from '@/test/chat/chat-fixtures';
 import { ConversationView } from './ConversationView';
 
 vi.mock('../../chat.api', () => ({

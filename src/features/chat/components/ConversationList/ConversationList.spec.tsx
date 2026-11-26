@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
-import { bruno, conversation } from '../../test/chat-fixtures';
+import { bruno, conversation } from '@/test/chat/chat-fixtures';
 import { ConversationList, type ConversationListProps } from './ConversationList';
 
 function renderList(changes: Partial<ConversationListProps> = {}) {

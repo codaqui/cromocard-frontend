@@ -9,8 +9,8 @@ import type { AuthenticatedUser } from '@/types/authenticated-user';
 import { chatApi } from '../chat.api';
 import { chatKeys } from '../chat.queries';
 import type { MessagesPage } from '../chat.types';
-import { ANA_ID, message } from '../test/chat-fixtures';
-import { createFakeSocket, type FakeSocket } from '../test/fake-socket';
+import { ANA_ID, message } from '@/test/chat/chat-fixtures';
+import { createFakeSocket, type FakeSocket } from '@/test/chat/fake-socket';
 import { useChatSocket } from './useChatSocket';
 
 let socket: FakeSocket;

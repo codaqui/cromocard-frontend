@@ -68,4 +68,15 @@ describe('RequireRole', () => {
 
     expect(await screen.findByText('Mensagens')).toBeInTheDocument();
   });
+
+  it('manda para a home quem acabou de sair, sem pedir login de novo', async () => {
+    const router = renderWithProviders({
+      routes: [...routes, { path: paths.home, element: <p>Home</p> }],
+      initialPath: paths.backoffice.users,
+      hasSignedOut: true,
+    });
+
+    expect(await screen.findByText('Home')).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe(paths.home);
+  });
 });

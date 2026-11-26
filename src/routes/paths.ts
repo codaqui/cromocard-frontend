@@ -64,7 +64,3 @@ export function userDetailPathFor(id: string): string {
 export function publicProfilePathFor(userId: string): string {
   return `/usuarios/${userId}`;
 }
-
-export function conversationPathFor(conversationId: string): string {
-  return `${paths.messages}?${new URLSearchParams({ conversa: conversationId }).toString()}`;
-}

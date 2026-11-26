@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createFakeSocket, type FakeSocket } from '../test/fake-socket';
+import { createFakeSocket, type FakeSocket } from '@/test/chat/fake-socket';
 import { usePresence, withPresence } from './usePresence';
 
 let socket: FakeSocket;

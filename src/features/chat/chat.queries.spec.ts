@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { messagesInOrder } from './chat.queries';
-import { message } from './test/chat-fixtures';
+import { message } from '@/test/chat/chat-fixtures';
 
 describe('messagesInOrder (R4)', () => {
   it('junta as páginas da mais antiga para a mais recente', () => {

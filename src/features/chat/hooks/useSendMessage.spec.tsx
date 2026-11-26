@@ -5,8 +5,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { chatKeys } from '../chat.queries';
 import type { MessagesPage } from '../chat.types';
-import { message } from '../test/chat-fixtures';
-import { createFakeSocket, type FakeSocket } from '../test/fake-socket';
+import { message } from '@/test/chat/chat-fixtures';
+import { createFakeSocket, type FakeSocket } from '@/test/chat/fake-socket';
 import { useSendMessage } from './useSendMessage';
 
 let socket: FakeSocket;
