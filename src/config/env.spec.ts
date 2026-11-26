@@ -11,8 +11,7 @@ describe('env', () => {
     delete window.__ENV__;
   });
 
-  it('usa as variáveis VITE_ no ambiente local e o ws na porta 3001 sem VITE_WS_URL', async () => {
-    vi.stubEnv('VITE_WS_URL', undefined);
+  it('usa as variáveis VITE_ no ambiente local', async () => {
     vi.stubEnv('VITE_GOOGLE_CLIENT_ID', '');
 
     const { env } = await loadEnv();
@@ -20,10 +19,16 @@ describe('env', () => {
     expect(env).toEqual({ API_URL: 'http://localhost:3000', WS_URL: 'http://localhost:3001' });
   });
 
-  it('prefere o env.js do container e tira a barra final das URLs', async () => {
+  it('recusa subir sem a URL do ws, nem no env.js nem na VITE_WS_URL', async () => {
+    vi.stubEnv('VITE_WS_URL', undefined);
+
+    await expect(loadEnv()).rejects.toThrow(/WS_URL/);
+  });
+
+  it('prefere o env.js do container, aceita wss:// e tira a barra final das URLs', async () => {
     window.__ENV__ = {
       API_URL: 'https://api.cromocard.com.br/',
-      WS_URL: 'https://ws.cromocard.com.br/',
+      WS_URL: 'wss://ws.cromocard.com.br/',
       GOOGLE_CLIENT_ID: 'cliente.apps.googleusercontent.com',
     };
 
@@ -31,7 +36,7 @@ describe('env', () => {
 
     expect(env).toEqual({
       API_URL: 'https://api.cromocard.com.br',
-      WS_URL: 'https://ws.cromocard.com.br',
+      WS_URL: 'wss://ws.cromocard.com.br',
       GOOGLE_CLIENT_ID: 'cliente.apps.googleusercontent.com',
     });
   });

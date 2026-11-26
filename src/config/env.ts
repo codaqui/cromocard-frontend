@@ -1,16 +1,16 @@
 import { z } from '@/lib/zod';
 
-const LOCAL_WS_URL = 'http://localhost:3001';
+const baseUrl = z.url().transform((url) => url.replace(/\/+$/, ''));
 
 const envSchema = z.object({
-  API_URL: z.url().transform((url) => url.replace(/\/+$/, '')),
-  WS_URL: z.url().transform((url) => url.replace(/\/+$/, '')),
+  API_URL: baseUrl,
+  WS_URL: baseUrl,
   GOOGLE_CLIENT_ID: z.string().min(1).optional(),
 });
 
 const parsedEnv = envSchema.safeParse({
   API_URL: window.__ENV__?.API_URL ?? import.meta.env.VITE_API_URL,
-  WS_URL: window.__ENV__?.WS_URL ?? import.meta.env.VITE_WS_URL ?? LOCAL_WS_URL,
+  WS_URL: window.__ENV__?.WS_URL ?? import.meta.env.VITE_WS_URL,
   GOOGLE_CLIENT_ID:
     window.__ENV__?.GOOGLE_CLIENT_ID || import.meta.env.VITE_GOOGLE_CLIENT_ID || undefined,
 });

@@ -13,7 +13,7 @@ export default defineConfig({
     environment: 'jsdom',
     include: ['src/**/*.spec.{ts,tsx}'],
     setupFiles: ['src/test/setup.ts'],
-    env: { VITE_API_URL: 'http://localhost:3000' },
+    env: { VITE_API_URL: 'http://localhost:3000', VITE_WS_URL: 'http://localhost:3001' },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
