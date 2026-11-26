@@ -217,6 +217,14 @@
 
 [data-theme='site'] {
   --size-sidebar: 10rem;
+  --size-chat-list: 19rem;
+  --size-chat-avatar: 3rem;
+  --size-chat-avatar-small: 1.75rem;
+  --size-chat-dot: 0.75rem;
+  --size-chat-bubble: 26rem;
+  --size-chat-badge: 1.25rem;
+  --color-chat-preview-active: #92cee5;
+  --line-height-chat: 1.55;
   --size-search: 34rem;
   --size-brand-logo: 1.5rem;
   --size-profile-avatar: 1.375rem;
