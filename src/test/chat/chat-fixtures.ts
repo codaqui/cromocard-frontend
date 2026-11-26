@@ -14,6 +14,7 @@ export function conversation(changes: Partial<ConversationSummary> = {}): Conver
       avatarUrl: null,
       verified: true,
     },
+    block: null,
     lastMessage: {
       content: 'Combinado, compro pelo anúncio.',
       fromMe: true,

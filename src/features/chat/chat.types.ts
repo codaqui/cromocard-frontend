@@ -8,9 +8,12 @@ export interface Contact {
   verified: boolean;
 }
 
+export type ContactBlock = 'BY_ME' | 'BY_CONTACT' | null;
+
 export interface ConversationSummary {
   id: string;
   contact: Contact;
+  block: ContactBlock;
   lastMessage: { content: string; fromMe: boolean; createdAt: string } | null;
   unreadCount: number;
   createdAt: string;
