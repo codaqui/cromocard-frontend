@@ -15,22 +15,37 @@ interface LoginRequiredDialogProps {
 
 const DEFAULT_MESSAGE = 'Faça login para continuar. É rápido e grátis.';
 
-/** Toda opção guarda a página de origem, para a volta depois do login não depender do caminho escolhido. */
-function LoginOptions() {
-  const location = useLocation();
-  const rememberOrigin = () => rememberRedirectAfterLogin(`${location.pathname}${location.search}`);
-  const option = (to: string, label: string, variant: 'primary' | 'secondary') => (
-    <Link to={to} className={cn(styles.action, styles[variant])} onClick={rememberOrigin}>
+interface LoginOptionProps {
+  to: string;
+  label: string;
+  variant: 'primary' | 'secondary';
+  onClick: () => void;
+}
+
+function LoginOption({ to, label, variant, onClick }: LoginOptionProps) {
+  return (
+    <Link to={to} className={cn(styles.action, styles[variant])} onClick={onClick}>
       {label}
     </Link>
   );
+}
+
+function LoginOptionsRememberingOrigin() {
+  const location = useLocation();
+  const onClick = () => rememberRedirectAfterLogin(`${location.pathname}${location.search}`);
+  const option = (to: string, label: string, variant: LoginOptionProps['variant']) => ({
+    to,
+    label,
+    variant,
+    onClick,
+  });
 
   return (
     <>
-      {option(paths.googleLogin, 'Continuar com Google', 'secondary')}
+      <LoginOption {...option(paths.googleLogin, 'Continuar com Google', 'secondary')} />
       <p className={styles.separator}>ou</p>
-      {option(loginPathFor(location), 'Entrar com e-mail e senha', 'primary')}
-      {option(paths.register, 'Criar conta grátis', 'secondary')}
+      <LoginOption {...option(loginPathFor(location), 'Entrar com e-mail e senha', 'primary')} />
+      <LoginOption {...option(paths.register, 'Criar conta grátis', 'secondary')} />
     </>
   );
 }
@@ -44,7 +59,7 @@ export function LoginRequiredDialog({
     <Modal open={open} title="Entre para continuar" onClose={onClose}>
       <div className={styles.body}>
         <p className={styles.message}>{message}</p>
-        <LoginOptions />
+        <LoginOptionsRememberingOrigin />
         <p className={styles.terms}>
           Ao continuar, você aceita os Termos de Uso e a Política de Privacidade.
         </p>

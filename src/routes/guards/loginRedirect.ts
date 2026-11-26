@@ -24,12 +24,11 @@ interface PendingRedirect {
   savedAt: number;
 }
 
-/** O sessionStorage pode estar bloqueado (modo privado, política do navegador): sem ele, a volta cai na home. */
-function withSessionStorage<T>(action: (storage: Storage) => T, fallback: T): T {
+function withSessionStorage<T>(action: (storage: Storage) => T, fallbackWhenBlocked: T): T {
   try {
     return action(sessionStorage);
   } catch {
-    return fallback;
+    return fallbackWhenBlocked;
   }
 }
 
