@@ -72,10 +72,11 @@ describe('ConversationList', () => {
     expect(props.onNewConversation).toHaveBeenCalled();
   });
 
-  it('CA4: sem conversas, o rodapé diz "Nenhuma conversa"', () => {
+  it('CA4: sem conversas, o rodapé diz "Nenhuma conversa", sem o selo e os números das abas', () => {
     renderList({ conversations: [], totals: { all: 0, unread: 0 } });
 
     expect(screen.getByText('Nenhuma conversa')).toBeInTheDocument();
-    expect(screen.getByText('0 ativas')).toBeInTheDocument();
+    expect(screen.queryByText('0 ativas')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Todas' })).toBeInTheDocument();
   });
 });

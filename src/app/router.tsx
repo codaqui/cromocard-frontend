@@ -4,6 +4,7 @@ import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { NotFoundPage } from '@/components/NotFoundPage/NotFoundPage';
 import { adminBackofficeRoutes } from '@/features/admin';
 import { authRoutes, tokenLinkRoutes } from '@/features/auth';
+import { chatPublicRoutes, chatRoutes } from '@/features/chat';
 import { catalogBackofficeRoutes, catalogCustomerRoutes, catalogRoutes } from '@/features/catalog';
 import { collectionRoutes } from '@/features/collection';
 import { communityBackofficeRoutes, communityRoutes } from '@/features/community';
@@ -32,6 +33,7 @@ export const router = createBrowserRouter([
           ...catalogRoutes,
           ...communityRoutes,
           ...usersPublicRoutes,
+          ...chatPublicRoutes,
           { path: '*', element: <NotFoundPage /> },
         ],
       },
@@ -45,6 +47,7 @@ export const router = createBrowserRouter([
               ...collectionRoutes,
               ...notificationsRoutes,
               ...catalogCustomerRoutes,
+              ...chatRoutes,
             ],
           },
         ],

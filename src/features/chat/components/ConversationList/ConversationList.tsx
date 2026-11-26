@@ -48,7 +48,7 @@ function ListHeader({
   return (
     <div className={styles.header}>
       <h2 className={styles.title}>Conversas</h2>
-      <span className={styles.active}>{activeLabel(total)}</span>
+      {total > 0 && <span className={styles.active}>{activeLabel(total)}</span>}
       <button
         type="button"
         className={styles.newButton}

@@ -22,6 +22,7 @@ export const siteMainMenu: SiteMenuItem[] = [
   { to: paths.categories, label: 'Categorias', icon: 'gridView' },
   { to: paths.albums, label: 'Álbuns', icon: 'bookOutline' },
   { to: paths.communities, label: 'Comunidades', icon: 'peopleOutline' },
+  { to: paths.messages, label: 'Mensagens', icon: 'chatBubbleOutline', hiddenFor: 'ADMIN' },
   { to: paths.suggestions, label: 'Sugestões', icon: 'howToVote', hiddenFor: 'ADMIN' },
 ];
 

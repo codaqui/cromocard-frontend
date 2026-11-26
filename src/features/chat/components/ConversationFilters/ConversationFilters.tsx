@@ -23,7 +23,13 @@ export function ConversationFilters({ active, totals, onChange }: ConversationFi
           aria-pressed={filter === active}
           onClick={() => onChange(filter)}
         >
-          {filterLabels[filter]} <span className={styles.count}>{totals[filter]}</span>
+          {filterLabels[filter]}
+          {totals.all > 0 && (
+            <>
+              {' '}
+              <span className={styles.count}>{totals[filter]}</span>
+            </>
+          )}
         </button>
       ))}
     </div>
