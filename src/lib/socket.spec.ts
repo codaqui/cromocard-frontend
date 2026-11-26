@@ -2,8 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 type Listener = (...args: unknown[]) => void;
 type AuthCallback = (send: (data: object) => void) => void;
+interface SocketOptions {
+  autoConnect: boolean;
+  auth: AuthCallback;
+}
 
-function fakeSocket(options: { auth: AuthCallback }) {
+function fakeSocket(options: SocketOptions) {
   const listeners = new Map<string, Listener[]>();
   return {
     options,
@@ -21,13 +25,13 @@ function fakeSocket(options: { auth: AuthCallback }) {
 
 type FakeSocket = ReturnType<typeof fakeSocket>;
 
-const { io, refreshSessionOnce } = vi.hoisted(() => ({
-  io: vi.fn(),
-  refreshSessionOnce: vi.fn<() => Promise<boolean>>(),
+const { io, renewSessionOrSignOut } = vi.hoisted(() => ({
+  io: vi.fn<(url: string, options: SocketOptions) => FakeSocket>(),
+  renewSessionOrSignOut: vi.fn<() => Promise<boolean>>(),
 }));
 
 vi.mock('socket.io-client', () => ({ io }));
-vi.mock('@/lib/http', () => ({ refreshSessionOnce }));
+vi.mock('@/lib/http', () => ({ renewSessionOrSignOut }));
 
 async function loadSocket() {
   vi.resetModules();
@@ -35,17 +39,25 @@ async function loadSocket() {
 }
 
 function lastSocket(): FakeSocket {
-  return io.mock.results.at(-1)?.value as FakeSocket;
+  const result = io.mock.results.at(-1);
+  if (result?.type !== 'return') throw new Error('o cliente não foi criado');
+  return result.value;
+}
+
+function deferred() {
+  let resolve: (value: boolean) => void = () => undefined;
+  const promise = new Promise<boolean>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
 }
 
 const unauthorized = () =>
   Object.assign(new Error('UNAUTHORIZED'), { data: { error: 'UNAUTHORIZED' } });
 
 beforeEach(() => {
-  io.mockReset().mockImplementation((_url: string, options: { auth: AuthCallback }) =>
-    fakeSocket(options),
-  );
-  refreshSessionOnce.mockReset().mockResolvedValue(true);
+  io.mockReset().mockImplementation((_url, options) => fakeSocket(options));
+  renewSessionOrSignOut.mockReset().mockResolvedValue(true);
 });
 
 afterEach(async () => {
@@ -54,7 +66,7 @@ afterEach(async () => {
 });
 
 describe('getSocket', () => {
-  it('cria um cliente único para a VITE_WS_URL, sem conectar e só por WebSocket', async () => {
+  it('cria um cliente único para a VITE_WS_URL, sem conectar e com o transporte padrão', async () => {
     const { getSocket } = await loadSocket();
 
     const socket = getSocket();
@@ -63,8 +75,9 @@ describe('getSocket', () => {
     expect(io).toHaveBeenCalledTimes(1);
     expect(io).toHaveBeenCalledWith(
       'http://localhost:3001',
-      expect.objectContaining({ autoConnect: false, transports: ['websocket'] }),
+      expect.objectContaining({ autoConnect: false }),
     );
+    expect(lastSocket().options).not.toHaveProperty('transports');
     expect(lastSocket().connect).not.toHaveBeenCalled();
   });
 
@@ -91,17 +104,17 @@ describe('renovação do token no connect_error', () => {
     lastSocket().fire('connect_error', unauthorized());
 
     await vi.waitFor(() => expect(lastSocket().connect).toHaveBeenCalledTimes(1));
-    expect(refreshSessionOnce).toHaveBeenCalledTimes(1);
+    expect(renewSessionOrSignOut).toHaveBeenCalledTimes(1);
   });
 
   it('não reconecta quando a sessão não renova', async () => {
-    refreshSessionOnce.mockResolvedValue(false);
+    renewSessionOrSignOut.mockResolvedValue(false);
     const { getSocket } = await loadSocket();
     getSocket();
 
     lastSocket().fire('connect_error', unauthorized());
 
-    await vi.waitFor(() => expect(refreshSessionOnce).toHaveBeenCalledTimes(1));
+    await vi.waitFor(() => expect(renewSessionOrSignOut).toHaveBeenCalledTimes(1));
     expect(lastSocket().connect).not.toHaveBeenCalled();
   });
 
@@ -111,7 +124,7 @@ describe('renovação do token no connect_error', () => {
 
     lastSocket().fire('connect_error', new Error('websocket error'));
 
-    expect(refreshSessionOnce).not.toHaveBeenCalled();
+    expect(renewSessionOrSignOut).not.toHaveBeenCalled();
   });
 
   it('renova uma vez só até a próxima conexão aceita, para não entrar em laço', async () => {
@@ -125,7 +138,45 @@ describe('renovação do token no connect_error', () => {
     socket.fire('connect');
     socket.fire('connect_error', unauthorized());
 
-    await vi.waitFor(() => expect(refreshSessionOnce).toHaveBeenCalledTimes(2));
+    await vi.waitFor(() => expect(renewSessionOrSignOut).toHaveBeenCalledTimes(2));
+  });
+
+  it('não reconecta o cliente descartado durante a renovação', async () => {
+    const renewal = deferred();
+    renewSessionOrSignOut.mockReturnValue(renewal.promise);
+    const { disconnectSocket, getSocket } = await loadSocket();
+    getSocket();
+    const socket = lastSocket();
+
+    socket.fire('connect_error', unauthorized());
+    disconnectSocket();
+    renewal.resolve(true);
+    await renewal.promise;
+
+    await vi.waitFor(() => expect(renewSessionOrSignOut).toHaveBeenCalledTimes(1));
+    expect(socket.connect).not.toHaveBeenCalled();
+  });
+});
+
+describe('token vencido durante a conexão', () => {
+  it('renova a sessão e reconecta quando o servidor derruba a conexão', async () => {
+    const { getSocket } = await loadSocket();
+    getSocket();
+
+    lastSocket().fire('disconnect', 'io server disconnect');
+
+    await vi.waitFor(() => expect(lastSocket().connect).toHaveBeenCalledTimes(1));
+    expect(renewSessionOrSignOut).toHaveBeenCalledTimes(1);
+  });
+
+  it('não renova quando a conexão cai por outro motivo', async () => {
+    const { getSocket } = await loadSocket();
+    getSocket();
+
+    lastSocket().fire('disconnect', 'io client disconnect');
+    lastSocket().fire('disconnect', 'transport close');
+
+    expect(renewSessionOrSignOut).not.toHaveBeenCalled();
   });
 });
 
@@ -143,11 +194,12 @@ describe('connectSocket e disconnectSocket', () => {
   it('desconecta e descarta o cliente, e o próximo getSocket cria outro', async () => {
     const { disconnectSocket, getSocket } = await loadSocket();
     const first = getSocket();
+    const firstFake = lastSocket();
 
     disconnectSocket();
     disconnectSocket();
 
-    expect((first as unknown as FakeSocket).disconnect).toHaveBeenCalledTimes(1);
+    expect(firstFake.disconnect).toHaveBeenCalledTimes(1);
     expect(getSocket()).not.toBe(first);
   });
 });

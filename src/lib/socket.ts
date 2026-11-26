@@ -2,13 +2,20 @@ import { io, type Socket } from 'socket.io-client';
 
 import { env } from '@/config/env';
 import { accessTokenStore } from '@/lib/access-token';
-import { refreshSessionOnce } from '@/lib/http';
+import { renewSessionOrSignOut } from '@/lib/http';
 
-export const SOCKET_UNAUTHORIZED = 'UNAUTHORIZED';
+const SOCKET_UNAUTHORIZED = 'UNAUTHORIZED';
+const EXPIRED_BY_SERVER = 'io server disconnect';
 
 let socket: Socket | null = null;
 
-function renewTokenOnUnauthorized(client: Socket): void {
+function reconnectWithRenewedSession(client: Socket): void {
+  void renewSessionOrSignOut().then((renewed) => {
+    if (renewed && client === socket) client.connect();
+  });
+}
+
+function renewTokenOnceOnUnauthorized(client: Socket): void {
   let renewedSinceLastConnect = false;
   client.on('connect', () => {
     renewedSinceLastConnect = false;
@@ -16,21 +23,24 @@ function renewTokenOnUnauthorized(client: Socket): void {
   client.on('connect_error', (error) => {
     if (error.message !== SOCKET_UNAUTHORIZED || renewedSinceLastConnect) return;
     renewedSinceLastConnect = true;
-    void refreshSessionOnce().then((renewed) => {
-      if (renewed) client.connect();
-    });
+    reconnectWithRenewedSession(client);
   });
 }
 
-function createSocket(): Socket {
-  const client = io(env.WS_URL, {
-    autoConnect: false,
-    transports: ['websocket'],
-    auth: (send) => {
-      send({ token: accessTokenStore.get() });
-    },
+function reconnectWhenServerExpiresToken(client: Socket): void {
+  client.on('disconnect', (reason) => {
+    if (reason === EXPIRED_BY_SERVER) reconnectWithRenewedSession(client);
   });
-  renewTokenOnUnauthorized(client);
+}
+
+const sendCurrentAccessToken = (send: (data: object) => void) => {
+  send({ token: accessTokenStore.get() });
+};
+
+function createSocket(): Socket {
+  const client = io(env.WS_URL, { autoConnect: false, auth: sendCurrentAccessToken });
+  renewTokenOnceOnUnauthorized(client);
+  reconnectWhenServerExpiresToken(client);
   return client;
 }
 
