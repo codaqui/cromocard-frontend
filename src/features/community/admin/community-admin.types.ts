@@ -41,12 +41,26 @@ export interface ReportedMessage {
   reportersCount: number;
 }
 
+export interface ReportedUser {
+  id: string;
+  name: string;
+  username: string | null;
+  accountAgeDays: number;
+  warnings: number;
+}
+
+export type ReportOrigin = 'GROUP' | 'CHAT';
+
 export interface GroupMessageReport {
   id: string;
   reason: string;
   description: string | null;
+  origin: ReportOrigin;
   reporterName: string;
+  reporterUsername: string | null;
   message: ReportedMessage | null;
+  reportedUser: ReportedUser | null;
+  evidences: string[];
 }
 
 export interface ReportResolution {

@@ -208,6 +208,7 @@
   --size-overview-tile-height: 10rem;
   --size-group-icon: 2.25rem;
   --size-report-card-action: 2.25rem;
+  --size-report-evidence: 5rem;
 
   color-scheme: dark;
   color: var(--color-text);

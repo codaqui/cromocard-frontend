@@ -33,10 +33,18 @@ function TargetDescription({ action }: { action: CommunityAction }) {
     );
   }
 
+  const { message, reportedUser } = action.report;
+  if (!message) {
+    return (
+      <p className={styles.target}>
+        Contato <strong>{reportedUser?.name}</strong> denunciado no chat pessoal.
+      </p>
+    );
+  }
   return (
     <p className={styles.target}>
-      Mensagem de <strong>{action.report.message?.authorName}</strong> no grupo{' '}
-      <strong>{action.report.message?.groupName}</strong>.
+      Mensagem de <strong>{message.authorName}</strong> no grupo{' '}
+      <strong>{message.groupName}</strong>.
     </p>
   );
 }

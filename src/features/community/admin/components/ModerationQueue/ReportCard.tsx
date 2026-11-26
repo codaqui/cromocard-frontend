@@ -1,35 +1,21 @@
-import type { ReactNode } from 'react';
-
 import { Icon } from '@/components/Icon/Icon';
 import type { SanctionTarget } from '@/features/users';
 
-import {
-  formatAccountAge,
-  formatPriorWarnings,
-  formatReportedAt,
-  formatReportedBy,
-} from '../../community-admin.format';
+import { formatReportedAt, formatReportedBy } from '../../community-admin.format';
 import type {
   GroupMessageReport,
   OnCommunityAction,
   ReportAction,
   ReportedMessage,
 } from '../../community-admin.types';
+import { ChatReportCard } from './ChatReportCard';
 import styles from './ModerationQueue.module.css';
+import { AuthorPills, OriginItem } from './ReportParts';
 
 interface ReportCardProps {
   report: GroupMessageReport;
   onAction: OnCommunityAction;
   onSanctionAuthor: (target: SanctionTarget) => void;
-}
-
-function OriginItem({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div>
-      <dt>{label}</dt>
-      <dd>{children}</dd>
-    </div>
-  );
 }
 
 function ReportOrigin({
@@ -56,10 +42,7 @@ function ReportOrigin({
 
 function AuthorStats({ message }: { message: ReportedMessage }) {
   return (
-    <div className={styles.authorStats}>
-      <span className={styles.statPill}>{formatAccountAge(message.authorAccountAgeDays)}</span>
-      <span className={styles.statPill}>{formatPriorWarnings(message.authorWarnings)}</span>
-    </div>
+    <AuthorPills accountAgeDays={message.authorAccountAgeDays} warnings={message.authorWarnings} />
   );
 }
 
@@ -155,7 +138,7 @@ function ReportActions({
   );
 }
 
-export function ReportCard({ report, onAction, onSanctionAuthor }: ReportCardProps) {
+function GroupReportCard({ report, onAction, onSanctionAuthor }: ReportCardProps) {
   const { message } = report;
   if (!message) return null;
 
@@ -177,4 +160,10 @@ export function ReportCard({ report, onAction, onSanctionAuthor }: ReportCardPro
       />
     </article>
   );
+}
+
+export function ReportCard(props: ReportCardProps) {
+  const { reportedUser } = props.report;
+  if (!reportedUser) return <GroupReportCard {...props} />;
+  return <ChatReportCard {...props} reportedUser={reportedUser} />;
 }

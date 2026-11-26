@@ -38,6 +38,10 @@ const report: GroupMessageReport = {
   reason: 'Spam',
   description: null,
   reporterName: 'Carla',
+  origin: 'GROUP',
+  reporterUsername: null,
+  reportedUser: null,
+  evidences: [],
   message: {
     id: 'message-1',
     content: 'Compre agora!',
@@ -176,5 +180,28 @@ describe('ModerationDialog', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('A denúncia já foi resolvida');
     expect(onDone).not.toHaveBeenCalled();
+  });
+});
+
+describe('ModerationDialog com a denúncia do chat pessoal (CCD047)', () => {
+  it('R19: o dispensar descreve o contato denunciado no chat', () => {
+    const chatReport: GroupMessageReport = {
+      ...report,
+      origin: 'CHAT',
+      message: null,
+      reportedUser: {
+        id: 'u1',
+        name: 'Marcos Vinicius',
+        username: 'marcos_tcg',
+        accountAgeDays: 3,
+        warnings: 0,
+      },
+    };
+
+    renderDialog({ kind: 'report', action: 'dismiss', report: chatReport });
+
+    expect(screen.getByText(/denunciado no chat pessoal/)).toHaveTextContent(
+      'Contato Marcos Vinicius denunciado no chat pessoal.',
+    );
   });
 });
