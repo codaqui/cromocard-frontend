@@ -82,6 +82,11 @@
 .shield {
   width: var(--size-control);
   color: var(--color-label);
+  cursor: pointer;
+}
+
+.shield:hover {
+  color: var(--color-text);
 }
 
 @media (max-width: 48rem) {

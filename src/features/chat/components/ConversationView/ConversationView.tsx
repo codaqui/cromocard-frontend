@@ -2,12 +2,16 @@ import { type UIEvent, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
+import { Toast } from '@/components/Toast/Toast';
 
 import { dayLabel, handleOf, sameDay } from '../../chat.format';
 import { chatTexts } from '../../chat.labels';
 import { messagesInOrder, useMarkAsRead, useMessages } from '../../chat.queries';
 import type { ChatMessage, ConversationSummary } from '../../chat.types';
 import { useSendMessage } from '../../hooks/useSendMessage';
+import { BlockedNotice } from '../BlockedNotice/BlockedNotice';
+import { ContactModerationDialog } from '../ContactModerationDialog/ContactModerationDialog';
+import type { ModerationNotice } from '../ContactModerationDialog/useContactModeration';
 import { ConversationHeader } from '../ConversationHeader/ConversationHeader';
 import { MessageBubble } from '../MessageBubble/MessageBubble';
 import { MessageComposer } from '../MessageComposer/MessageComposer';
@@ -122,17 +126,78 @@ function Body({ conversation, currentUserId }: ConversationViewProps) {
   );
 }
 
+function Footer({ conversation }: { conversation: ConversationSummary }) {
+  const sendMessage = useSendMessage();
+  const { contact, block } = conversation;
+  const handle = handleOf(contact.username) || contact.name;
+  if (block) return <BlockedNotice block={block} contactId={contact.id} handle={handle} />;
+  return (
+    <MessageComposer
+      recipient={handle}
+      onSend={(content) => sendMessage(conversation.id, content)}
+    />
+  );
+}
+
+function useModerationDialog() {
+  const [open, setOpen] = useState(false);
+  const [notice, setNotice] = useState<ModerationNotice | null>(null);
+  const done = (next: ModerationNotice) => {
+    setOpen(false);
+    setNotice(next);
+  };
+  return {
+    open,
+    notice,
+    show: () => setOpen(true),
+    close: () => setOpen(false),
+    done,
+    dismiss: () => setNotice(null),
+  };
+}
+
+type ModerationState = ReturnType<typeof useModerationDialog>;
+
+interface ModerationLayerProps {
+  conversation: ConversationSummary;
+  moderation: ModerationState;
+}
+
+function ModerationLayer({ conversation, moderation }: ModerationLayerProps) {
+  return (
+    <>
+      {moderation.open && (
+        <ContactModerationDialog
+          conversation={conversation}
+          onClose={moderation.close}
+          onDone={moderation.done}
+        />
+      )}
+      <Toast
+        message={moderation.notice?.title ?? null}
+        detail={moderation.notice?.detail}
+        placement="top"
+        tinted
+        onDismiss={moderation.dismiss}
+      />
+    </>
+  );
+}
+
 export function ConversationView(props: ConversationViewProps) {
   const { conversation, online, onBack } = props;
-  const sendMessage = useSendMessage();
+  const moderation = useModerationDialog();
   return (
     <section className={styles.view} aria-label={`Conversa com ${conversation.contact.name}`}>
-      <ConversationHeader contact={conversation.contact} online={online} onBack={onBack} />
-      <Body {...props} />
-      <MessageComposer
-        recipient={handleOf(conversation.contact.username) || conversation.contact.name}
-        onSend={(content) => sendMessage(conversation.id, content)}
+      <ConversationHeader
+        contact={conversation.contact}
+        online={online}
+        onBack={onBack}
+        onModerate={moderation.show}
       />
+      <Body {...props} />
+      <Footer conversation={conversation} />
+      <ModerationLayer conversation={conversation} moderation={moderation} />
     </section>
   );
 }
