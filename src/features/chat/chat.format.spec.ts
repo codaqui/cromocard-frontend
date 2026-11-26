@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 
 import {
   activeLabel,
+  commonGroupsLabel,
   dayLabel,
   handleOf,
   initialOf,
+  initialsOf,
   listedLabel,
   previewTime,
   sameDay,
@@ -46,5 +48,14 @@ describe('chat.format', () => {
     expect(initialOf(' marcos')).toBe('M');
     expect(handleOf('marcos_tcg')).toBe('@marcos_tcg');
     expect(handleOf(null)).toBe('');
+  });
+
+  it('CA14: iniciais de duas palavras e o resumo dos grupos em comum', () => {
+    expect(initialsOf('Renata Valente')).toBe('RV');
+    expect(initialsOf('Rei das Cartas BR')).toBe('RB');
+    expect(initialsOf('thiago')).toBe('T');
+    expect(commonGroupsLabel(['Pokémon TCG São Paulo'])).toBe('Pokémon TCG São Paulo');
+    expect(commonGroupsLabel(['A', 'B'])).toBe('2 grupos em comum');
+    expect(commonGroupsLabel([])).toBe('');
   });
 });

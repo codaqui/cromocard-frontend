@@ -53,3 +53,12 @@ export const listedLabel = (listed: number, total: number) =>
     : `${listed} de ${total} ${total === 1 ? 'conversa listada' : 'conversas listadas'}`;
 
 export const activeLabel = (total: number) => `${total} ${total === 1 ? 'ativa' : 'ativas'}`;
+
+export const initialsOf = (name: string) => {
+  const words = name.trim().split(/\s+/);
+  const last = words.length > 1 ? words.at(-1) : '';
+  return `${words[0]?.charAt(0) ?? ''}${last?.charAt(0) ?? ''}`.toUpperCase();
+};
+
+export const commonGroupsLabel = (groups: readonly string[]) =>
+  groups.length > 1 ? `${groups.length} grupos em comum` : (groups[0] ?? '');

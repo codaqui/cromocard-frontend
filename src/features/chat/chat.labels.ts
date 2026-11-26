@@ -26,5 +26,7 @@ export const chatTexts = {
   verified: 'Verificado',
   newConversation: 'Nova conversa',
   newConversationSubtitle: 'Envie uma mensagem privada para outro colecionador.',
+  startError: 'Não foi possível abrir a conversa. Tente de novo.',
+  noResults: 'Nenhum colecionador encontrado.',
   selectConversation: 'Selecione uma conversa para ver as mensagens.',
 } as const;
