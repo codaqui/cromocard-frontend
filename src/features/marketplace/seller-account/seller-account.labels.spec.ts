@@ -40,6 +40,7 @@ describe('noticeFor', () => {
 
   it('CA3: em verificação, mostra o selo sem botão', () => {
     expect(noticeFor(account({ status: 'VERIFYING' }))).toEqual({
+      kind: 'badge',
       tone: 'info',
       title: 'Estamos verificando sua conta na Stripe',
       help: 'Você poderá publicar anúncios assim que a Stripe liberar a conta. Isso costuma levar poucos minutos.',
