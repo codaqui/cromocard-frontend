@@ -64,9 +64,9 @@ export function userDetailPathFor(id: string): string {
 }
 
 export function cardProfilePathFor(id: string): string {
-  return `/cartas/${id}`;
+  return paths.cardProfile.replace(':id', id);
 }
 
 export function listingDetailPathFor(id: string): string {
-  return `/anuncios/${id}`;
+  return paths.listingDetail.replace(':id', id);
 }

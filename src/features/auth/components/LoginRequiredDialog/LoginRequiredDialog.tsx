@@ -15,27 +15,22 @@ interface LoginRequiredDialogProps {
 
 const DEFAULT_MESSAGE = 'Faça login para continuar. É rápido e grátis.';
 
+/** Toda opção guarda a página de origem, para a volta depois do login não depender do caminho escolhido. */
 function LoginOptions() {
   const location = useLocation();
-  const loginPath = loginPathFor(location);
   const rememberOrigin = () => rememberRedirectAfterLogin(`${location.pathname}${location.search}`);
+  const option = (to: string, label: string, variant: 'primary' | 'secondary') => (
+    <Link to={to} className={cn(styles.action, styles[variant])} onClick={rememberOrigin}>
+      {label}
+    </Link>
+  );
 
   return (
     <>
-      <Link to={paths.googleLogin} className={cn(styles.action, styles.secondary)}>
-        Continuar com Google
-      </Link>
+      {option(paths.googleLogin, 'Continuar com Google', 'secondary')}
       <p className={styles.separator}>ou</p>
-      <Link to={loginPath} className={cn(styles.action, styles.primary)}>
-        Entrar com e-mail e senha
-      </Link>
-      <Link
-        to={paths.register}
-        className={cn(styles.action, styles.secondary)}
-        onClick={rememberOrigin}
-      >
-        Criar conta grátis
-      </Link>
+      {option(loginPathFor(location), 'Entrar com e-mail e senha', 'primary')}
+      {option(paths.register, 'Criar conta grátis', 'secondary')}
     </>
   );
 }

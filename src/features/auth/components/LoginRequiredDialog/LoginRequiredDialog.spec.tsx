@@ -63,6 +63,9 @@ describe('LoginRequiredDialog', () => {
 
     expect(router.state.location.pathname).toBe('/login');
     expect(router.state.location.search).toBe('?redirect=%2Fcartas%2Fc1%3Faba%3Danuncios');
+    expect(sessionStorage.getItem('cromocard:redirect-after-login')).toContain(
+      '"path":"/cartas/c1?aba=anuncios"',
+    );
   });
 
   it('L18: Continuar com Google leva à página em construção', async () => {
@@ -71,6 +74,9 @@ describe('LoginRequiredDialog', () => {
     await userEvent.click(within(dialog()).getByRole('link', { name: 'Continuar com Google' }));
 
     expect(router.state.location.pathname).toBe('/login/google');
+    expect(sessionStorage.getItem('cromocard:redirect-after-login')).toContain(
+      '"path":"/cartas/c1?aba=anuncios"',
+    );
   });
 
   it('L16: Criar conta grátis guarda a página atual para depois do login', async () => {

@@ -24,13 +24,21 @@ interface PendingRedirect {
   savedAt: number;
 }
 
+/** O sessionStorage pode estar bloqueado (modo privado, política do navegador): sem ele, a volta cai na home. */
+function withSessionStorage<T>(action: (storage: Storage) => T, fallback: T): T {
+  try {
+    return action(sessionStorage);
+  } catch {
+    return fallback;
+  }
+}
+
 export function rememberRedirectAfterLogin(path: string): void {
   const pending: PendingRedirect = { path, savedAt: Date.now() };
-  try {
-    sessionStorage.setItem(PENDING_REDIRECT_KEY, JSON.stringify(pending));
-  } catch {
-    return;
-  }
+  withSessionStorage(
+    (storage) => storage.setItem(PENDING_REDIRECT_KEY, JSON.stringify(pending)),
+    undefined,
+  );
 }
 
 function isFresh(pending: Partial<PendingRedirect>): pending is PendingRedirect {
@@ -39,22 +47,16 @@ function isFresh(pending: Partial<PendingRedirect>): pending is PendingRedirect 
 }
 
 function pendingRedirect(): string | null {
-  try {
+  return withSessionStorage((storage) => {
     const pending = JSON.parse(
-      sessionStorage.getItem(PENDING_REDIRECT_KEY) ?? '{}',
+      storage.getItem(PENDING_REDIRECT_KEY) ?? '{}',
     ) as Partial<PendingRedirect> | null;
     return pending && isFresh(pending) ? pending.path : null;
-  } catch {
-    return null;
-  }
+  }, null);
 }
 
 export function forgetRedirectAfterLogin(): void {
-  try {
-    sessionStorage.removeItem(PENDING_REDIRECT_KEY);
-  } catch {
-    return;
-  }
+  withSessionStorage((storage) => storage.removeItem(PENDING_REDIRECT_KEY), undefined);
 }
 
 export function pathAfterLogin(search: string, role: UserRole): string {
