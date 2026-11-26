@@ -7,20 +7,27 @@ import { AuthProvider } from '@/contexts/AuthProvider';
 import { authApi } from '@/features/auth';
 import { useAuth } from '@/hooks/useAuth';
 import { accessTokenStore } from '@/lib/access-token';
+import { disconnectSocket } from '@/lib/socket';
 import { fakeAccessToken } from '@/test/fakeAccessToken';
 
 vi.mock('@/features/auth', () => ({
   authApi: { refresh: vi.fn(), logout: vi.fn() },
 }));
 
+vi.mock('@/lib/socket', () => ({ disconnectSocket: vi.fn() }));
+
 function SessionProbe() {
-  const { user, isRestoringSession, signOut } = useAuth();
+  const { user, isRestoringSession, hasSignedOut, signIn, signOut } = useAuth();
 
   if (isRestoringSession) return <p>Restaurando sessão</p>;
 
   return (
     <>
       <p>{user ? `Logado como ${user.role}` : 'Sem sessão'}</p>
+      {hasSignedOut && <p>Saiu da conta</p>}
+      <button type="button" onClick={() => signIn(fakeAccessToken('SELLER'))}>
+        Entrar
+      </button>
       <button type="button" onClick={signOut}>
         Sair
       </button>
@@ -85,5 +92,28 @@ describe('AuthProvider', () => {
     expect(authApi.logout).toHaveBeenCalledOnce();
     expect(accessTokenStore.get()).toBeNull();
     await waitFor(() => expect(queryClient.getQueryData(['users', 'me'])).toBeUndefined());
+  });
+
+  it('entrar depois de sair guarda o token novo e apaga a marca de quem saiu', async () => {
+    vi.mocked(authApi.refresh).mockResolvedValue(adminSession);
+    renderProvider();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Sair' }));
+    expect(await screen.findByText('Saiu da conta')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Entrar' }));
+
+    expect(await screen.findByText('Logado como SELLER')).toBeInTheDocument();
+    expect(screen.queryByText('Saiu da conta')).not.toBeInTheDocument();
+    expect(accessTokenStore.get()).not.toBeNull();
+  });
+
+  it('o Sair fecha a conexão do tempo real, para ela não seguir autenticada como a conta anterior', async () => {
+    vi.mocked(authApi.refresh).mockResolvedValue(adminSession);
+    vi.mocked(disconnectSocket).mockClear();
+    renderProvider();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Sair' }));
+
+    expect(disconnectSocket).toHaveBeenCalledOnce();
   });
 });

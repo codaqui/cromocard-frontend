@@ -6,6 +6,7 @@ import { authApi } from '@/features/auth';
 import { accessTokenStore } from '@/lib/access-token';
 import { onUnauthorized, refreshSessionOnce, setSessionRefresher } from '@/lib/http';
 import { decodeAccessToken } from '@/lib/jwt';
+import { disconnectSocket } from '@/lib/socket';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -27,6 +28,7 @@ function useSessionRestore(storeAccessToken: (token: string | null) => void) {
   const [isRestoringSession, setIsRestoringSession] = useState(true);
 
   const clearSession = useCallback(() => {
+    disconnectSocket();
     storeAccessToken(null);
     queryClient.clear();
   }, [queryClient, storeAccessToken]);

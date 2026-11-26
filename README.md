@@ -66,11 +66,13 @@ feature, use o alias `@/`; `import.meta.env` só em `src/config/env.ts`.
 | Nome | Onde | Observação |
 | --- | --- | --- |
 | `VITE_API_URL` | `.env` (dev) | URL da API sem `/api/v1` |
+| `VITE_WS_URL` | `.env` (dev) | URL do serviço de tempo real (Socket.IO), local `http://localhost:3001` |
 | `VITE_GOOGLE_CLIENT_ID` | `.env` (dev) | Client ID do Google Identity Services; vazio esconde o botão do Google |
 | `API_URL` | Container | Gravada em `/env.js` na subida do container; tem prioridade sobre `VITE_API_URL` |
+| `WS_URL` | Container | Gravada em `/env.js`; tem prioridade sobre `VITE_WS_URL` (em hml, `wss://hml-ws.cromocard.com.br`) |
 | `GOOGLE_CLIENT_ID` | Container | Gravada em `/env.js`; tem prioridade sobre `VITE_GOOGLE_CLIENT_ID`. Não é segredo (ADR-048) |
 
-A mesma imagem roda em homologação e produção: a URL da API e o client ID do Google não entram no build, vêm do container.
+A mesma imagem roda em homologação e produção: as URLs da API e do tempo real e o client ID do Google não entram no build, vêm do container.
 
 ## Scripts
 
@@ -86,8 +88,8 @@ A mesma imagem roda em homologação e produção: a URL da API e o client ID do
 
 ```bash
 docker build -f docker/Dockerfile -t cromocard-web .
-docker run --rm -p 8080:8080 -e API_URL=http://localhost:3000 -e GOOGLE_CLIENT_ID=<client-id> cromocard-web
+docker run --rm -p 8080:8080 -e API_URL=http://localhost:3000 -e WS_URL=http://localhost:3001 -e GOOGLE_CLIENT_ID=<client-id> cromocard-web
 ```
 
 nginx sem root na porta 8080; qualquer URL desconhecida devolve o `index.html` (SPA). Sem `API_URL`
-o container não sobe.
+ou sem `WS_URL` o container não sobe.
