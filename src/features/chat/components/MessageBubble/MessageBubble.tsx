@@ -6,6 +6,7 @@ import { timeOf } from '../../chat.format';
 import type { ChatMessage } from '../../chat.types';
 import { ContactAvatar } from '../ContactAvatar/ContactAvatar';
 import { MessageMenu } from '../MessageMenu/MessageMenu';
+import { MessageQuote } from '../MessageQuote/MessageQuote';
 import styles from './MessageBubble.module.css';
 
 export interface MessageBubbleProps {
@@ -20,10 +21,13 @@ export interface MessageBubbleProps {
 
 const opensMenu = (event: KeyboardEvent) => event.key === 'Enter' || event.key === ' ';
 
-function BubbleContent({ message, unread }: Pick<MessageBubbleProps, 'message' | 'unread'>) {
+type BubbleContentProps = Pick<MessageBubbleProps, 'message' | 'unread' | 'mine'>;
+
+function BubbleContent({ message, unread, mine }: BubbleContentProps) {
   return (
     <>
       {unread && <span className={styles.srOnly}>Não lida</span>}
+      {message.replyTo && <MessageQuote quote={message.replyTo} mine={mine} />}
       <p className={styles.text}>{message.content}</p>
       <time className={styles.time} dateTime={message.createdAt}>
         {timeOf(message.createdAt)}
@@ -32,9 +36,9 @@ function BubbleContent({ message, unread }: Pick<MessageBubbleProps, 'message' |
   );
 }
 
-type BubbleButtonProps = Pick<MessageBubbleProps, 'message' | 'unread' | 'menuOpen' | 'onOpenMenu'>;
+type BubbleButtonProps = Omit<MessageBubbleProps, 'onCloseMenu' | 'onReply'>;
 
-function BubbleButton({ message, unread, menuOpen, onOpenMenu }: BubbleButtonProps) {
+function BubbleButton({ message, unread, mine, menuOpen, onOpenMenu }: BubbleButtonProps) {
   return (
     <div
       role="button"
@@ -49,13 +53,13 @@ function BubbleButton({ message, unread, menuOpen, onOpenMenu }: BubbleButtonPro
         onOpenMenu();
       }}
     >
-      <BubbleContent message={message} unread={unread} />
+      <BubbleContent message={message} unread={unread} mine={mine} />
     </div>
   );
 }
 
-export function MessageBubble({ mine, onCloseMenu, onReply, ...bubble }: MessageBubbleProps) {
-  const { message, menuOpen } = bubble;
+export function MessageBubble({ onCloseMenu, onReply, ...bubble }: MessageBubbleProps) {
+  const { message, menuOpen, mine } = bubble;
   return (
     <li className={cn(styles.row, mine && styles.mine)}>
       <ContactAvatar name={message.author.name} avatarUrl={null} size="small" />

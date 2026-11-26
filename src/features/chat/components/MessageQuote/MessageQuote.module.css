@@ -1,0 +1,51 @@
+.quote {
+  display: flex;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-high);
+}
+
+.mine {
+  background: var(--color-quote-mine);
+}
+
+.bar {
+  flex-shrink: 0;
+  width: var(--size-reply-bar);
+  border-radius: var(--radius-pill);
+  background: var(--color-highlight);
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+}
+
+.title,
+.text {
+  overflow: hidden;
+  line-height: var(--space-6);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-highlight);
+  font-size: var(--font-size-hint);
+  font-weight: 600;
+}
+
+.text {
+  color: var(--color-label);
+  font-size: var(--font-size-label);
+  font-style: italic;
+}
+
+.mine .text {
+  color: var(--color-quote-text-mine);
+}
