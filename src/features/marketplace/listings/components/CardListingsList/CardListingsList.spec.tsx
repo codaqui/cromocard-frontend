@@ -49,6 +49,27 @@ const rows = () =>
 describe('CardListingsList', () => {
   beforeEach(() => vi.clearAllMocks());
 
+  it('o título usa o total da lista quando ele diverge da contagem do perfil', async () => {
+    vi.mocked(listingsApi.listByCard).mockResolvedValue({
+      data: [listingOf('a', '1750.00'), listingOf('b', '1980.00')],
+      meta: { page: 1, pageSize: 20, total: 2, totalPages: 1 },
+    });
+    renderList(5);
+
+    expect(await screen.findByRole('heading', { name: 'Anúncios disponíveis (2)' })).toBeVisible();
+    expect(rows()).toHaveLength(2);
+  });
+
+  it('mostra o estado vazio quando a lista volta sem anúncios', async () => {
+    vi.mocked(listingsApi.listByCard).mockResolvedValue({
+      data: [],
+      meta: { page: 1, pageSize: 20, total: 0, totalPages: 0 },
+    });
+    renderList(1);
+
+    expect(await screen.findByRole('heading', { name: 'Anúncios disponíveis (0)' })).toBeVisible();
+  });
+
   it('CA2: mostra os anúncios na ordem da API, com preço e condição, e destaca o primeiro', async () => {
     vi.mocked(listingsApi.listByCard).mockResolvedValue(
       pageOf(

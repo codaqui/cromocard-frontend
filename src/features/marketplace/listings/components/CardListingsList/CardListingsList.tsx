@@ -133,7 +133,18 @@ function ListingsTable({ cardId }: { cardId: string }) {
   );
 }
 
-export function CardListingsList({ cardId, count, canCreateListing }: CardListingsListProps) {
+/** O total da própria lista prevalece sobre o do perfil, para o título não contradizer as linhas. */
+function useListingsCount(cardId: string, profileCount: number): number {
+  const { data } = useCardListings(cardId, profileCount > 0);
+  return data?.pages[0]?.meta.total ?? profileCount;
+}
+
+export function CardListingsList({
+  cardId,
+  count: profileCount,
+  canCreateListing,
+}: CardListingsListProps) {
+  const count = useListingsCount(cardId, profileCount);
   return (
     <section id={CARD_LISTINGS_SECTION_ID} className={styles.section}>
       <ListingsHeader count={count} />
