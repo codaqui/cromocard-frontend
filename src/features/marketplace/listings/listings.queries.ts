@@ -9,9 +9,8 @@ export const listingsKeys = {
   byCard: (cardId: string) => [...listingsKeys.all, 'card', cardId] as const,
 };
 
-export function useCardListings(cardId: string, enabled = true) {
+export function useCardListings(cardId: string) {
   return useInfiniteQuery({
-    enabled,
     queryKey: listingsKeys.byCard(cardId),
     queryFn: ({ pageParam }) =>
       listingsApi.listByCard(cardId, { page: pageParam, pageSize: CARD_LISTINGS_PAGE_SIZE }),

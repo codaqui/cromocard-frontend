@@ -49,7 +49,7 @@ const rows = () =>
 describe('CardListingsList', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('o título usa o total da lista quando ele diverge da contagem do perfil', async () => {
+  it('L20: o título usa o total da lista quando ele diverge da contagem do perfil', async () => {
     vi.mocked(listingsApi.listByCard).mockResolvedValue({
       data: [listingOf('a', '1750.00'), listingOf('b', '1980.00')],
       meta: { page: 1, pageSize: 20, total: 2, totalPages: 1 },
@@ -60,14 +60,30 @@ describe('CardListingsList', () => {
     expect(rows()).toHaveLength(2);
   });
 
-  it('mostra o estado vazio quando a lista volta sem anúncios', async () => {
+  it('L20: mostra o estado vazio quando a lista volta sem anúncios', async () => {
     vi.mocked(listingsApi.listByCard).mockResolvedValue({
       data: [],
       meta: { page: 1, pageSize: 20, total: 0, totalPages: 0 },
     });
     renderList(1);
 
-    expect(await screen.findByRole('heading', { name: 'Anúncios disponíveis (0)' })).toBeVisible();
+    expect(await screen.findByText('Ainda não há anúncios ativos para esta carta.')).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'Anúncios disponíveis (0)' })).toBeVisible();
+    expect(screen.queryByRole('list', { name: 'Anúncios disponíveis' })).not.toBeInTheDocument();
+  });
+
+  it('L20: consulta a lista mesmo com o perfil dizendo 0 e mostra os anúncios dela', async () => {
+    vi.mocked(listingsApi.listByCard).mockResolvedValue({
+      data: [listingOf('a', '1750.00')],
+      meta: { page: 1, pageSize: 20, total: 1, totalPages: 1 },
+    });
+    renderList(0);
+
+    expect(await screen.findByRole('heading', { name: 'Anúncios disponíveis (1)' })).toBeVisible();
+    expect(rows()).toHaveLength(1);
+    expect(
+      screen.queryByText('Ainda não há anúncios ativos para esta carta.'),
+    ).not.toBeInTheDocument();
   });
 
   it('CA2: mostra os anúncios na ordem da API, com preço e condição, e destaca o primeiro', async () => {
