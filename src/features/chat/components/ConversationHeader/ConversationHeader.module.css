@@ -89,6 +89,10 @@
     display: inline-flex;
   }
 
+  .name {
+    font-size: var(--font-size-md);
+  }
+
   .profile {
     width: var(--size-control);
     padding: 0;

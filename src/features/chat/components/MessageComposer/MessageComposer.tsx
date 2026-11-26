@@ -37,7 +37,10 @@ function useComposer(onSend: MessageComposerProps['onSend']) {
 function ComposerFooter() {
   return (
     <p className={styles.footer}>
-      <span>{chatTexts.marketplaceNotice}</span>
+      <span className={styles.notice}>
+        <Icon name="lock" size={12} />
+        {chatTexts.marketplaceNotice}
+      </span>
       <span className={styles.hint}>
         Pressione <kbd className={styles.kbd}>Enter</kbd> para enviar
       </span>

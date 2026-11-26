@@ -25,6 +25,8 @@ export function timeOf(iso: string): string {
   return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }
 
+export const isToday = (iso: string, now = new Date()) => daysBetween(new Date(iso), now) === 0;
+
 export function previewTime(iso: string, now = new Date()): string {
   const date = new Date(iso);
   const days = daysBetween(date, now);

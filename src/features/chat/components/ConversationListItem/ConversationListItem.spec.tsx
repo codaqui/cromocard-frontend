@@ -67,4 +67,15 @@ describe('ConversationListItem', () => {
     expect(screen.getByRole('button').querySelector('time')).toBeNull();
     expect(screen.queryByText(/compro/)).not.toBeInTheDocument();
   });
+
+  it('a hora fica em destaque só nas mensagens de hoje', () => {
+    const old = new Date(Date.now() - 3 * 86_400_000).toISOString();
+    renderItem({
+      conversation: conversation({ lastMessage: { content: 'Oi', fromMe: false, createdAt: old } }),
+    });
+
+    expect(screen.getByRole('button').querySelector('time')?.className).not.toMatch(
+      /timeHighlight/,
+    );
+  });
 });

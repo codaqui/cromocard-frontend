@@ -25,6 +25,13 @@
   font: inherit;
   font-size: var(--font-size-md);
   resize: none;
+  field-sizing: content;
+}
+
+.input::placeholder {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .input:focus {
@@ -60,6 +67,16 @@
   font-size: var(--font-size-xs);
 }
 
+.notice {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.notice svg {
+  color: var(--color-warning);
+}
+
 .kbd {
   padding: 0 var(--space-1);
   border-radius: var(--radius-xs);
@@ -69,5 +86,12 @@
 @media (max-width: 48rem) {
   .hint {
     display: none;
+  }
+
+  .send {
+    width: var(--size-control);
+    padding: 0;
+    justify-content: center;
+    font-size: 0;
   }
 }

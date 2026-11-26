@@ -7,6 +7,7 @@ import {
   handleOf,
   initialOf,
   initialsOf,
+  isToday,
   listedLabel,
   previewTime,
   sameDay,
@@ -22,6 +23,8 @@ describe('chat.format', () => {
     expect(previewTime(at(31), NOW)).toBe('15:42');
     expect(previewTime(at(30), NOW)).toBe('Ontem');
     expect(previewTime(at(27), NOW)).toBe('27 Out');
+    expect(isToday(at(31), NOW)).toBe(true);
+    expect(isToday(at(30), NOW)).toBe(false);
   });
 
   it('CA1: separador "Hoje, 31 de Outubro", "Ontem, …" e a data nos dias anteriores', () => {

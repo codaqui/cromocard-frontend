@@ -78,7 +78,8 @@
 
 @media (max-width: 48rem) {
   .page {
-    height: calc(100dvh - var(--size-topbar) - 2 * var(--space-4));
+    height: auto;
+    min-height: 0;
   }
 
   .placeholder {

@@ -50,6 +50,16 @@
 }
 
 @media (max-width: 48rem) {
+  .scroll {
+    flex: none;
+    max-height: 60dvh;
+  }
+
+  .view > form {
+    position: sticky;
+    bottom: 0;
+  }
+
   .messages {
     padding: 0 var(--space-3) var(--space-3);
   }

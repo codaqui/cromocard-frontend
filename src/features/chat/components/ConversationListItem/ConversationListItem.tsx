@@ -1,7 +1,7 @@
 import { Icon } from '@/components/Icon/Icon';
 import { cn } from '@/utils/cn';
 
-import { handleOf, previewTime } from '../../chat.format';
+import { handleOf, isToday, previewTime } from '../../chat.format';
 import { chatTexts } from '../../chat.labels';
 import type { ConversationSummary } from '../../chat.types';
 import { ContactAvatar } from '../ContactAvatar/ContactAvatar';
@@ -34,13 +34,7 @@ function VerifiedSeal() {
   );
 }
 
-function ItemTop({
-  conversation,
-  highlighted,
-}: {
-  conversation: ConversationSummary;
-  highlighted: boolean;
-}) {
+function ItemTop({ conversation }: { conversation: ConversationSummary }) {
   const { contact, lastMessage } = conversation;
   return (
     <span className={styles.top}>
@@ -48,7 +42,7 @@ function ItemTop({
       {contact.verified && <VerifiedSeal />}
       {lastMessage && (
         <time
-          className={cn(styles.time, highlighted && styles.timeHighlight)}
+          className={cn(styles.time, isToday(lastMessage.createdAt) && styles.timeHighlight)}
           dateTime={lastMessage.createdAt}
         >
           {previewTime(lastMessage.createdAt)}
@@ -89,7 +83,7 @@ export function ConversationListItem({
       >
         <ContactAvatar name={contact.name} avatarUrl={contact.avatarUrl} online={online} />
         <span className={styles.body}>
-          <ItemTop conversation={conversation} highlighted={active || unreadCount > 0} />
+          <ItemTop conversation={conversation} />
           <span className={styles.handle}>{handleOf(contact.username)}</span>
           <ItemBottom conversation={conversation} />
         </span>

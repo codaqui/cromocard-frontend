@@ -127,12 +127,7 @@
 }
 
 @media (max-width: 48rem) {
-  .row {
-    flex-wrap: wrap;
-  }
-
   .tag {
-    order: 3;
-    margin-left: calc(var(--size-chat-avatar-small) + var(--space-3));
+    display: none;
   }
 }
