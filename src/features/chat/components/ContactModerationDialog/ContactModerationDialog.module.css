@@ -60,8 +60,8 @@
 .option {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3);
+  gap: 10px;
+  padding: 10px var(--space-3);
   border: 1px solid var(--color-outline-faint);
   border-radius: var(--radius-sm);
   background: var(--color-surface-raised);
@@ -100,6 +100,7 @@
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+  line-height: 1.25;
 }
 
 .optionLabel {
@@ -233,14 +234,18 @@
 }
 
 .footerNote {
-  margin-right: auto;
+  flex: 1;
+  min-width: 0;
   color: var(--color-text-hint);
   font-size: var(--font-size-hint);
 }
 
 .footerButton,
 .dangerButton {
+  flex-shrink: 0;
+  min-height: auto;
   padding: 10px var(--space-4);
+  line-height: 1.25;
   font-size: var(--font-size-label);
   font-weight: 700;
 }

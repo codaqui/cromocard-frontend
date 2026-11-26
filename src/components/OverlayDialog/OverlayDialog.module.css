@@ -267,8 +267,13 @@
   padding: var(--space-6);
 }
 
+.denseDialog .titles {
+  gap: 2px;
+  line-height: 1.25;
+}
+
 .denseDialog .footer {
-  flex-wrap: wrap;
+  gap: var(--space-2);
   align-items: center;
   padding: var(--space-4) var(--space-6);
   border-top: none;
@@ -276,6 +281,12 @@
 
 .mediumDialog {
   width: min(var(--size-dialog-medium), 100%);
+}
+
+@media (max-width: 30rem) {
+  .denseDialog .footer {
+    flex-wrap: wrap;
+  }
 }
 
 @media (max-width: 48rem) {
