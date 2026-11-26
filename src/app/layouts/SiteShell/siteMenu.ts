@@ -28,11 +28,22 @@ export const siteMainMenu: SiteMenuItem[] = [
 export const mainMenuFor = (role?: UserRole) =>
   siteMainMenu.filter(({ hiddenFor }) => hiddenFor === undefined || hiddenFor !== role);
 
-export const sellerMenu: SiteMenuItem[] = [
-  { to: paths.seller.overview, label: 'Visão geral', icon: 'gridView', end: true },
+interface SiteMenuGroup {
+  label: string;
+  visibleFor: UserRole;
+  items: SiteMenuItem[];
+}
+
+export const siteMenuGroups: SiteMenuGroup[] = [
+  {
+    label: 'Vendedor',
+    visibleFor: 'SELLER',
+    items: [{ to: paths.seller.overview, label: 'Visão geral', icon: 'gridView', end: true }],
+  },
 ];
 
-export const sellerMenuFor = (role?: UserRole) => (role === 'SELLER' ? sellerMenu : []);
+export const menuGroupsFor = (role?: UserRole) =>
+  siteMenuGroups.filter(({ visibleFor }) => visibleFor === role);
 
 export const siteSecondaryMenu: SiteMenuItem[] = [
   { to: paths.settings, label: 'Configurações', icon: 'settingsOutline' },

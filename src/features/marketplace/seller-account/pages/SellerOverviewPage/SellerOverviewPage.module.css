@@ -42,7 +42,7 @@
 }
 
 .title {
-  font-size: var(--font-size-page-title);
+  font-size: var(--font-size-section-title);
   font-weight: 800;
   line-height: var(--line-height-title);
   letter-spacing: var(--letter-spacing-tight);
@@ -50,7 +50,24 @@
 
 .description {
   color: var(--color-label);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-section-description);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.createListing:disabled {
+  opacity: var(--opacity-disabled-cta);
+}
+
+.error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
 }
 
 @media (max-width: 48rem) {

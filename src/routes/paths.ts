@@ -22,6 +22,7 @@ export const paths = {
     overview: '/vendedor',
     stripeReturn: '/vendedor/stripe/retorno',
     stripeRefresh: '/vendedor/stripe/renovar',
+    store: '/vendedor/loja',
   },
   backoffice: {
     root: '/backoffice',

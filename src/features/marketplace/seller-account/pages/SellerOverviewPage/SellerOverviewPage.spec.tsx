@@ -1,9 +1,10 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ApiError } from '@/lib/api-error';
+import { paths } from '@/routes/paths';
+import { renderWithProviders } from '@/test/renderWithProviders';
 
 import { sellerAccountApi } from '../../seller-account.api';
 import type { StripeAccount } from '../../seller-account.types';
@@ -14,15 +15,17 @@ vi.mock('../../seller-account.api', () => ({
 }));
 
 const assign = vi.fn();
+const CONNECT_HELP =
+  'O cadastro é feito na própria Stripe e leva poucos minutos. Sem a conta pronta, não é possível publicar anúncios.';
 
-function renderPage(account: StripeAccount) {
-  vi.mocked(sellerAccountApi.get).mockResolvedValue(account);
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  render(
-    <QueryClientProvider client={queryClient}>
-      <SellerOverviewPage />
-    </QueryClientProvider>,
-  );
+const routes = [
+  { path: paths.seller.overview, element: <SellerOverviewPage /> },
+  { path: paths.seller.store, element: <h1>Loja pública</h1> },
+];
+
+function renderPage(account?: StripeAccount) {
+  if (account) vi.mocked(sellerAccountApi.get).mockResolvedValue(account);
+  return renderWithProviders({ routes, initialPath: paths.seller.overview });
 }
 
 const createListing = () => screen.findByRole('button', { name: /Criar Novo Anúncio/ });
@@ -52,7 +55,7 @@ describe('SellerOverviewPage', () => {
     expect(assign).toHaveBeenCalledWith('https://connect.stripe.com/setup/e/acct_1');
   });
 
-  it('CA9: com a Stripe fora do ar, avisa o erro e deixa tentar de novo', async () => {
+  it('CA9: com a Stripe fora do ar, avisa o erro, deixa tentar de novo e fecha o aviso', async () => {
     vi.mocked(sellerAccountApi.createOnboardingLink).mockRejectedValue(
       new ApiError({ status: 502, code: 'PAYMENT_PROVIDER_ERROR', message: 'Stripe fora do ar' }),
     );
@@ -65,6 +68,25 @@ describe('SellerOverviewPage', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Continuar cadastro' })).toBeEnabled();
     expect(assign).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Fechar aviso' }));
+    expect(
+      screen.queryByText(/Não foi possível abrir o cadastro na Stripe/),
+    ).not.toBeInTheDocument();
+  });
+
+  it('CA9: link de cadastro fora da Stripe não sai do app e vira o mesmo erro', async () => {
+    vi.mocked(sellerAccountApi.createOnboardingLink).mockResolvedValue({
+      url: 'https://golpe.example.com/setup',
+    });
+    renderPage({ status: 'NOT_CONNECTED', pendingReason: null });
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Conectar conta Stripe' }));
+
+    expect(
+      await screen.findByText(/Não foi possível abrir o cadastro na Stripe/),
+    ).toBeInTheDocument();
+    expect(assign).not.toHaveBeenCalled();
   });
 
   it('CA9: o botão mostra o carregamento enquanto espera a Stripe', async () => {
@@ -76,14 +98,13 @@ describe('SellerOverviewPage', () => {
     expect(await screen.findByRole('button', { name: 'Abrindo a Stripe…' })).toBeDisabled();
   });
 
-  it('CA7: com pedido de informação, oferece completar o cadastro e mantém o anúncio bloqueado', async () => {
+  it('CA7: com pedido de informação, oferece completar o cadastro e explica o anúncio bloqueado', async () => {
     renderPage({ status: 'PENDING', pendingReason: 'MORE_INFO_REQUIRED' });
 
     expect(await screen.findByRole('button', { name: 'Completar cadastro' })).toBeInTheDocument();
-    expect(await createListing()).toHaveAttribute(
-      'title',
-      'Conecte sua conta de recebimento para publicar anúncios',
-    );
+    const button = await createListing();
+    expect(button).toBeDisabled();
+    expect(button).toHaveAccessibleDescription(CONNECT_HELP);
   });
 
   it('CA3: em verificação, mostra o selo Verificando', async () => {
@@ -93,27 +114,42 @@ describe('SellerOverviewPage', () => {
       await screen.findByRole('heading', { name: 'Estamos verificando sua conta na Stripe' }),
     ).toBeInTheDocument();
     expect(screen.getByText('Verificando')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Conectar|Continuar|Completar/ })).toBeNull();
     expect(await createListing()).toBeDisabled();
   });
 
   it('CA4: conta pronta tira o aviso e libera Criar Novo Anúncio', async () => {
     renderPage({ status: 'READY', pendingReason: null });
 
-    expect(await createListing()).toBeEnabled();
+    const button = await createListing();
+    expect(button).toBeEnabled();
+    expect(button).not.toHaveAccessibleDescription();
     expect(screen.queryByRole('region')).not.toBeInTheDocument();
   });
 
-  it('avisa quando não consegue carregar a conta', async () => {
-    vi.mocked(sellerAccountApi.get).mockRejectedValue(new Error('rede'));
-    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    render(
-      <QueryClientProvider client={queryClient}>
-        <SellerOverviewPage />
-      </QueryClientProvider>,
-    );
+  it('Ver Loja Pública leva à loja pública do vendedor (CCD080)', async () => {
+    renderPage({ status: 'READY', pendingReason: null });
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Ver Loja Pública' }));
+
+    expect(await screen.findByRole('heading', { name: 'Loja pública' })).toBeInTheDocument();
+  });
+
+  it('sem carregar a conta, mantém o cabeçalho e deixa tentar de novo', async () => {
+    vi.mocked(sellerAccountApi.get)
+      .mockRejectedValueOnce(new Error('rede'))
+      .mockResolvedValueOnce({ status: 'READY', pendingReason: null });
+    renderPage();
 
     expect(
-      await screen.findByText('Não foi possível carregar a sua conta de recebimento.'),
+      await screen.findByText('Não foi possível carregar a sua conta de recebimento'),
     ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Visão geral' })).toBeInTheDocument();
+    expect(await createListing()).toBeDisabled();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }));
+
+    expect(await createListing()).toBeEnabled();
+    expect(sellerAccountApi.get).toHaveBeenCalledTimes(2);
   });
 });

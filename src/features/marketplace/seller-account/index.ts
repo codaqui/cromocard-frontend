@@ -1,2 +1,3 @@
 export { sellerAccountRoutes } from './seller-account.routes';
-export { isStripeAccountReady, useStripeAccount } from './seller-account.queries';
+export { useCanPublishListing } from './seller-account.queries';
+export { NOT_READY_REASON } from './seller-account.labels';

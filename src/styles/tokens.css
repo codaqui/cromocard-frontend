@@ -181,6 +181,10 @@
   --font-size-notice-title: 1.0625rem;
   --line-height-notice: 1.25;
   --size-notice-text: 34rem;
+  --size-notice-text-min: 20rem;
+  --font-size-section-title: 2.1875rem;
+  --font-size-section-description: 0.9375rem;
+  --opacity-disabled-cta: 0.4;
   --line-height-badge: 1.5;
 
   --font-family: 'Plus Jakarta Sans Variable', 'Inter', system-ui, sans-serif;
