@@ -207,4 +207,20 @@ describe('SanctionDialog', () => {
     expect(onClose).toHaveBeenCalled();
     expect(usersApi.suspend).not.toHaveBeenCalled();
   });
+
+  it('CCD047: a suspensão e o banimento pela fila levam o id da denúncia', async () => {
+    const target = buildTarget({ reportId: '0199a000-0000-7000-8000-000000000042' });
+    vi.mocked(usersApi.suspend).mockResolvedValue({} as never);
+    renderDialog(target);
+
+    await typeReason('Golpe confirmado no chat pessoal');
+    await userEvent.click(screen.getByRole('button', { name: 'Aplicar sanção' }));
+
+    await vi.waitFor(() =>
+      expect(usersApi.suspend).toHaveBeenCalledWith(
+        target.id,
+        expect.objectContaining({ reportId: '0199a000-0000-7000-8000-000000000042' }),
+      ),
+    );
+  });
 });
