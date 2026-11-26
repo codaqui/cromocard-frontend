@@ -7,7 +7,14 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { accessTokenStore } from '@/lib/access-token';
-import { api, http, onUnauthorized, refreshSessionOnce, setSessionRefresher } from '@/lib/http';
+import {
+  api,
+  http,
+  onUnauthorized,
+  refreshSessionOnce,
+  renewSessionOrSignOut,
+  setSessionRefresher,
+} from '@/lib/http';
 
 type Responder = (config: InternalAxiosRequestConfig) => { status: number; data: unknown };
 
@@ -96,6 +103,28 @@ describe('http', () => {
 
     await expect(api.get('/users/me')).rejects.toMatchObject({ status: 401 });
     expect(listener).toHaveBeenCalledOnce();
+    stop();
+    stopListening();
+  });
+
+  it('renewSessionOrSignOut encerra a sessão quando o renovador falha com erro', async () => {
+    const listener = vi.fn();
+    const stopListening = onUnauthorized(listener);
+    const stop = setSessionRefresher(() => Promise.reject(new Error('lock indisponível')));
+
+    await expect(renewSessionOrSignOut()).resolves.toBe(false);
+    expect(listener).toHaveBeenCalledOnce();
+    stop();
+    stopListening();
+  });
+
+  it('renewSessionOrSignOut mantém a sessão quando renova', async () => {
+    const listener = vi.fn();
+    const stopListening = onUnauthorized(listener);
+    const stop = setSessionRefresher(() => Promise.resolve(true));
+
+    await expect(renewSessionOrSignOut()).resolves.toBe(true);
+    expect(listener).not.toHaveBeenCalled();
     stop();
     stopListening();
   });

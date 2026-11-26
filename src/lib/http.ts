@@ -48,6 +48,12 @@ export function refreshSessionOnce(): Promise<boolean> {
   return refreshInFlight;
 }
 
+export async function renewSessionOrSignOut(): Promise<boolean> {
+  const renewed = await refreshSessionOnce().catch(() => false);
+  if (!renewed) notifyUnauthorized();
+  return renewed;
+}
+
 function retriableAfterRefresh(error: unknown): RetriableRequestConfig | undefined {
   if (!axios.isAxiosError(error) || error.response?.status !== HTTP_UNAUTHORIZED) return undefined;
 
@@ -69,9 +75,8 @@ http.interceptors.request.use((config) => {
 
 async function retryAfterRefresh(config: RetriableRequestConfig, error: unknown) {
   config.retriedAfterRefresh = true;
-  if (await refreshSessionOnce()) return http(config);
+  if (await renewSessionOrSignOut()) return http(config);
 
-  notifyUnauthorized();
   return Promise.reject(toApiError(error));
 }
 
