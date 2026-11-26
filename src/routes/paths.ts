@@ -18,6 +18,8 @@ export const paths = {
   settings: '/configuracoes',
   notifications: '/notificacoes',
   suggestions: '/sugestoes',
+  messages: '/mensagens',
+  publicProfile: '/usuarios/:id',
   backoffice: {
     root: '/backoffice',
     dashboard: '/backoffice/dashboard',
@@ -57,4 +59,12 @@ export function searchPathFor(term: string, scope: string): string {
 
 export function userDetailPathFor(id: string): string {
   return `${paths.backoffice.users}/${id}`;
+}
+
+export function publicProfilePathFor(userId: string): string {
+  return `/usuarios/${userId}`;
+}
+
+export function conversationPathFor(conversationId: string): string {
+  return `${paths.messages}?${new URLSearchParams({ conversa: conversationId }).toString()}`;
 }
