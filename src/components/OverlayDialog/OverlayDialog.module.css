@@ -224,6 +224,56 @@
   backdrop-filter: none;
 }
 
+.narrowDialog {
+  width: min(var(--size-dialog-compact), 100%);
+}
+
+/* Modais do chat no Figma (1160-34298): faixas de 16/24 px, título de 18 px e corpo de 24 px. */
+.denseDialog {
+  border: 1px solid var(--color-primary-border);
+  border-radius: var(--radius-md);
+}
+
+.denseDialog .header {
+  padding: var(--space-4) var(--space-6);
+  border-bottom: none;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  background: var(--color-surface-raised);
+}
+
+.denseDialog .heading {
+  gap: var(--space-3);
+}
+
+.denseDialog .title {
+  font-size: var(--font-size-dialog-dense);
+  font-weight: 700;
+}
+
+.denseDialog .subtitle {
+  color: var(--color-label);
+  font-size: var(--font-size-label);
+}
+
+.denseDialog .close {
+  width: auto;
+  height: auto;
+  padding: var(--space-1);
+  border: none;
+  background: transparent;
+}
+
+.denseDialog .body {
+  padding: var(--space-6);
+}
+
+.denseDialog .footer {
+  flex-wrap: wrap;
+  align-items: center;
+  padding: var(--space-4) var(--space-6);
+  border-top: none;
+}
+
 .mediumDialog {
   width: min(var(--size-dialog-medium), 100%);
 }

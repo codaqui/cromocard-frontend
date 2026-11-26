@@ -23,13 +23,15 @@ export interface OverlayDialogProps {
   /** Linha de apoio abaixo do título, como nos formulários do catálogo no Figma. */
   subtitle?: string;
   /**
+   * `narrow` (35rem) para os modais do chat, como o de bloquear ou denunciar (1160-34298);
    * `wide` para formulários de duas colunas (48rem), como o cadastro de usuário no Figma;
    * `large` para formulários com dois painéis (64rem), como o cadastro de carta.
    */
   size?: DialogSize;
   /**
    * `framed`: cabeçalho e rodapé em faixas separadas, como os formulários do catálogo no Figma;
-   * `compact`: modal pequeno, com borda e sem o botão de fechar, como os avisos do catálogo.
+   * `compact`: modal pequeno, com borda e sem o botão de fechar, como os avisos do catálogo;
+   * `dense`: faixas de cabeçalho e rodapé mais baixas e título de 18 px, como os modais do chat.
    */
   variant?: DialogVariant;
 }
@@ -38,9 +40,9 @@ interface OverlayDialogWithPlacementProps extends OverlayDialogProps {
   placement: 'center' | 'right';
 }
 
-type DialogSize = 'default' | 'medium' | 'wide' | 'large';
+type DialogSize = 'default' | 'narrow' | 'medium' | 'wide' | 'large';
 
-type DialogVariant = 'default' | 'framed' | 'compact';
+type DialogVariant = 'default' | 'framed' | 'compact' | 'dense';
 
 const keepOpen = () => undefined;
 
@@ -131,6 +133,7 @@ interface DialogPanelProps extends Omit<OverlayDialogWithPlacementProps, 'open'>
 
 const sizeClassName: Record<DialogSize, string | undefined> = {
   default: undefined,
+  narrow: styles.narrowDialog,
   medium: styles.mediumDialog,
   wide: styles.wideDialog,
   large: styles.largeDialog,
@@ -140,6 +143,7 @@ const variantClassName: Record<DialogVariant, string | undefined> = {
   default: undefined,
   framed: styles.framedDialog,
   compact: styles.compactDialog,
+  dense: cn(styles.framedDialog, styles.denseDialog),
 };
 
 interface DialogLook {

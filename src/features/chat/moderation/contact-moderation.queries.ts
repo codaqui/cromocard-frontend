@@ -5,10 +5,10 @@ import { contactModerationApi } from './contact-moderation.api';
 
 export const blockedContactsKey = (page: number) => [...chatKeys.all, 'blocks', page] as const;
 
-function useRefreshingMutation<T, R>(mutationFn: (input: T) => Promise<R>) {
+function useRefreshingMutation<T, R>(request: (input: T) => Promise<R>) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn,
+    mutationFn: (input: T) => request(input),
     onSuccess: async () => {
       await Promise.all([
         refreshConversations(queryClient),
