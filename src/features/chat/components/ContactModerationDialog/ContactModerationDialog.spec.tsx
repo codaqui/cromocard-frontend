@@ -209,4 +209,13 @@ describe('ContactModerationDialog', () => {
       await screen.findByText('Não foi possível concluir. Tente de novo.'),
     ).toBeInTheDocument();
   });
+
+  it('R2: sem @, o título e o contato usam o nome', () => {
+    renderDialog({ ...marcos, contact: { ...marcos.contact, username: null } });
+
+    expect(
+      screen.getByRole('dialog', { name: 'Bloquear ou denunciar Marcos Vinicius' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('conversa desde out. de 2026')).toBeInTheDocument();
+  });
 });
