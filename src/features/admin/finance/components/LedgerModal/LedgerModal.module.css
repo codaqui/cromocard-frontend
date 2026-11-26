@@ -1,0 +1,53 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.totals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-3);
+}
+
+.total {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-shade);
+}
+
+.totalLabel {
+  font-size: var(--font-size-caption);
+  color: var(--color-label);
+}
+
+.totalValue {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.release {
+  color: var(--color-primary);
+}
+
+.retained {
+  color: var(--color-warning);
+}
+
+.count {
+  font-size: var(--font-size-caption);
+  color: var(--color-label);
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+}

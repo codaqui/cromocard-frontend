@@ -6,19 +6,21 @@ import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
 import type { Period } from '@/components/PeriodFilter/PeriodFilter';
 import {
+  FinanceOverview,
+  ListedVolumeCell,
   SellerRegistrationsTable,
   SellerVerificationPanel,
   useSellerVerificationDrawer,
   useSellerVerificationsList,
+  useSellerFinanceStats,
   useSellerVerificationsSummary,
 } from '@/features/admin';
-import type { SellerVerificationListItem } from '@/features/admin';
+import type { SellerFinanceStats, SellerVerificationListItem, StatsById } from '@/features/admin';
 import type { SellerVerificationStatus } from '@/types/seller-verification';
 
 import { DashboardHeader } from '../../components/DashboardHeader/DashboardHeader';
 import { DashboardKpis } from '../../components/DashboardKpis/DashboardKpis';
 import { SignupsEvolutionChart } from '../../components/SignupsEvolutionChart/SignupsEvolutionChart';
-import { SignupsMix } from '../../components/SignupsMix/SignupsMix';
 import { DEFAULT_DASHBOARD_PERIOD, toPeriodParams } from '../../dashboard.period';
 import { useDashboardSummary, useSignupsEvolution } from '../../dashboard.queries';
 import type {
@@ -60,6 +62,17 @@ function SignupsEvolution({ params, period }: PeriodSelection) {
   return <SignupsEvolutionChart evolution={query.data} period={period} />;
 }
 
+function sellerFinanceColumns(stats: StatsById<SellerFinanceStats> = {}) {
+  const statsOf = (item: SellerVerificationListItem) => stats[item.seller.id];
+  return [
+    {
+      key: 'listedVolume',
+      header: 'Volume anunciado',
+      render: (item: SellerVerificationListItem) => <ListedVolumeCell stats={statsOf(item)} />,
+    },
+  ];
+}
+
 interface SellerRegistrationsProps {
   statusFilter: SellerVerificationStatus | 'ALL';
   onStatusFilterChange: (status: SellerVerificationStatus | 'ALL') => void;
@@ -73,6 +86,7 @@ function SellerRegistrations({ statusFilter, onValidate, ...props }: SellerRegis
     page: 1,
     pageSize: 20,
   });
+  const financeStats = useSellerFinanceStats(query.data?.data.map(({ seller }) => seller.id) ?? []);
 
   if (query.isPending) return <LoadingState message="Carregando vendedores…" />;
   if (query.isError) {
@@ -86,6 +100,7 @@ function SellerRegistrations({ statusFilter, onValidate, ...props }: SellerRegis
       statusFilter={statusFilter}
       onValidate={onValidate}
       onRefresh={() => void query.refetch()}
+      extraColumns={sellerFinanceColumns(financeStats.data)}
       {...props}
     />
   );
@@ -114,7 +129,10 @@ function DashboardData({
       <DashboardKpis summary={summary} {...selection} credentialing={credentialing} />
       <div className={styles.insights}>
         <SignupsEvolution {...selection} />
-        <SignupsMix kpis={summary.kpis} />
+        <FinanceOverview
+          params={selection.params}
+          isToday={'preset' in selection.period && selection.period.preset === 'today'}
+        />
       </div>
       <SellerRegistrations {...sellerVerifications} />
     </>
