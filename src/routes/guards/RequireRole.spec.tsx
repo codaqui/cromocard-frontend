@@ -51,4 +51,21 @@ describe('RequireRole', () => {
 
     expect(screen.getByRole('status')).toHaveTextContent('Carregando sessão…');
   });
+
+  it('libera a rota para qualquer um dos papéis da lista', async () => {
+    const shared = [
+      { path: paths.profile, element: <p>Perfil</p> },
+      {
+        element: <RequireRole role={['CUSTOMER', 'SELLER']} />,
+        children: [{ path: '/mensagens', element: <p>Mensagens</p> }],
+      },
+    ];
+    renderWithProviders({
+      routes: shared,
+      initialPath: '/mensagens',
+      user: { id: '1', role: 'SELLER' },
+    });
+
+    expect(await screen.findByText('Mensagens')).toBeInTheDocument();
+  });
 });
