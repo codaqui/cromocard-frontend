@@ -142,6 +142,7 @@ export const iconPaths = {
   remove: 'M19 13H5v-2h14v2z',
   openInNew:
     'M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z',
+  reply: 'M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z',
 } as const;
 
 export type IconName = keyof typeof iconPaths;

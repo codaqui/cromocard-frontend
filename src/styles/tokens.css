@@ -245,6 +245,15 @@
   --color-info-tint: rgb(167 200 255 / 0.25);
   --color-white: #ffffff;
   --color-positive-border: rgb(74 222 128 / 0.5);
+  --color-menu-border: rgb(255 255 255 / 0.1);
+  --color-menu-item-active: rgb(50 145 255 / 0.15);
+  --color-quote-mine: rgb(0 48 97 / 0.1);
+  --color-quote-text-mine: #d5e3ff;
+  --radius-menu: 0.625rem;
+  --radius-menu-item: 0.375rem;
+  --size-reply-bar: 0.25rem;
+  --size-reply-close: 1.5rem;
+  --size-message-menu: 16.25rem;
   --size-dialog-badge: 2.5rem;
   --size-radio: 1rem;
   --size-evidence-thumb: 3.5rem;

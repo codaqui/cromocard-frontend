@@ -47,6 +47,7 @@ export function message(changes: Partial<ChatMessage> = {}): ChatMessage {
     content: 'Olá Ana!',
     isRead: true,
     createdAt: minutesAgo(30),
+    replyTo: null,
     ...changes,
   };
 }
