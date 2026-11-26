@@ -117,6 +117,47 @@ describe('ConversationView', () => {
     expect(chatApi.messages).toHaveBeenLastCalledWith('c-elisa', 'm9');
   });
 
+  it('CCD045 CA1: clicar na mensagem, escolher Responder e enviar leva a citação', async () => {
+    vi.mocked(chatApi.messages).mockResolvedValue(
+      page([message({ id: 'm5', content: 'Mandei as fotos do verso agora.' })]),
+    );
+    sendMessage.mockResolvedValue(message({ id: 'm6' }));
+    renderView();
+
+    fireEvent.click(await screen.findByRole('button', { name: /Mandei as fotos/ }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /Responder/ }));
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(screen.getByText('Respondendo a @elisa.raras:')).toBeInTheDocument();
+    fireEvent.change(screen.getByRole('textbox', { name: 'Mensagem' }), {
+      target: { value: 'Recebi!' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar' }));
+
+    await vi.waitFor(() => expect(sendMessage).toHaveBeenCalledWith('c-elisa', 'Recebi!', 'm5'));
+    await vi.waitFor(() =>
+      expect(screen.queryByText('Respondendo a @elisa.raras:')).not.toBeInTheDocument(),
+    );
+  });
+
+  it('CCD045 CA11: o × cancela a resposta, e o envio seguinte vai sem citação', async () => {
+    vi.mocked(chatApi.messages).mockResolvedValue(page([message({ id: 'm5', content: 'Oi' })]));
+    sendMessage.mockResolvedValue(message({ id: 'm6' }));
+    renderView();
+
+    fireEvent.keyDown(await screen.findByRole('button', { name: /^Oi/ }), { key: 'Enter' });
+    fireEvent.click(screen.getByRole('menuitem', { name: /Responder/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancelar resposta' }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Mensagem' }), {
+      target: { value: 'Tudo bem?' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar' }));
+
+    expect(screen.queryByText(/Respondendo a/)).not.toBeInTheDocument();
+    await vi.waitFor(() =>
+      expect(sendMessage).toHaveBeenCalledWith('c-elisa', 'Tudo bem?', undefined),
+    );
+  });
+
   it('CA5: avisa quando não dá para carregar as mensagens', async () => {
     vi.mocked(chatApi.messages).mockRejectedValue(new Error('fora do ar'));
     renderView();
@@ -136,7 +177,7 @@ describe('ConversationView', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Enviar' }));
     fireEvent.click(screen.getByRole('button', { name: 'Voltar para as conversas' }));
 
-    await vi.waitFor(() => expect(sendMessage).toHaveBeenCalledWith('c-elisa', 'Oi'));
+    await vi.waitFor(() => expect(sendMessage).toHaveBeenCalledWith('c-elisa', 'Oi', undefined));
     expect(onBack).toHaveBeenCalled();
   });
 });

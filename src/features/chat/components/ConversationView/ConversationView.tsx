@@ -1,4 +1,4 @@
-import { type UIEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { type UIEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
@@ -13,7 +13,7 @@ import { BlockedNotice } from '../BlockedNotice/BlockedNotice';
 import { ContactModerationDialog } from '../ContactModerationDialog/ContactModerationDialog';
 import type { ModerationNotice } from '../ContactModerationDialog/useContactModeration';
 import { ConversationHeader } from '../ConversationHeader/ConversationHeader';
-import { MessageBubble } from '../MessageBubble/MessageBubble';
+import { MessageBubble, type MessageBubbleProps } from '../MessageBubble/MessageBubble';
 import { MessageComposer } from '../MessageComposer/MessageComposer';
 import { SafetyTip } from '../SafetyTip/SafetyTip';
 import styles from './ConversationView.module.css';
@@ -25,13 +25,22 @@ export interface ConversationViewProps {
   onBack?: () => void;
 }
 
+type ReplyHandler = (message: ChatMessage) => void;
+
 interface MessageListProps {
   messages: ChatMessage[];
   currentUserId: string;
   unreadIds: ReadonlySet<string>;
+  onReply: ReplyHandler;
 }
 
-function MessageList({ messages, currentUserId, unreadIds }: MessageListProps) {
+function MessageList({ messages, currentUserId, unreadIds, onReply }: MessageListProps) {
+  const [menuId, setMenuId] = useState<string | null>(null);
+  const closeMenu = useCallback(() => setMenuId(null), []);
+  const reply = (message: ChatMessage) => {
+    closeMenu();
+    onReply(message);
+  };
   return (
     <ol className={styles.messages}>
       {messages.map((message, index) => (
@@ -41,17 +50,18 @@ function MessageList({ messages, currentUserId, unreadIds }: MessageListProps) {
           previous={messages[index - 1]}
           mine={message.author.id === currentUserId}
           unread={unreadIds.has(message.id)}
+          menuOpen={menuId === message.id}
+          onOpenMenu={() => setMenuId(message.id)}
+          onCloseMenu={closeMenu}
+          onReply={reply}
         />
       ))}
     </ol>
   );
 }
 
-interface MessageItemProps {
-  message: ChatMessage;
+interface MessageItemProps extends MessageBubbleProps {
   previous: ChatMessage | undefined;
-  mine: boolean;
-  unread: boolean;
 }
 
 function MessageItem({ message, previous, ...bubble }: MessageItemProps) {
@@ -102,12 +112,21 @@ function useScrollToLatest(lastId: string | undefined) {
   return area;
 }
 
-function Body({ conversation, currentUserId }: ConversationViewProps) {
-  const query = useMessages(conversation.id);
+interface BodyProps extends ConversationViewProps {
+  onReply: ReplyHandler;
+}
+
+function useOrderedMessages(conversationId: string) {
+  const query = useMessages(conversationId);
   const messages = useMemo(
     () => (query.data ? messagesInOrder(query.data.pages) : undefined),
     [query.data],
   );
+  return { query, messages };
+}
+
+function Body({ conversation, currentUserId, onReply }: BodyProps) {
+  const { query, messages } = useOrderedMessages(conversation.id);
   const unreadIds = useUnreadOnOpen(conversation.id, messages, currentUserId);
   const area = useScrollToLatest(messages?.at(-1)?.id);
   const loadOlder = (event: UIEvent<HTMLDivElement>) => {
@@ -121,12 +140,23 @@ function Body({ conversation, currentUserId }: ConversationViewProps) {
     <div ref={area} className={styles.scroll} onScroll={loadOlder}>
       <SafetyTip />
       {query.isFetchingNextPage && <LoadingState />}
-      <MessageList messages={messages} currentUserId={currentUserId} unreadIds={unreadIds} />
+      <MessageList
+        messages={messages}
+        currentUserId={currentUserId}
+        unreadIds={unreadIds}
+        onReply={onReply}
+      />
     </div>
   );
 }
 
-function Footer({ conversation }: { conversation: ConversationSummary }) {
+interface FooterProps {
+  conversation: ConversationSummary;
+  replyingTo: ChatMessage | null;
+  onCancelReply: () => void;
+}
+
+function Footer({ conversation, replyingTo, onCancelReply }: FooterProps) {
   const sendMessage = useSendMessage();
   const { contact, block } = conversation;
   const handle = handleOf(contact.username) || contact.name;
@@ -134,7 +164,9 @@ function Footer({ conversation }: { conversation: ConversationSummary }) {
   return (
     <MessageComposer
       recipient={handle}
-      onSend={(content) => sendMessage(conversation.id, content)}
+      replyingTo={replyingTo}
+      onCancelReply={onCancelReply}
+      onSend={(content) => sendMessage(conversation.id, content, replyingTo?.id)}
     />
   );
 }
@@ -187,6 +219,7 @@ function ModerationLayer({ conversation, moderation }: ModerationLayerProps) {
 export function ConversationView(props: ConversationViewProps) {
   const { conversation, online, onBack } = props;
   const moderation = useModerationDialog();
+  const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
   return (
     <section className={styles.view} aria-label={`Conversa com ${conversation.contact.name}`}>
       <ConversationHeader
@@ -195,8 +228,12 @@ export function ConversationView(props: ConversationViewProps) {
         onBack={onBack}
         onModerate={moderation.show}
       />
-      <Body {...props} />
-      <Footer conversation={conversation} />
+      <Body {...props} onReply={setReplyingTo} />
+      <Footer
+        conversation={conversation}
+        replyingTo={replyingTo}
+        onCancelReply={() => setReplyingTo(null)}
+      />
       <ModerationLayer conversation={conversation} moderation={moderation} />
     </section>
   );
