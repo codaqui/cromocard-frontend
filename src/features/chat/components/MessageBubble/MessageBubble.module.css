@@ -8,11 +8,22 @@
   flex-direction: row-reverse;
 }
 
+.anchor {
+  position: relative;
+  display: flex;
+  max-width: min(var(--size-chat-bubble), 85%);
+}
+
+.mine .anchor {
+  justify-content: flex-end;
+}
+
 .bubble {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  max-width: min(var(--size-chat-bubble), 85%);
+  min-width: 0;
+  cursor: pointer;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   background: var(--color-surface-raised);
@@ -25,6 +36,11 @@
 
 .unread {
   outline: 1px solid var(--color-highlight);
+}
+
+.selected,
+.bubble:focus-visible {
+  outline: 1px solid var(--color-primary);
 }
 
 .srOnly {

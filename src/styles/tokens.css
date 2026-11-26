@@ -254,6 +254,9 @@
   --size-reply-bar: 0.25rem;
   --size-reply-close: 1.5rem;
   --size-message-menu: 16.25rem;
+  --space-menu: 0.375rem;
+  --space-menu-item-y: 0.5625rem;
+  --space-menu-item-gap: 0.625rem;
   --size-dialog-badge: 2.5rem;
   --size-radio: 1rem;
   --size-evidence-thumb: 3.5rem;
