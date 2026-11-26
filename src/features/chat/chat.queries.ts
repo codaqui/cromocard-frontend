@@ -1,0 +1,87 @@
+import {
+  type InfiniteData,
+  keepPreviousData,
+  type QueryClient,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+
+import { chatApi } from './chat.api';
+import type {
+  ChatMessage,
+  ContactsParams,
+  ListConversationsParams,
+  MessagesPage,
+} from './chat.types';
+
+export const chatKeys = {
+  all: ['chat'] as const,
+  conversations: () => [...chatKeys.all, 'conversations'] as const,
+  conversationList: (params: ListConversationsParams) =>
+    [...chatKeys.conversations(), params] as const,
+  messages: (conversationId: string) => [...chatKeys.all, 'messages', conversationId] as const,
+  contacts: (params: ContactsParams) => [...chatKeys.all, 'contacts', params] as const,
+};
+
+export function useConversations(params: ListConversationsParams) {
+  return useQuery({
+    queryKey: chatKeys.conversationList(params),
+    queryFn: () => chatApi.list(params),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useMessages(conversationId: string | null) {
+  return useInfiniteQuery({
+    queryKey: chatKeys.messages(conversationId ?? ''),
+    queryFn: ({ pageParam }) => chatApi.messages(conversationId ?? '', pageParam),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (last: MessagesPage) => last.meta.nextCursor ?? undefined,
+    enabled: conversationId !== null,
+  });
+}
+
+export function useContacts(params: ContactsParams, enabled: boolean) {
+  return useQuery({
+    queryKey: chatKeys.contacts(params),
+    queryFn: () => chatApi.contacts(params),
+    enabled,
+  });
+}
+
+export const refreshConversations = (queryClient: QueryClient) =>
+  queryClient.invalidateQueries({ queryKey: chatKeys.conversations() });
+
+export function useMarkAsRead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: chatApi.markAsRead,
+    onSuccess: () => refreshConversations(queryClient),
+  });
+}
+
+export function useStartConversation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: chatApi.start,
+    onSuccess: () => refreshConversations(queryClient),
+  });
+}
+
+const withMessage = (pages: MessagesPage[], message: ChatMessage): MessagesPage[] => {
+  const [latest, ...older] = pages;
+  if (!latest || pages.some((page) => page.data.some(({ id }) => id === message.id))) return pages;
+  return [{ ...latest, data: [...latest.data, message] }, ...older];
+};
+
+export function appendMessage(queryClient: QueryClient, message: ChatMessage) {
+  queryClient.setQueryData<InfiniteData<MessagesPage>>(
+    chatKeys.messages(message.conversationId),
+    (data) => (data ? { ...data, pages: withMessage(data.pages, message) } : data),
+  );
+}
+
+export const messagesInOrder = (pages: MessagesPage[] = []) =>
+  pages.toReversed().flatMap(({ data }) => data);
