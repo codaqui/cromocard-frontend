@@ -54,6 +54,7 @@ function OpenPanel({ page }: { page: MessagesPageState }) {
       currentUserId={user.id}
       online={page.online.has(opened.contact.id)}
       onBack={() => page.open(null)}
+      draft={page.draft}
     />
   );
 }

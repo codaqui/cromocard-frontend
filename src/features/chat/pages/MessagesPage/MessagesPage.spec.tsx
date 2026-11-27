@@ -87,6 +87,28 @@ describe('MessagesPage', () => {
     expect(router.state.location.search).toBe('');
   });
 
+  it('CCD073 CA1: vindo do anúncio, abre a conversa com o texto sugerido uma vez só', async () => {
+    const text = 'Olá! Tenho interesse no anúncio Lionel Messi (R$ 1.750).';
+    const router = renderWithProviders({
+      routes: [
+        { path: '/anuncios/:id', element: <p>Anúncio</p> },
+        { path: '/mensagens', element: <MessagesPage /> },
+      ],
+      initialPath: '/anuncios/anuncio-messi',
+      user: { id: ANA_ID, role: 'CUSTOMER' },
+    });
+
+    await router.navigate('/mensagens?conversa=c-elisa', {
+      state: { draft: { conversationId: 'c-elisa', text } },
+    });
+
+    expect(await screen.findByRole('textbox', { name: 'Mensagem' })).toHaveValue(text);
+    await vi.waitFor(() => expect(router.state.location.state).toBeNull());
+    await userEvent.click(screen.getByText('Bruno Figurinhas'));
+    await userEvent.click(await screen.findByText('Elisa Cartas Raras'));
+    expect(await screen.findByRole('textbox', { name: 'Mensagem' })).toHaveValue('');
+  });
+
   it('CA12: busca e troca de aba pedem a lista de novo', async () => {
     renderPage();
 
