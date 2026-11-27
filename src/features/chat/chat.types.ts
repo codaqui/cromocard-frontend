@@ -59,3 +59,14 @@ export interface ContactsParams {
   q?: string;
   scope: ContactScope;
 }
+
+export interface ListingContact {
+  conversationId: string;
+  created: boolean;
+}
+
+export interface ContactListing {
+  id: string;
+  cardName: string;
+  price: number;
+}

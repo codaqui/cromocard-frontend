@@ -1,4 +1,5 @@
-import type { ContactScope, ConversationFilter } from './chat.types';
+import { formatListingPrice } from './chat.format';
+import type { ContactListing, ContactScope, ConversationFilter } from './chat.types';
 
 export const filterLabels: Record<ConversationFilter, string> = {
   all: 'Todas',
@@ -38,3 +39,12 @@ export const chatTexts = {
 } as const;
 
 export const replyingTo = (handle: string) => `Respondendo a ${handle}`;
+
+export const listingContactTexts = {
+  button: 'Entrar em contato',
+  sellerUnavailable: 'Não foi possível iniciar a conversa com este vendedor.',
+  failure: chatTexts.startError,
+} as const;
+
+export const suggestedMessage = ({ cardName, price }: ContactListing) =>
+  `Olá! Tenho interesse no anúncio ${cardName} (${formatListingPrice(price)}).`;
