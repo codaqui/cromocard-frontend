@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ApiError } from '@/lib/api-error';
+import { rememberRedirectAfterLogin } from '@/routes/guards/loginRedirect';
 import { paths } from '@/routes/paths';
 import { renderWithProviders } from '@/test/renderWithProviders';
 import type { UserRole } from '@/types/authenticated-user';
@@ -69,6 +70,17 @@ describe('LoginPanel', () => {
     await submitLogin();
 
     expect(await screen.findByText('Página pedida antes do login')).toBeInTheDocument();
+  });
+
+  it('CA4 e L16: volta para a carta guardada e esquece a origem depois do login', async () => {
+    rememberRedirectAfterLogin('/colecao');
+    vi.mocked(authApi.login).mockResolvedValue(sessionFor('CUSTOMER'));
+    renderWithProviders({ routes, initialPath: paths.login });
+
+    await submitLogin();
+
+    expect(await screen.findByText('Página pedida antes do login')).toBeInTheDocument();
+    expect(sessionStorage.getItem('cromocard:redirect-after-login')).toBeNull();
   });
 
   it.each(['//site-malicioso.com', '/%5Csite-malicioso.com', 'https://site-malicioso.com'])(

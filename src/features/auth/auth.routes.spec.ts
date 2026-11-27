@@ -1,3 +1,5 @@
+import { render, screen } from '@testing-library/react';
+import type { ReactElement } from 'react';
 import type { RouteObject } from 'react-router';
 import { describe, expect, it } from 'vitest';
 
@@ -5,7 +7,7 @@ import { paths } from '@/routes/paths';
 
 import { authRoutes, tokenLinkRoutes } from './auth.routes';
 
-type LazyRoute = () => Promise<{ Component?: { name: string }; element?: unknown }>;
+type LazyRoute = () => Promise<{ Component?: { name: string }; element?: ReactElement }>;
 
 function lazyOf(routes: RouteObject[], path: string): LazyRoute | undefined {
   const children = routes.flatMap((route) => [route, ...(route.children ?? [])]);
@@ -13,9 +15,12 @@ function lazyOf(routes: RouteObject[], path: string): LazyRoute | undefined {
 }
 
 describe('auth.routes', () => {
-  it('L18: Continuar com Google abre a página em construção', async () => {
+  it('L18: Continuar com Google abre a página em construção da CCD004', async () => {
     const loaded = await lazyOf(authRoutes, paths.googleLogin)?.();
-    expect(loaded?.element).toBeDefined();
+    render(loaded?.element ?? null);
+
+    expect(screen.getByRole('heading', { name: 'Entrar com Google' })).toBeVisible();
+    expect(screen.getByText('Esta tela chega com a user story CCD004.')).toBeVisible();
   });
 
   it.each([

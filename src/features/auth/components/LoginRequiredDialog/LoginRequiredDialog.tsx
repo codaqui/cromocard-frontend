@@ -1,9 +1,9 @@
-import { Link, useLocation } from 'react-router';
+import { useLocation } from 'react-router';
 
+import { ButtonLink } from '@/components/Button/ButtonLink';
 import { Modal } from '@/components/Modal/Modal';
 import { loginPathFor, rememberRedirectAfterLogin } from '@/routes/guards/loginRedirect';
 import { paths } from '@/routes/paths';
-import { cn } from '@/utils/cn';
 
 import styles from './LoginRequiredDialog.module.css';
 
@@ -15,37 +15,20 @@ interface LoginRequiredDialogProps {
 
 const DEFAULT_MESSAGE = 'Faça login para continuar. É rápido e grátis.';
 
-interface LoginOptionProps {
-  to: string;
-  label: string;
-  variant: 'primary' | 'secondary';
-  onClick: () => void;
-}
-
-function LoginOption({ to, label, variant, onClick }: LoginOptionProps) {
-  return (
-    <Link to={to} className={cn(styles.action, styles[variant])} onClick={onClick}>
-      {label}
-    </Link>
-  );
-}
-
-function LoginOptionsRememberingOrigin() {
+function LoginOptions() {
   const location = useLocation();
-  const onClick = () => rememberRedirectAfterLogin(`${location.pathname}${location.search}`);
-  const option = (to: string, label: string, variant: LoginOptionProps['variant']) => ({
-    to,
-    label,
-    variant,
-    onClick,
-  });
+  const rememberOrigin = () => rememberRedirectAfterLogin(`${location.pathname}${location.search}`);
 
   return (
     <>
-      <LoginOption {...option(paths.googleLogin, 'Continuar com Google', 'secondary')} />
+      <ButtonLink to={paths.googleLogin} variant="secondary">
+        Continuar com Google
+      </ButtonLink>
       <p className={styles.separator}>ou</p>
-      <LoginOption {...option(loginPathFor(location), 'Entrar com e-mail e senha', 'primary')} />
-      <LoginOption {...option(paths.register, 'Criar conta grátis', 'secondary')} />
+      <ButtonLink to={loginPathFor(location)}>Entrar com e-mail e senha</ButtonLink>
+      <ButtonLink to={paths.register} variant="secondary" onClick={rememberOrigin}>
+        Criar conta grátis
+      </ButtonLink>
     </>
   );
 }
@@ -59,7 +42,7 @@ export function LoginRequiredDialog({
     <Modal open={open} title="Entre para continuar" onClose={onClose}>
       <div className={styles.body}>
         <p className={styles.message}>{message}</p>
-        <LoginOptionsRememberingOrigin />
+        <LoginOptions />
         <p className={styles.terms}>
           Ao continuar, você aceita os Termos de Uso e a Política de Privacidade.
         </p>
