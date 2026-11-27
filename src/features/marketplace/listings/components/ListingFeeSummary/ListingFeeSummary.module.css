@@ -1,0 +1,45 @@
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.fee,
+.net {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-2);
+  border-radius: var(--radius-xs);
+}
+
+.fee dd,
+.net dd {
+  margin: 0;
+}
+
+.fee {
+  min-height: var(--size-control);
+  background: var(--color-surface-sunken);
+  font-size: var(--font-size-xs);
+}
+
+.feeAmount {
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.net {
+  min-height: var(--size-control);
+  border: 1px solid var(--color-positive-soft);
+  background: var(--color-positive-soft);
+  color: var(--color-positive);
+  font-size: var(--font-size-sm);
+}
+
+.netAmount {
+  font-weight: 700;
+}
