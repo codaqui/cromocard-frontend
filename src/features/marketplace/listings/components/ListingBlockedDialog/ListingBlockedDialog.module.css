@@ -1,0 +1,19 @@
+.text {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-start;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+@media (max-width: 25rem) {
+  .footer {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+}
