@@ -16,7 +16,8 @@ export function useCardProfileActions() {
   const requireLogin = () => (user ? setNotice(COMING_SOON_MESSAGE) : setLoginOpen(true));
 
   return {
-    user,
+    isGuest: !user,
+    canCreateListing: user?.role === 'SELLER',
     loginOpen,
     closeLogin: () => setLoginOpen(false),
     notice,

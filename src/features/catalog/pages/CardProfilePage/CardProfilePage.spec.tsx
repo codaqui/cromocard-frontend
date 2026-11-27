@@ -1,17 +1,15 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { ListingSummary } from '@/features/marketplace';
 import { ApiError } from '@/lib/api-error';
 import { api } from '@/lib/http';
 import { renderWithProviders } from '@/test/renderWithProviders';
 import type { AuthenticatedUser } from '@/types/authenticated-user';
 
-import { cardProfileApi } from '../../card-profile.api';
 import type { CardProfile } from '../../card-profile.types';
 import { CardProfilePage } from './CardProfilePage';
-
-vi.mock('../../card-profile.api', () => ({ cardProfileApi: { get: vi.fn() } }));
 
 const CARD_ID = '0199a000-0000-7000-8000-000000000010';
 const GUEST_NOTICE = /Ainda não tem conta\? Você pode ver tudo nesta página/;
@@ -31,14 +29,7 @@ const messi: CardProfile = {
   market: { averagePrice: '2100.00', lowestListingPrice: '1750.00', activeListingsCount: 4 },
 };
 
-vi.mock('@/lib/http', () => ({ api: { getPage: vi.fn() } }));
-
-interface ListingSummary {
-  id: string;
-  price: string;
-  condition: { name: string } | null;
-  seller: { id: string; username: string | null };
-}
+vi.mock('@/lib/http', () => ({ api: { get: vi.fn(), getPage: vi.fn() } }));
 
 const listingOf = (id: string, price: string, username: string): ListingSummary => ({
   id,
@@ -72,7 +63,7 @@ function renderPage(user: AuthenticatedUser | null = null) {
 }
 
 function withCard(card: CardProfile, items: ListingSummary[] = listings) {
-  vi.mocked(cardProfileApi.get).mockResolvedValue(card);
+  vi.mocked(api).get.mockResolvedValue(card);
   vi.mocked(api).getPage.mockResolvedValue({
     data: items,
     meta: { page: 1, pageSize: 20, total: items.length, totalPages: 1 },
@@ -84,6 +75,8 @@ describe('CardProfilePage', () => {
     vi.clearAllMocks();
     withCard(messi);
   });
+
+  afterEach(() => vi.restoreAllMocks());
 
   it('CA1: o visitante vê imagens, mercado, identificação, histórico e anúncios', async () => {
     renderPage();
@@ -197,7 +190,7 @@ describe('CardProfilePage', () => {
   });
 
   it('CA8: carta não encontrada mostra a mensagem própria', async () => {
-    vi.mocked(cardProfileApi.get).mockRejectedValue(
+    vi.mocked(api).get.mockRejectedValue(
       new ApiError({ status: 404, code: 'CARD_NOT_FOUND', message: 'Carta não encontrada' }),
     );
     renderPage();
@@ -206,7 +199,7 @@ describe('CardProfilePage', () => {
   });
 
   it('mostra o erro quando a API falha', async () => {
-    vi.mocked(cardProfileApi.get).mockRejectedValue(
+    vi.mocked(api).get.mockRejectedValue(
       new ApiError({ status: 500, code: 'INTERNAL', message: 'Erro' }),
     );
     renderPage();
@@ -217,15 +210,21 @@ describe('CardProfilePage', () => {
   });
 
   it('mostra o carregando enquanto busca a carta', () => {
-    vi.mocked(cardProfileApi.get).mockReturnValue(new Promise(() => undefined));
+    vi.mocked(api).get.mockReturnValue(new Promise(() => undefined));
     renderPage();
 
     expect(screen.getByRole('status')).toHaveTextContent('Carregando carta…');
   });
 
   it('R15: Ver anúncios leva até a lista de anúncios', async () => {
-    const scrollIntoView = vi.fn();
-    Element.prototype.scrollIntoView = scrollIntoView;
+    Object.defineProperty(Element.prototype, 'scrollIntoView', {
+      configurable: true,
+      writable: true,
+      value: () => undefined,
+    });
+    const scrollIntoView = vi
+      .spyOn(Element.prototype, 'scrollIntoView')
+      .mockImplementation(() => undefined);
     renderPage();
 
     await userEvent.click(await screen.findByRole('button', { name: 'Ver anúncios (4)' }));

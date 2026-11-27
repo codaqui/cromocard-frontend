@@ -3,8 +3,7 @@ import type { ComponentProps } from 'react';
 import { cn } from '@/utils/cn';
 
 import styles from './Button.module.css';
-
-type ButtonVariant = 'primary' | 'secondary' | 'danger';
+import type { ButtonVariant } from './ButtonLink';
 
 interface ButtonProps extends ComponentProps<'button'> {
   variant?: ButtonVariant;

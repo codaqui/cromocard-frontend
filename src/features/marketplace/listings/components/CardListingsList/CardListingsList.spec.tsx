@@ -98,9 +98,9 @@ describe('CardListingsList', () => {
 
     await screen.findByText('vendedor_a');
     expect(rows().map((row) => within(row).getByText(/^R\$/).textContent)).toEqual([
-      'R$ 1.750',
-      'R$ 1.980',
-      'R$ 2.390',
+      'R$ 1.750',
+      'R$ 1.980',
+      'R$ 2.390',
     ]);
     expect(within(rows()[2] as HTMLElement).getByText('—')).toBeVisible();
     expect(listingsApi.listByCard).toHaveBeenCalledWith(CARD_ID, { page: 1, pageSize: 20 });

@@ -1,5 +1,6 @@
 import { Button } from '@/components/Button/Button';
-import { formatPrice } from '@/features/marketplace';
+import { cn } from '@/utils/cn';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 import type { CardProfile } from '../../card-profile.types';
 import styles from './CardMarketStats.module.css';
@@ -12,11 +13,17 @@ interface CardMarketStatsProps {
   onFavorite: () => void;
 }
 
-function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+interface StatProps {
+  label: string;
+  value: string;
+  tone?: 'default' | 'highlight';
+}
+
+function Stat({ label, value, tone = 'default' }: StatProps) {
   return (
     <div className={styles.stat}>
       <dt className={styles.label}>{label}</dt>
-      <dd className={accent ? styles.accent : styles.value}>{value}</dd>
+      <dd className={cn(styles.value, styles[tone])}>{value}</dd>
     </div>
   );
 }
@@ -28,8 +35,12 @@ export function CardMarketStats({ market, isGuest, ...actions }: CardMarketStats
   return (
     <section className={styles.market} aria-label="Mercado">
       <dl className={styles.stats}>
-        <Stat label="Preço médio de mercado" value={formatPrice(market.averagePrice)} />
-        <Stat label="Menor anúncio" value={formatPrice(market.lowestListingPrice)} accent />
+        <Stat label="Preço médio de mercado" value={formatCurrency(market.averagePrice)} />
+        <Stat
+          label="Menor anúncio"
+          value={formatCurrency(market.lowestListingPrice)}
+          tone="highlight"
+        />
         <Stat label="Anúncios ativos" value={String(market.activeListingsCount)} />
       </dl>
       <div className={styles.actions}>

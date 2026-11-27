@@ -10,6 +10,12 @@ describe('Badge', () => {
     expect(screen.getByText('Suspenso')).toHaveAttribute('data-tone', 'danger');
   });
 
+  it('usa o canto menor no formato de etiqueta', () => {
+    render(<Badge shape="tag">Lendária</Badge>);
+
+    expect(screen.getByText('Lendária').className).toMatch(/tag/);
+  });
+
   it('usa o tom neutro por padrão', () => {
     render(<Badge>Pendente</Badge>);
 

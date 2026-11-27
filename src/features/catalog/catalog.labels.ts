@@ -1,3 +1,5 @@
+import { EMPTY_VALUE } from '@/utils/formatCurrency';
+
 import type { AlbumStatus, CatalogItemKind, CatalogNotice, CategoryBadge } from './catalog.types';
 
 export const categoryBadgeLabels: Record<CategoryBadge, string> = {
@@ -10,7 +12,7 @@ export const albumStatusLabels: Record<AlbumStatus, string> = {
   INACTIVE: 'Inativo',
 };
 
-export const EMPTY_VALUE_LABEL = '—';
+export const EMPTY_VALUE_LABEL = EMPTY_VALUE;
 
 const AUDIT_NOTE = 'Alterações registradas no log de auditoria.';
 const SAVE_CHANGES = 'Salvar alterações';

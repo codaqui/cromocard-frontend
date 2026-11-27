@@ -39,21 +39,6 @@
   list-style: none;
 }
 
-.badge {
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-xs);
-  background: var(--color-info-soft);
-  color: var(--color-info);
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.rarity {
-  background: var(--color-warning-soft);
-  color: var(--color-warning);
-}
-
 .name {
   margin: 0;
   overflow-wrap: anywhere;

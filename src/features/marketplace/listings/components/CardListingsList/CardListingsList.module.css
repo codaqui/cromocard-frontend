@@ -53,23 +53,23 @@
   font-size: var(--font-size-caption);
 }
 
-.actionColumn {
-  visibility: hidden;
-  padding: 0 var(--space-4);
-  font-size: var(--font-size-caption);
-  white-space: nowrap;
-}
-
 .sortSelect option {
   background: var(--color-surface);
 }
 
-.columns,
-.row {
+.table {
   display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+  column-gap: var(--space-3);
+}
+
+.columns,
+.list,
+.row {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
   align-items: center;
-  gap: var(--space-3);
 }
 
 .columns {
@@ -83,8 +83,6 @@
 }
 
 .list {
-  display: flex;
-  flex-direction: column;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -129,17 +127,6 @@
   color: var(--color-text-muted);
 }
 
-.conditionBadge {
-  display: inline-block;
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-xs);
-  background: var(--color-info-soft);
-  color: var(--color-info);
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
 .price {
   color: var(--color-text);
   font-size: var(--font-size-sm);
@@ -147,23 +134,13 @@
 }
 
 .view {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: var(--size-control);
   padding: 0 var(--space-4);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface-high);
-  color: var(--color-text);
   font-size: var(--font-size-caption);
-  font-weight: 600;
-  text-decoration: none;
   white-space: nowrap;
 }
 
-.viewPrimary {
-  background: var(--color-primary);
-  color: var(--color-primary-contrast);
+.cellLabel {
+  display: none;
 }
 
 .more {
@@ -193,11 +170,26 @@
     padding: var(--space-4);
   }
 
+  .table,
+  .list {
+    display: flex;
+    flex-direction: column;
+  }
+
   .columns {
     display: none;
   }
 
+  .cellLabel {
+    display: block;
+    color: var(--color-label);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
   .row {
+    gap: var(--space-3);
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
       'seller seller'

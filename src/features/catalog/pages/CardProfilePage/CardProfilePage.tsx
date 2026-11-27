@@ -1,14 +1,14 @@
 import { Link, useParams } from 'react-router';
 
+import { Badge } from '@/components/Badge/Badge';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { Toast } from '@/components/Toast/Toast';
 import { LoginRequiredDialog } from '@/features/auth';
 import { CardListingsList } from '@/features/marketplace';
-import { ApiError } from '@/lib/api-error';
+import { ApiError, HTTP_NOT_FOUND } from '@/lib/api-error';
 import { paths } from '@/routes/paths';
-import { cn } from '@/utils/cn';
 
 import { badgesOf, breadcrumbOf, galleryImagesOf, subtitleOf } from '../../card-profile.format';
 import { useCardProfile } from '../../card-profile.queries';
@@ -18,8 +18,6 @@ import { CardIdentification } from '../../components/CardIdentification/CardIden
 import { CardMarketStats } from '../../components/CardMarketStats/CardMarketStats';
 import { useCardProfileActions } from '../../hooks/useCardProfileActions';
 import styles from './CardProfilePage.module.css';
-
-const HTTP_NOT_FOUND = 404;
 
 function CardNotFound() {
   return (
@@ -37,8 +35,10 @@ function CardHeading({ card }: { card: CardProfile }) {
     <div className={styles.heading}>
       <ul className={styles.badges} aria-label="Selos">
         {badgesOf(card).map(({ kind, label }) => (
-          <li key={kind} className={cn(styles.badge, kind === 'rarity' && styles.rarity)}>
-            {label}
+          <li key={kind}>
+            <Badge shape="tag" tone={kind === 'rarity' ? 'warning' : 'info'}>
+              {label}
+            </Badge>
           </li>
         ))}
       </ul>
@@ -76,7 +76,7 @@ function CardDetails({ card, actions }: { card: CardProfile; actions: CardProfil
       <CardHeading card={card} />
       <CardMarketStats
         market={card.market}
-        isGuest={!actions.user}
+        isGuest={actions.isGuest}
         onSeeListings={actions.onSeeListings}
         onAddToCollection={actions.onAddToCollection}
         onFavorite={actions.onFavorite}
@@ -102,7 +102,7 @@ function CardProfileContent({ card }: { card: CardProfile }) {
       <CardListingsList
         cardId={card.id}
         count={card.market.activeListingsCount}
-        canCreateListing={actions.user?.role === 'SELLER'}
+        canCreateListing={actions.canCreateListing}
       />
       <CardProfileOverlays actions={actions} />
     </article>

@@ -28,18 +28,17 @@
   text-transform: uppercase;
 }
 
-.value,
-.accent {
+.value {
   margin: 0;
   font-size: var(--font-size-xl);
   font-weight: 700;
 }
 
-.value {
+.default {
   color: var(--color-text);
 }
 
-.accent {
+.highlight {
   color: var(--color-highlight);
 }
 

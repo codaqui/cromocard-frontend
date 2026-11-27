@@ -1,13 +1,14 @@
 import { useId } from 'react';
-import { Link } from 'react-router';
 
+import { Badge } from '@/components/Badge/Badge';
 import { Button } from '@/components/Button/Button';
+import { ButtonLink } from '@/components/Button/ButtonLink';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { listingDetailPathFor, paths } from '@/routes/paths';
-import { cn } from '@/utils/cn';
+import { EMPTY_VALUE, formatCurrency } from '@/utils/formatCurrency';
 
-import { EMPTY_VALUE, formatPrice, initialsOf } from '../../listings.format';
+import { initialsOf } from '../../listings.format';
 import { useCardListings } from '../../listings.queries';
 import type { ListingSummary } from '../../listings.types';
 import styles from './CardListingsList.module.css';
@@ -31,24 +32,37 @@ function SellerCell({ username }: { username: string | null }) {
   );
 }
 
+function ConditionCell({ condition }: { condition: ListingSummary['condition'] }) {
+  return (
+    <span className={styles.condition}>
+      <span className={styles.cellLabel}>Condição</span>
+      {condition ? (
+        <Badge shape="tag" tone="info">
+          {condition.name}
+        </Badge>
+      ) : (
+        EMPTY_VALUE
+      )}
+    </span>
+  );
+}
+
 function ListingRow({ listing, highlighted }: { listing: ListingSummary; highlighted: boolean }) {
   return (
     <li className={styles.row}>
       <SellerCell username={listing.seller.username} />
-      <span className={styles.condition}>
-        {listing.condition ? (
-          <span className={styles.conditionBadge}>{listing.condition.name}</span>
-        ) : (
-          EMPTY_VALUE
-        )}
+      <ConditionCell condition={listing.condition} />
+      <span className={styles.price}>
+        <span className={styles.cellLabel}>Preço</span>
+        <span>{formatCurrency(listing.price)}</span>
       </span>
-      <span className={styles.price}>{formatPrice(listing.price)}</span>
-      <Link
+      <ButtonLink
         to={listingDetailPathFor(listing.id)}
-        className={cn(styles.view, highlighted && styles.viewPrimary)}
+        variant={highlighted ? 'primary' : 'secondary'}
+        className={styles.view}
       >
         Ver anúncio
-      </Link>
+      </ButtonLink>
     </li>
   );
 }
@@ -57,11 +71,7 @@ function EmptyListings({ canCreateListing }: { canCreateListing: boolean }) {
   return (
     <div className={styles.empty}>
       <p className={styles.emptyText}>Ainda não há anúncios ativos para esta carta.</p>
-      {canCreateListing && (
-        <Link to={paths.newListing} className={cn(styles.view, styles.viewPrimary)}>
-          Anunciar esta carta
-        </Link>
-      )}
+      {canCreateListing && <ButtonLink to={paths.newListing}>Anunciar esta carta</ButtonLink>}
     </div>
   );
 }
@@ -98,7 +108,7 @@ function ListingsColumns() {
       <span>Vendedor</span>
       <span>Condição</span>
       <span>Preço</span>
-      <span className={styles.actionColumn}>Ver anúncio</span>
+      <span />
     </div>
   );
 }
@@ -120,12 +130,14 @@ function ListingsTable({ cardId }: { cardId: string }) {
 
   return (
     <>
-      <ListingsColumns />
-      <ul className={styles.list} aria-label="Anúncios disponíveis">
-        {listings.map((listing, index) => (
-          <ListingRow key={listing.id} listing={listing} highlighted={index === 0} />
-        ))}
-      </ul>
+      <div className={styles.table}>
+        <ListingsColumns />
+        <ul className={styles.list} aria-label="Anúncios disponíveis">
+          {listings.map((listing, index) => (
+            <ListingRow key={listing.id} listing={listing} highlighted={index === 0} />
+          ))}
+        </ul>
+      </div>
       {hasNextPage && (
         <LoadMoreButton loading={isFetchingNextPage} onLoad={() => void fetchNextPage()} />
       )}

@@ -42,6 +42,17 @@ describe('useCardProfileActions', () => {
     expect(result.current.notice).toBeNull();
   });
 
+  it.each([
+    [null, true, false],
+    [{ id: 'u1', role: 'CUSTOMER' } as const, false, false],
+    [{ id: 'u2', role: 'SELLER' } as const, false, true],
+  ])('R10 e R12: diz quem é visitante e quem pode anunciar (%o)', (user, isGuest, canCreate) => {
+    const { result } = renderActions(user);
+
+    expect(result.current.isGuest).toBe(isGuest);
+    expect(result.current.canCreateListing).toBe(canCreate);
+  });
+
   it('R15: Ver anúncios rola até a seção de anúncios', () => {
     const section = document.createElement('section');
     section.id = 'anuncios';
