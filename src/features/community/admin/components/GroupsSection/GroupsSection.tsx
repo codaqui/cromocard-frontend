@@ -4,6 +4,7 @@ import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { Icon } from '@/components/Icon/Icon';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { Pagination } from '@/components/Pagination/Pagination';
+import { useGroupFinanceStats } from '@/features/admin';
 
 import { groupStatusFilterOptions } from '../../community-admin.labels';
 import { GROUP_NAME_MAX_LENGTH } from '../../community-admin.schemas';
@@ -80,6 +81,7 @@ function GroupsHeading({ filters, titleId }: { filters: GroupsFilters; titleId: 
 
 function GroupsContent({ filters, onAction }: GroupsSectionProps & { filters: GroupsFilters }) {
   const query = useAdminGroups(filters.params);
+  const financeStats = useGroupFinanceStats(query.data?.data.map(({ id }) => id) ?? []);
 
   if (query.isPending) return <LoadingState message="Carregando os grupos…" />;
   if (query.isError) {
@@ -90,7 +92,7 @@ function GroupsContent({ filters, onAction }: GroupsSectionProps & { filters: Gr
   const { page, totalPages } = query.data.meta;
   return (
     <>
-      <GroupsTable groups={query.data.data} onAction={onAction} />
+      <GroupsTable groups={query.data.data} onAction={onAction} financeStats={financeStats.data} />
       <Pagination page={page} totalPages={totalPages} onPageChange={filters.changePage} />
     </>
   );

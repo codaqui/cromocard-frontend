@@ -84,10 +84,27 @@ const sellerAuditPreview: ReportPreview = {
   total: 4,
 };
 
+const volumePreview: ReportPreview = {
+  type: 'volume',
+  title: 'Volume Transacionado & Custódia',
+  period: PERIOD,
+  columns: [
+    { key: 'day', label: 'Dia' },
+    { key: 'received', label: 'Recebido em custódia' },
+    { key: 'released', label: 'Liquidado aos vendedores' },
+    { key: 'releasedOrders', label: 'Pedidos liquidados' },
+  ],
+  rows: [
+    { day: '14/11/2026', received: 'R$ 1.250,50', released: 'R$ 800,00', releasedOrders: '2' },
+  ],
+  total: 1,
+};
+
 const previews: Record<ReportType, ReportPreview> = {
   signups: signupsPreview,
   catalog: catalogPreview,
   'seller-audit': sellerAuditPreview,
+  volume: volumePreview,
 };
 
 function renderPage() {
@@ -164,12 +181,16 @@ describe('ReportsPage', () => {
     expect(reportsApi.preview).toHaveBeenCalledWith('signups', { period: '30d' });
   });
 
-  it('L9: só Volume Transacionado (CCD097) continua desabilitado, com "Em breve"', () => {
+  it('CA7 (CCD097): Volume Transacionado mostra o recebido e o liquidado por dia', async () => {
     renderPage();
 
-    expect(screen.getByRole('button', { name: /Auditoria de Lojistas/ })).toBeEnabled();
-    expect(screen.getByRole('button', { name: /Volume Transacionado/ })).toBeDisabled();
-    expect(screen.getAllByText('Em breve')).toHaveLength(1);
+    expect(screen.queryByText('Em breve')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /Volume Transacionado/ }));
+    const panel = previewPanel();
+    expect(await within(panel).findByRole('cell', { name: '14/11/2026' })).toBeInTheDocument();
+    expect(within(panel).getByRole('cell', { name: 'R$ 1.250,50' })).toBeInTheDocument();
+    expect(within(panel).getByRole('cell', { name: 'R$ 800,00' })).toBeInTheDocument();
+    expect(reportsApi.preview).toHaveBeenCalledWith('volume', { period: '30d' });
   });
 
   it('CA9 (CCD094): Auditoria de Lojistas mostra a prévia com o status e exporta em CSV', async () => {
