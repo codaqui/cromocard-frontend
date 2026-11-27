@@ -13,6 +13,7 @@ const REPLY_UNAVAILABLE = 'REPLY_TARGET_UNAVAILABLE';
 
 interface MessageComposerProps {
   recipient: string;
+  initialText?: string;
   replyingTo: ChatMessage | null;
   onCancelReply: () => void;
   onSend: (content: string) => Promise<unknown>;
@@ -46,7 +47,7 @@ function useDelivery({ onSend, onCancelReply }: MessageComposerProps) {
 }
 
 function useComposer(props: MessageComposerProps) {
-  const [text, setText] = useState('');
+  const [text, setText] = useState(props.initialText ?? '');
   const [notice, setNotice] = useState<string | null>(null);
   const { sending, deliver } = useDelivery(props);
   const send = async () => {

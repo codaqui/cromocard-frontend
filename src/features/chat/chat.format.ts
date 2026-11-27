@@ -64,3 +64,15 @@ export const initialsOf = (name: string) => {
 
 export const commonGroupsLabel = (groups: readonly string[]) =>
   groups.length > 1 ? `${groups.length} grupos em comum` : (groups[0] ?? '');
+
+const wholePrice = new Intl.NumberFormat('pt-BR', {
+  style: 'currency',
+  currency: 'BRL',
+  maximumFractionDigits: 0,
+});
+const centsPrice = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
+export function formatListingPrice(price: number): string {
+  const formatter = Number.isInteger(price) ? wholePrice : centsPrice;
+  return formatter.format(price).replace(/\s/u, ' ');
+}

@@ -4,6 +4,7 @@ import {
   activeLabel,
   commonGroupsLabel,
   dayLabel,
+  formatListingPrice,
   handleOf,
   initialOf,
   initialsOf,
@@ -60,5 +61,15 @@ describe('chat.format', () => {
     expect(commonGroupsLabel(['Pokémon TCG São Paulo'])).toBe('Pokémon TCG São Paulo');
     expect(commonGroupsLabel(['A', 'B'])).toBe('2 grupos em comum');
     expect(commonGroupsLabel([])).toBe('');
+  });
+});
+
+describe('formatListingPrice (CCD073)', () => {
+  it.each([
+    [1750, 'R$ 1.750'],
+    [1750.5, 'R$ 1.750,50'],
+    [12.9, 'R$ 12,90'],
+  ])('mostra %s como %s, sem centavos quando o preço é inteiro', (price, label) => {
+    expect(formatListingPrice(price)).toBe(label);
   });
 });

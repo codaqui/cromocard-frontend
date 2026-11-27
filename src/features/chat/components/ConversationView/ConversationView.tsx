@@ -23,6 +23,7 @@ export interface ConversationViewProps {
   currentUserId: string;
   online: boolean;
   onBack?: () => void;
+  draft?: string;
 }
 
 type ReplyHandler = (message: ChatMessage) => void;
@@ -154,9 +155,10 @@ interface FooterProps {
   conversation: ConversationSummary;
   replyingTo: ChatMessage | null;
   onCancelReply: () => void;
+  draft?: string;
 }
 
-function Footer({ conversation, replyingTo, onCancelReply }: FooterProps) {
+function Footer({ conversation, replyingTo, onCancelReply, draft }: FooterProps) {
   const sendMessage = useSendMessage();
   const { contact, block } = conversation;
   const handle = handleOf(contact.username) || contact.name;
@@ -164,6 +166,7 @@ function Footer({ conversation, replyingTo, onCancelReply }: FooterProps) {
   return (
     <MessageComposer
       recipient={handle}
+      initialText={draft}
       replyingTo={replyingTo}
       onCancelReply={onCancelReply}
       onSend={(content) => sendMessage(conversation.id, content, replyingTo?.id)}
@@ -217,7 +220,7 @@ function ModerationLayer({ conversation, moderation }: ModerationLayerProps) {
 }
 
 export function ConversationView(props: ConversationViewProps) {
-  const { conversation, online, onBack } = props;
+  const { conversation, online, onBack, draft } = props;
   const moderation = useModerationDialog();
   const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
   return (
@@ -233,6 +236,7 @@ export function ConversationView(props: ConversationViewProps) {
         conversation={conversation}
         replyingTo={replyingTo}
         onCancelReply={() => setReplyingTo(null)}
+        draft={draft}
       />
       <ModerationLayer conversation={conversation} moderation={moderation} />
     </section>
