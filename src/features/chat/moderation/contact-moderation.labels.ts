@@ -67,6 +67,8 @@ export const moderationTexts = {
   invalidEvidence: 'Envie até 3 imagens PNG, JPG ou WEBP de até 4 MB cada.',
   alreadyReported: 'Você já denunciou este contato. A moderação está analisando.',
   failure: 'Não foi possível concluir. Tente de novo.',
+  cancel: 'Cancelar',
+  close: 'Fechar',
   blockedTitle: (handle: string) => `${handle} está bloqueado`,
   blockedMessage: 'Ele não pode te enviar mensagens. Desbloqueie para conversar de novo.',
   unblock: 'Desbloquear',

@@ -3,11 +3,12 @@ import { FormError } from '@/components/FormError/FormError';
 import { Icon } from '@/components/Icon/Icon';
 import { Modal } from '@/components/Modal/Modal';
 
+import { handleOrName } from '../../chat.format';
 import { moderationOptions, moderationTexts } from '../../moderation/contact-moderation.labels';
 import styles from './ContactModerationDialog.module.css';
 import { ContactCard } from './ContactCard';
 import { DialogBadge } from './DialogBadge';
-import { type ContactModerationDialogProps, handleOrName } from './dialog-props';
+import type { ContactModerationDialogProps } from './dialog-props';
 import { ModerationFields } from './ModerationFields';
 import { UnblockPanel } from './UnblockPanel';
 import { useContactModeration } from './useContactModeration';
@@ -23,7 +24,7 @@ function ModerationFooter({
     <>
       <p className={styles.footerNote}>{moderationTexts.footer}</p>
       <Button variant="secondary" className={styles.footerButton} onClick={props.onClose}>
-        Cancelar
+        {moderationTexts.cancel}
       </Button>
       <Button
         variant="danger"
@@ -47,7 +48,7 @@ function ModerationDialog(props: ContactModerationDialogProps) {
       variant="dense"
       size="narrow"
       icon={<DialogBadge />}
-      title={moderationTexts.title(handleOrName(conversation))}
+      title={moderationTexts.title(handleOrName(conversation.contact))}
       subtitle={moderationTexts.subtitle}
       onClose={onClose}
       footer={<ModerationFooter props={props} moderation={moderation} />}

@@ -3,12 +3,13 @@ import { FormError } from '@/components/FormError/FormError';
 import { Modal } from '@/components/Modal/Modal';
 
 import type { ConversationSummary } from '../../chat.types';
+import { handleOrName } from '../../chat.format';
 import { moderationTexts } from '../../moderation/contact-moderation.labels';
 import { useUnblockContact } from '../../moderation/contact-moderation.queries';
 import { ContactCard } from './ContactCard';
 import styles from './ContactModerationDialog.module.css';
 import { DialogBadge } from './DialogBadge';
-import { type ContactModerationDialogProps, handleOrName } from './dialog-props';
+import type { ContactModerationDialogProps } from './dialog-props';
 
 interface UnblockFooterProps {
   pending: boolean;
@@ -20,7 +21,7 @@ function UnblockFooter({ pending, onCancel, onConfirm }: UnblockFooterProps) {
   return (
     <>
       <Button variant="secondary" className={styles.footerButton} onClick={onCancel}>
-        Cancelar
+        {moderationTexts.cancel}
       </Button>
       <Button className={styles.footerButton} disabled={pending} onClick={onConfirm}>
         {moderationTexts.unblock}
@@ -40,7 +41,7 @@ function UnblockBody({
     <div className={styles.body}>
       <ContactCard conversation={conversation} />
       <p className={styles.blockedState}>
-        <strong>{moderationTexts.blockedTitle(handleOrName(conversation))}</strong>
+        <strong>{moderationTexts.blockedTitle(handleOrName(conversation.contact))}</strong>
         {moderationTexts.blockedMessage}
       </p>
       <FormError message={failed ? moderationTexts.failure : undefined} />
@@ -64,7 +65,7 @@ export function UnblockPanel({ conversation, onClose, onDone }: ContactModeratio
       variant="dense"
       size="narrow"
       icon={<DialogBadge />}
-      title={moderationTexts.title(handleOrName(conversation))}
+      title={moderationTexts.title(handleOrName(conversation.contact))}
       subtitle={moderationTexts.subtitle}
       onClose={onClose}
       footer={footer}

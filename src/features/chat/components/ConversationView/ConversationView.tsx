@@ -4,7 +4,7 @@ import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { Toast } from '@/components/Toast/Toast';
 
-import { dayLabel, handleOf, sameDay } from '../../chat.format';
+import { dayLabel, handleOrName, sameDay } from '../../chat.format';
 import { chatTexts } from '../../chat.labels';
 import { messagesInOrder, useMarkAsRead, useMessages } from '../../chat.queries';
 import type { ChatMessage, ConversationSummary } from '../../chat.types';
@@ -129,7 +129,7 @@ function Body({ conversation, currentUserId }: ConversationViewProps) {
 function Footer({ conversation }: { conversation: ConversationSummary }) {
   const sendMessage = useSendMessage();
   const { contact, block } = conversation;
-  const handle = handleOf(contact.username) || contact.name;
+  const handle = handleOrName(contact);
   if (block) return <BlockedNotice block={block} contactId={contact.id} handle={handle} />;
   return (
     <MessageComposer

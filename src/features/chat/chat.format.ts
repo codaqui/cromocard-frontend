@@ -40,6 +40,9 @@ export const initialOf = (name: string) => name.trim().charAt(0).toUpperCase();
 
 export const handleOf = (username: string | null) => (username ? `@${username}` : '');
 
+export const handleOrName = ({ username, name }: { username: string | null; name: string }) =>
+  handleOf(username) || name;
+
 export const listedLabel = (listed: number, total: number) =>
   total === 0
     ? 'Nenhuma conversa'

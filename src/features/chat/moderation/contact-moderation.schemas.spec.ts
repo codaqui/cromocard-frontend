@@ -9,11 +9,15 @@ import {
 
 const file = (type: string, size = 10) => new File([new Uint8Array(size)], 'print', { type });
 
-const issuesOf = (values: Parameters<typeof contactModerationSchema.safeParse>[0]) => {
+const issuesOf = (
+  values: Parameters<typeof contactModerationSchema.safeParse>[0],
+): Record<string, string> => {
   const result = contactModerationSchema.safeParse(values);
   return result.success
     ? {}
-    : Object.fromEntries(result.error.issues.map((issue) => [issue.path[0], issue.message]));
+    : Object.fromEntries(
+        result.error.issues.map((issue) => [String(issue.path[0]), issue.message]),
+      );
 };
 
 describe('contact-moderation.schemas', () => {
