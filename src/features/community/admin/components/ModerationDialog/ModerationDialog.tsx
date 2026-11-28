@@ -34,13 +34,14 @@ function TargetDescription({ action }: { action: CommunityAction }) {
   }
 
   const { message, reportedUser } = action.report;
-  if (!message) {
+  if (reportedUser) {
     return (
       <p className={styles.target}>
-        Contato <strong>{reportedUser?.name}</strong> denunciado no chat pessoal.
+        Contato <strong>{reportedUser.name}</strong> denunciado no chat pessoal.
       </p>
     );
   }
+  if (!message) return null;
   return (
     <p className={styles.target}>
       Mensagem de <strong>{message.authorName}</strong> no grupo{' '}

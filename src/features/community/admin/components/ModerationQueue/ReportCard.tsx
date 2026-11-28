@@ -163,7 +163,9 @@ function GroupReportCard({ report, onAction, onSanctionAuthor }: ReportCardProps
 }
 
 export function ReportCard(props: ReportCardProps) {
-  const { reportedUser } = props.report;
-  if (!reportedUser) return <GroupReportCard {...props} />;
-  return <ChatReportCard {...props} reportedUser={reportedUser} />;
+  const { origin, reportedUser } = props.report;
+  if (origin === 'CHAT' && reportedUser) {
+    return <ChatReportCard {...props} reportedUser={reportedUser} />;
+  }
+  return <GroupReportCard {...props} />;
 }
