@@ -1,3 +1,5 @@
+import type { FieldPath, PathValue } from 'react-hook-form';
+
 import {
   CONTACT_REPORT_REASONS,
   DESCRIPTION_MAX_LENGTH,
@@ -5,7 +7,10 @@ import {
   moderationOptions,
   moderationTexts,
 } from '../../moderation/contact-moderation.labels';
-import { reportsContact } from '../../moderation/contact-moderation.form';
+import {
+  type ContactModerationValues,
+  reportsContact,
+} from '../../moderation/contact-moderation.schemas';
 import type {
   ContactReportReason,
   ModerationOption,
@@ -41,7 +46,16 @@ function OptionCard({ option, checked, onSelect }: OptionCardProps) {
   );
 }
 
+function useFieldSetter({ form }: ContactModeration) {
+  return <K extends FieldPath<ContactModerationValues>>(
+    field: K,
+    value: PathValue<ContactModerationValues, K>,
+  ) => form.setValue(field, value, { shouldValidate: form.formState.isSubmitted });
+}
+
 function OptionsField({ moderation }: { moderation: ContactModeration }) {
+  const set = useFieldSetter(moderation);
+  const selected = moderation.form.watch('option');
   return (
     <fieldset className={styles.field}>
       <legend className={styles.label}>{moderationTexts.question}</legend>
@@ -49,8 +63,8 @@ function OptionsField({ moderation }: { moderation: ContactModeration }) {
         <OptionCard
           key={option}
           option={option}
-          checked={moderation.form.option === option}
-          onSelect={() => moderation.change({ option })}
+          checked={selected === option}
+          onSelect={() => set('option', option)}
         />
       ))}
     </fieldset>
@@ -79,7 +93,9 @@ function ReasonChip({
 }
 
 function ReasonField({ moderation }: { moderation: ContactModeration }) {
-  const { form, errors, change } = moderation;
+  const set = useFieldSetter(moderation);
+  const selected = moderation.form.watch('reason');
+  const error = moderation.form.formState.errors.reason?.message;
   return (
     <div className={styles.field} role="group" aria-label={moderationTexts.reason}>
       <span className={styles.label}>{moderationTexts.reason}</span>
@@ -88,14 +104,14 @@ function ReasonField({ moderation }: { moderation: ContactModeration }) {
           <ReasonChip
             key={reason}
             reason={reason}
-            selected={form.reason === reason}
-            onSelect={() => change({ reason })}
+            selected={selected === reason}
+            onSelect={() => set('reason', reason)}
           />
         ))}
       </div>
-      {errors.reason && (
+      {error && (
         <p className={styles.fieldError} role="alert">
-          {errors.reason}
+          {error}
         </p>
       )}
     </div>
@@ -109,28 +125,34 @@ function DescriptionField({ moderation }: { moderation: ContactModeration }) {
       <input
         className={styles.input}
         maxLength={DESCRIPTION_MAX_LENGTH}
-        value={moderation.form.description}
-        onChange={(event) => moderation.change({ description: event.target.value })}
+        {...moderation.form.register('description')}
       />
     </label>
   );
 }
 
+function EvidencesField({ moderation }: { moderation: ContactModeration }) {
+  const { form } = moderation;
+  const set = useFieldSetter(moderation);
+  return (
+    <EvidencePicker
+      files={form.watch('evidences')}
+      error={form.formState.errors.evidences?.message}
+      onChange={(evidences) => set('evidences', evidences)}
+      onInvalid={(message) => form.setError('evidences', { message })}
+    />
+  );
+}
+
 export function ModerationFields({ moderation }: { moderation: ContactModeration }) {
-  const { form, errors, change, setErrors } = moderation;
   return (
     <>
       <OptionsField moderation={moderation} />
-      {reportsContact(form.option) && (
+      {reportsContact(moderation.form.watch('option')) && (
         <>
           <ReasonField moderation={moderation} />
           <DescriptionField moderation={moderation} />
-          <EvidencePicker
-            files={form.evidences}
-            error={errors.evidences}
-            onChange={(evidences) => change({ evidences })}
-            onInvalid={(message) => setErrors({ ...errors, evidences: message })}
-          />
+          <EvidencesField moderation={moderation} />
         </>
       )}
     </>

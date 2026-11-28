@@ -32,14 +32,18 @@ export const moderationOptions: Record<ModerationOption, OptionLabels> = {
   },
 };
 
-export const MODERATION_OPTIONS = Object.keys(moderationOptions) as ModerationOption[];
+export const MODERATION_OPTIONS = [
+  'block',
+  'blockAndReport',
+  'report',
+] as const satisfies readonly ModerationOption[];
 
-export const CONTACT_REPORT_REASONS: ContactReportReason[] = [
+export const CONTACT_REPORT_REASONS = [
   'Golpe / pagamento externo',
   'Assédio',
   'Spam',
   'Perfil falso',
-];
+] as const satisfies readonly ContactReportReason[];
 
 export const MAX_EVIDENCES = 3;
 export const MAX_EVIDENCE_SIZE_IN_BYTES = 4 * 1024 * 1024;

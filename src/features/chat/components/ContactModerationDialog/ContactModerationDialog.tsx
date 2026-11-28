@@ -32,7 +32,7 @@ function ModerationFooter({
         onClick={() => void moderation.submit()}
       >
         <Icon name="block" size={14} />
-        {moderationOptions[moderation.form.option].action}
+        {moderationOptions[moderation.form.watch('option')].action}
       </Button>
     </>
   );

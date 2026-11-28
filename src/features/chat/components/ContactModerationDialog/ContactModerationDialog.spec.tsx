@@ -131,6 +131,28 @@ describe('ContactModerationDialog', () => {
     expect(contactModerationApi.report).not.toHaveBeenCalled();
   });
 
+  it('Somente denunciar sem motivo não bloqueia o contato', async () => {
+    renderDialog();
+    await user().click(screen.getByRole('radio', { name: /Somente denunciar/ }));
+
+    await user().click(action('Denunciar'));
+
+    expect(screen.getByText('Escolha o motivo da denúncia.')).toBeInTheDocument();
+    expect(contactModerationApi.block).not.toHaveBeenCalled();
+    expect(contactModerationApi.report).not.toHaveBeenCalled();
+  });
+
+  it('o aviso do campo some assim que ele é corrigido', async () => {
+    renderDialog();
+    await user().click(action('Bloquear e denunciar'));
+
+    await user().click(screen.getByRole('button', { name: 'Spam' }));
+    await attach([print()]);
+
+    expect(screen.queryByText('Escolha o motivo da denúncia.')).not.toBeInTheDocument();
+    expect(screen.queryByText('Envie pelo menos um print da conversa.')).not.toBeInTheDocument();
+  });
+
   it('CA15: recusa um GIF e some com o botão depois do terceiro print, e um print pode ser removido', async () => {
     renderDialog();
     await attach([print('a.gif', 'image/gif')]);

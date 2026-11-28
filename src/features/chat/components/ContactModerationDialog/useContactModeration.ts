@@ -1,25 +1,26 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 
 import { ApiError } from '@/lib/api-error';
 
 import type { ConversationSummary } from '../../chat.types';
-import {
-  blocksContact,
-  type ModerationErrors,
-  type ModerationForm,
-  validateModeration,
-} from '../../moderation/contact-moderation.form';
 import { moderationOptions, moderationTexts } from '../../moderation/contact-moderation.labels';
 import { useBlockContact, useReportContact } from '../../moderation/contact-moderation.queries';
+import {
+  blocksContact,
+  type ContactModerationRequest,
+  type ContactModerationValues,
+  contactModerationSchema,
+} from '../../moderation/contact-moderation.schemas';
 
 export interface ModerationNotice {
   title: string;
   detail: string;
 }
 
-const EMPTY_FORM: ModerationForm = {
+const DEFAULT_VALUES: ContactModerationValues = {
   option: 'blockAndReport',
-  reason: null,
   description: '',
   evidences: [],
 };
@@ -32,15 +33,15 @@ const failureOf = (error: unknown) =>
 function useModerationRequest(userId: string) {
   const block = useBlockContact();
   const report = useReportContact();
-  const send = ({ option, reason, description, evidences }: ModerationForm) =>
-    option === 'block' || !reason
+  const send = (request: ContactModerationRequest) =>
+    request.option === 'block'
       ? block.mutateAsync(userId)
       : report.mutateAsync({
           userId,
-          reason,
-          description: description.trim() || undefined,
-          block: blocksContact(option),
-          evidences,
+          reason: request.reason,
+          description: request.description || undefined,
+          block: blocksContact(request.option),
+          evidences: request.evidences,
         });
   return { send, pending: block.isPending || report.isPending };
 }
@@ -49,29 +50,25 @@ export function useContactModeration(
   conversation: ConversationSummary,
   onDone: (notice: ModerationNotice) => void,
 ) {
-  const [form, setForm] = useState(EMPTY_FORM);
-  const [errors, setErrors] = useState<ModerationErrors>({});
+  const form = useForm<ContactModerationValues, unknown, ContactModerationRequest>({
+    resolver: zodResolver(contactModerationSchema),
+    defaultValues: DEFAULT_VALUES,
+  });
   const [failure, setFailure] = useState<string>();
   const request = useModerationRequest(conversation.contact.id);
 
-  const change = (changes: Partial<ModerationForm>) =>
-    setForm((current) => ({ ...current, ...changes }));
-
-  const submit = async () => {
-    const found = validateModeration(form);
-    setErrors(found);
+  const submit = form.handleSubmit(async (values: ContactModerationRequest) => {
     setFailure(undefined);
-    if (Object.keys(found).length > 0) return;
     try {
-      await request.send(form);
-      const { done, doneDetail } = moderationOptions[form.option];
+      await request.send(values);
+      const { done, doneDetail } = moderationOptions[values.option];
       onDone({ title: done, detail: doneDetail });
     } catch (error) {
       setFailure(failureOf(error));
     }
-  };
+  });
 
-  return { form, errors, failure, change, setErrors, submit, pending: request.pending };
+  return { form, failure, submit, pending: request.pending };
 }
 
 export type ContactModeration = ReturnType<typeof useContactModeration>;

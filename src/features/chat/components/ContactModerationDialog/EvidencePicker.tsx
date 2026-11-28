@@ -1,6 +1,6 @@
 import { type ChangeEvent, useId } from 'react';
 
-import { acceptsEvidences } from '../../moderation/contact-moderation.form';
+import { evidencesSchema } from '../../moderation/contact-moderation.schemas';
 import { MAX_EVIDENCES, moderationTexts } from '../../moderation/contact-moderation.labels';
 import styles from './ContactModerationDialog.module.css';
 
@@ -55,7 +55,7 @@ export function EvidencePicker({ files, error, onChange, onInvalid }: EvidencePi
   const add = (event: ChangeEvent<HTMLInputElement>) => {
     const next = [...files, ...Array.from(event.target.files ?? [])];
     event.target.value = '';
-    if (acceptsEvidences(next)) onChange(next);
+    if (evidencesSchema.safeParse(next).success) onChange(next);
     else onInvalid(moderationTexts.invalidEvidence);
   };
 
