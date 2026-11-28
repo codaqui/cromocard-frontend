@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   forgetRedirectAfterLogin,
   pathAfterLogin,
+  PENDING_REDIRECT_KEY,
   PENDING_REDIRECT_MAX_AGE_MS,
   rememberRedirectAfterLogin,
 } from './loginRedirect';
@@ -34,7 +35,7 @@ describe('pathAfterLogin', () => {
   });
 
   it('ignora valor guardado em formato inválido', () => {
-    sessionStorage.setItem('cromocard:redirect-after-login', 'null');
+    sessionStorage.setItem(PENDING_REDIRECT_KEY, 'null');
 
     expect(pathAfterLogin('', 'CUSTOMER')).toBe('/profile');
   });

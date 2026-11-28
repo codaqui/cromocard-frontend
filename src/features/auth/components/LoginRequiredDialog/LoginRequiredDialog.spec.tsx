@@ -1,7 +1,8 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
+import { PENDING_REDIRECT_KEY } from '@/routes/guards/loginRedirect';
 import { renderWithProviders } from '@/test/renderWithProviders';
 
 import { LoginRequiredDialog } from './LoginRequiredDialog';
@@ -32,8 +33,6 @@ function renderDialog(props: { open?: boolean; message?: string } = {}) {
 const dialog = () => screen.getByRole('dialog', { name: 'Entre para continuar' });
 
 describe('LoginRequiredDialog', () => {
-  afterEach(() => sessionStorage.clear());
-
   it('CA4: mostra a mensagem padrão, as opções e os termos', () => {
     renderDialog();
 
@@ -63,7 +62,7 @@ describe('LoginRequiredDialog', () => {
 
     expect(router.state.location.pathname).toBe('/login');
     expect(router.state.location.search).toBe('?redirect=%2Fcartas%2Fc1%3Faba%3Danuncios');
-    expect(sessionStorage.getItem('cromocard:redirect-after-login')).toBeNull();
+    expect(sessionStorage.getItem(PENDING_REDIRECT_KEY)).toBeNull();
   });
 
   it('L18: Continuar com Google leva à página em construção, sem guardar a origem', async () => {
@@ -72,7 +71,7 @@ describe('LoginRequiredDialog', () => {
     await userEvent.click(within(dialog()).getByRole('link', { name: 'Continuar com Google' }));
 
     expect(router.state.location.pathname).toBe('/login/google');
-    expect(sessionStorage.getItem('cromocard:redirect-after-login')).toBeNull();
+    expect(sessionStorage.getItem(PENDING_REDIRECT_KEY)).toBeNull();
   });
 
   it('L16: Criar conta grátis guarda a página atual para depois do login', async () => {
@@ -81,7 +80,7 @@ describe('LoginRequiredDialog', () => {
     await userEvent.click(within(dialog()).getByRole('link', { name: 'Criar conta grátis' }));
 
     expect(await screen.findByText('Tela de cadastro')).toBeVisible();
-    expect(sessionStorage.getItem('cromocard:redirect-after-login')).toContain(
+    expect(sessionStorage.getItem(PENDING_REDIRECT_KEY)).toContain(
       '"path":"/cartas/c1?aba=anuncios"',
     );
   });

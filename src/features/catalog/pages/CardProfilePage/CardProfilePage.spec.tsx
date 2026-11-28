@@ -6,6 +6,7 @@ import type { ListingSummary } from '@/features/marketplace';
 import { ApiError } from '@/lib/api-error';
 import { api } from '@/lib/http';
 import { renderWithProviders } from '@/test/renderWithProviders';
+import { PENDING_REDIRECT_KEY } from '@/routes/guards/loginRedirect';
 import type { AuthenticatedUser } from '@/types/authenticated-user';
 
 import type { CardProfile } from '../../card-profile.types';
@@ -141,9 +142,7 @@ describe('CardProfilePage', () => {
     await userEvent.click(screen.getByRole('link', { name: 'Criar conta grátis' }));
 
     expect(await screen.findByText('Tela de cadastro')).toBeVisible();
-    expect(sessionStorage.getItem('cromocard:redirect-after-login')).toContain(
-      `"path":"/cartas/${CARD_ID}"`,
-    );
+    expect(sessionStorage.getItem(PENDING_REDIRECT_KEY)).toContain(`"path":"/cartas/${CARD_ID}"`);
   });
 
   it('CA6: o cliente logado não vê o aviso e não abre o modal', async () => {
@@ -217,11 +216,6 @@ describe('CardProfilePage', () => {
   });
 
   it('R15: Ver anúncios leva até a lista de anúncios', async () => {
-    Object.defineProperty(Element.prototype, 'scrollIntoView', {
-      configurable: true,
-      writable: true,
-      value: () => undefined,
-    });
     const scrollIntoView = vi
       .spyOn(Element.prototype, 'scrollIntoView')
       .mockImplementation(() => undefined);

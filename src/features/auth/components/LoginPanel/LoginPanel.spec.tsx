@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ApiError } from '@/lib/api-error';
-import { rememberRedirectAfterLogin } from '@/routes/guards/loginRedirect';
+import { PENDING_REDIRECT_KEY, rememberRedirectAfterLogin } from '@/routes/guards/loginRedirect';
 import { paths } from '@/routes/paths';
 import { renderWithProviders } from '@/test/renderWithProviders';
 import type { UserRole } from '@/types/authenticated-user';
@@ -80,7 +80,7 @@ describe('LoginPanel', () => {
     await submitLogin();
 
     expect(await screen.findByText('Página pedida antes do login')).toBeInTheDocument();
-    expect(sessionStorage.getItem('cromocard:redirect-after-login')).toBeNull();
+    expect(sessionStorage.getItem(PENDING_REDIRECT_KEY)).toBeNull();
   });
 
   it.each(['//site-malicioso.com', '/%5Csite-malicioso.com', 'https://site-malicioso.com'])(

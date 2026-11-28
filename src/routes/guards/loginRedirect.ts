@@ -16,7 +16,7 @@ function isInternalPath(path: string | null): path is string {
   return new URL(path, origin).origin === origin && !path.includes('\\');
 }
 
-const PENDING_REDIRECT_KEY = 'cromocard:redirect-after-login';
+export const PENDING_REDIRECT_KEY = 'cromocard:redirect-after-login';
 export const PENDING_REDIRECT_MAX_AGE_MS = 30 * 60 * 1000;
 
 interface PendingRedirect {
