@@ -130,4 +130,25 @@ describe('NotificationBell', () => {
       await screen.findByText('Não foi possível carregar as notificações. Tente de novo.'),
     ).toBeInTheDocument();
   });
+
+  it('aberto antes de as contagens chegarem, mostra os filtros sem número', async () => {
+    list.mockReturnValue(new Promise(() => undefined));
+    renderBell();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Notificações' }));
+
+    expect(screen.getByRole('button', { name: 'Todas' })).toBeInTheDocument();
+    expect(screen.queryByText(/novas/)).not.toBeInTheDocument();
+    expect(screen.getByText('Carregando notificações…')).toBeInTheDocument();
+  });
+
+  it('sem não lidas, o popup não mostra o selo de novas', async () => {
+    list.mockResolvedValue(pageOf([read], countsOf({ ALL: 1, PLATFORM: 1 })));
+    renderBell();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Notificações' }));
+
+    expect(await screen.findByRole('button', { name: 'Todas (1)' })).toBeInTheDocument();
+    expect(screen.queryByText(/novas/)).not.toBeInTheDocument();
+  });
 });

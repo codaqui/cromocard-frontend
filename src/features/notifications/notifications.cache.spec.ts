@@ -64,4 +64,28 @@ describe('addIncomingNotification', () => {
     expect(read()?.pages[0]?.data).toHaveLength(1);
     expect(read()?.pages[0]?.meta.counts.ALL).toBe(2);
   });
+
+  it('ignora a lista que ainda está carregando', () => {
+    const queryClient = new QueryClient();
+    const key = notificationsKeys.list('ALL', 50);
+    void queryClient.prefetchQuery({
+      queryKey: key,
+      queryFn: () => new Promise<never>(() => undefined),
+    });
+
+    addIncomingNotification(queryClient, notification());
+
+    expect(queryClient.getQueryData(key)).toBeUndefined();
+  });
+
+  it('a nova entra na lista de não lidas e na da própria categoria', () => {
+    const unread = cacheWith('UNREAD');
+    const messages = cacheWith('MESSAGES');
+
+    addIncomingNotification(unread.queryClient, notification());
+    addIncomingNotification(messages.queryClient, notification());
+
+    expect(unread.read()?.pages[0]?.data).toHaveLength(1);
+    expect(messages.read()?.pages[0]?.data).toHaveLength(1);
+  });
 });

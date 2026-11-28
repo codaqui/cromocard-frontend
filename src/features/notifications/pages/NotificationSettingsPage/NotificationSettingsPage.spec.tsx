@@ -110,6 +110,18 @@ describe('NotificationSettingsPage', () => {
     expect(screen.getByText('Badge: Ativo')).toBeInTheDocument();
   });
 
+  it('desligar o site muda o selo para "Inativo" e desativa as chaves do site nos eventos', async () => {
+    renderPage();
+
+    await userEvent.click(await screen.findByRole('switch', { name: 'In-App (Central & Sino)' }));
+
+    expect(screen.getByText('Badge: Inativo')).toBeInTheDocument();
+    expect(
+      screen.getByRole('switch', { name: 'Convite para entrar em novo grupo: In-App' }),
+    ).toBeDisabled();
+    expect(await groupInvitesEmail()).toBeEnabled();
+  });
+
   it('"Cancelar" desfaz o que não foi salvo', async () => {
     renderPage();
 

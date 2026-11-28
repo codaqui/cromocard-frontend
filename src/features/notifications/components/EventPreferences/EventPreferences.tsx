@@ -21,7 +21,9 @@ interface SwitchCellProps extends EventPreferencesProps {
 }
 
 function SwitchCell({ item, channel, column, preferences, onChange }: SwitchCellProps) {
-  const choice = preferences.events.find(({ event }) => event === item.event);
+  const checked = preferences.events.some(
+    (choice) => choice.event === item.event && choice[channel],
+  );
   return (
     <span className={styles.switchCell}>
       <span className={styles.switchLabel} aria-hidden="true">
@@ -29,7 +31,7 @@ function SwitchCell({ item, channel, column, preferences, onChange }: SwitchCell
       </span>
       <Switch
         label={`${item.label}: ${column}`}
-        checked={choice?.[channel] ?? true}
+        checked={checked}
         disabled={!preferences.channels[channel]}
         onChange={(on) => onChange(item.event, channel, on)}
       />

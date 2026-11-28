@@ -17,17 +17,16 @@ export const notificationsKeys = {
   preferences: () => [...notificationsKeys.all, 'preferences'] as const,
 };
 
-function matches(filter: NotificationFilter, notification: Notification): boolean {
-  if (filter === 'ALL') return true;
-  if (filter === 'UNREAD') return !notification.isRead;
-  return filter === notification.category;
-}
+const LISTS_EVERY_INCOMING: readonly NotificationFilter[] = ['ALL', 'UNREAD'];
+
+const matches = (filter: NotificationFilter, notification: Notification) =>
+  LISTS_EVERY_INCOMING.includes(filter) || filter === notification.category;
 
 function countedIn(counts: NotificationCounts, notification: Notification): NotificationCounts {
   return {
     ...counts,
     ALL: counts.ALL + 1,
-    UNREAD: counts.UNREAD + (notification.isRead ? 0 : 1),
+    UNREAD: counts.UNREAD + 1,
     [notification.category]: counts[notification.category] + 1,
   };
 }
