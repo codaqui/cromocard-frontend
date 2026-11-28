@@ -8,7 +8,7 @@ import { NavItem } from '@/components/NavItem/NavItem';
 import { SearchBar, type SearchQuery } from '@/components/SearchBar/SearchBar';
 import { UserMenu } from '@/components/UserMenu/UserMenu';
 import { NOT_READY_REASON, useCanPublishListing } from '@/features/marketplace';
-import { NotificationToasts } from '@/features/notifications';
+import { NotificationBell, NotificationToasts } from '@/features/notifications';
 import { roleLabels, useMe } from '@/features/users';
 import { useAuth } from '@/hooks/useAuth';
 import { useSignOut } from '@/hooks/useSignOut';
@@ -144,6 +144,8 @@ function CreateListingButton() {
   );
 }
 
+const hasNotifications = (role?: UserRole) => role === 'CUSTOMER' || role === 'SELLER';
+
 function AccountArea({ role }: { role: UserRole }) {
   const actions = useAccountActions(role);
   const { name, initial } = useAccountName(role);
@@ -151,9 +153,7 @@ function AccountArea({ role }: { role: UserRole }) {
   return (
     <>
       {role === 'SELLER' && <CreateListingButton />}
-      <Link to={paths.notifications} className={styles.iconButton} aria-label="Notificações">
-        <Icon name="notifications" size={20} />
-      </Link>
+      {hasNotifications(role) && <NotificationBell className={styles.iconButton} />}
       <UserMenu name={name} initial={initial} avatarFirst actions={actions} />
     </>
   );
@@ -184,8 +184,6 @@ function SiteTopbar() {
     </Header>
   );
 }
-
-const hasNotifications = (role?: UserRole) => role === 'CUSTOMER' || role === 'SELLER';
 
 function RealtimeNotifications() {
   const { user } = useAuth();

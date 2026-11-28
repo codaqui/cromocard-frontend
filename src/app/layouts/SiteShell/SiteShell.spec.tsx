@@ -14,6 +14,13 @@ vi.mock('@/features/marketplace/seller-account/seller-account.api', () => ({
   sellerAccountApi: { get: getStripeAccount, createOnboardingLink: vi.fn(), refresh: vi.fn() },
 }));
 
+const listNotifications = vi.hoisted(() => vi.fn());
+
+vi.mock('@/features/notifications/notifications.api', () => ({
+  notificationsApi: { list: listNotifications, markAsRead: vi.fn() },
+}));
+vi.mock('@/lib/socket', () => ({ connectSocket: () => ({ on: vi.fn(), off: vi.fn() }) }));
+
 const routes = [
   {
     element: <SiteShell />,
@@ -32,6 +39,13 @@ function renderShell(user: AuthenticatedUser | null = null, signOut = vi.fn()) {
 
 describe('SiteShell', () => {
   beforeEach(() => {
+    listNotifications.mockResolvedValue({
+      data: [],
+      meta: {
+        nextCursor: null,
+        counts: { ALL: 3, UNREAD: 3, MESSAGES: 0, GROUPS: 0, PLATFORM: 3, ORDERS: 0 },
+      },
+    });
     getStripeAccount.mockResolvedValue({
       status: 'NOT_CONNECTED',
       pendingReason: null,
@@ -180,5 +194,23 @@ describe('SiteShell', () => {
     expect(
       await screen.findByRole('heading', { name: 'Painel administrativo' }),
     ).toBeInTheDocument();
+  });
+
+  it('CA19: cliente e vendedor veem o sino com o número de não lidas', async () => {
+    renderShell({ id: 'u-1', role: 'CUSTOMER' });
+
+    expect(
+      await screen.findByRole('button', { name: 'Notificações, 3 não lidas' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Notificações' })).toBeInTheDocument();
+  });
+
+  it('o administrador não tem central de notificações no site', async () => {
+    renderShell({ id: 'u-2', role: 'ADMIN' });
+
+    await screen.findByRole('heading', { name: 'Início' });
+    expect(screen.queryByRole('button', { name: /^Notificações/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Notificações' })).not.toBeInTheDocument();
+    expect(listNotifications).not.toHaveBeenCalled();
   });
 });
