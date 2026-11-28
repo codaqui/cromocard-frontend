@@ -9,9 +9,23 @@ import type { AuthenticatedUser } from '@/types/authenticated-user';
 import { SiteShell } from './SiteShell';
 
 const getStripeAccount = vi.hoisted(() => vi.fn());
+const createOnboardingLink = vi.hoisted(() => vi.fn());
+const getEligibility = vi.hoisted(() =>
+  vi.fn().mockResolvedValue({ canCreate: true, stripeAccountReady: true, hasPrimaryAddress: true }),
+);
 
 vi.mock('@/features/marketplace/seller-account/seller-account.api', () => ({
-  sellerAccountApi: { get: getStripeAccount, createOnboardingLink: vi.fn(), refresh: vi.fn() },
+  sellerAccountApi: { get: getStripeAccount, createOnboardingLink, refresh: vi.fn() },
+}));
+
+vi.mock('@/features/marketplace/listings/listings.api', () => ({
+  listingsApi: {
+    getEligibility,
+    listConditions: vi.fn().mockResolvedValue([]),
+    create: vi.fn(),
+    searchCards: vi.fn(),
+    uploadPhoto: vi.fn(),
+  },
 }));
 
 const routes = [
@@ -115,6 +129,40 @@ describe('SiteShell', () => {
       }
     },
   );
+
+  it('CCD084 T12: o Criar Anúncio do topo abre o formulário de anúncio', async () => {
+    getStripeAccount.mockResolvedValue({ status: 'READY', pendingReason: null });
+    renderShell({ id: '1', role: 'SELLER' });
+
+    const button = screen.getByRole('button', { name: 'Criar Anúncio' });
+    await vi.waitFor(() => expect(button).toBeEnabled());
+    await userEvent.click(button);
+
+    expect(await screen.findByRole('dialog', { name: 'Criar anúncio' })).toBeInTheDocument();
+  });
+
+  it('CCD084 CA7: pelo topo, o aviso de conta bloqueada leva ao cadastro na Stripe', async () => {
+    const assign = vi.fn();
+    vi.stubGlobal('location', { ...window.location, assign });
+    getEligibility.mockResolvedValueOnce({
+      canCreate: false,
+      stripeAccountReady: false,
+      hasPrimaryAddress: true,
+    });
+    createOnboardingLink.mockResolvedValue({ url: 'https://connect.stripe.com/setup/e/acct_1' });
+    getStripeAccount.mockResolvedValue({ status: 'READY', pendingReason: null });
+    renderShell({ id: '1', role: 'SELLER' });
+
+    const button = screen.getByRole('button', { name: 'Criar Anúncio' });
+    await vi.waitFor(() => expect(button).toBeEnabled());
+    await userEvent.click(button);
+    await userEvent.click(await screen.findByRole('button', { name: 'Conectar conta Stripe' }));
+
+    await vi.waitFor(() =>
+      expect(assign).toHaveBeenCalledWith('https://connect.stripe.com/setup/e/acct_1'),
+    );
+    vi.unstubAllGlobals();
+  });
 
   it.each(['CUSTOMER', 'ADMIN'] as const)('o Criar Anúncio do topo não aparece para %s', (role) => {
     renderShell({ id: '1', role });

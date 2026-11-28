@@ -7,7 +7,13 @@ import { Icon } from '@/components/Icon/Icon';
 import { NavItem } from '@/components/NavItem/NavItem';
 import { SearchBar, type SearchQuery } from '@/components/SearchBar/SearchBar';
 import { UserMenu } from '@/components/UserMenu/UserMenu';
-import { NOT_READY_REASON, useCanPublishListing } from '@/features/marketplace';
+import {
+  CreateListingFlow,
+  NOT_READY_REASON,
+  useCanPublishListing,
+  useCreateListingFlow,
+  useStripeOnboarding,
+} from '@/features/marketplace';
 import { roleLabels, useMe } from '@/features/users';
 import { useAuth } from '@/hooks/useAuth';
 import { useSignOut } from '@/hooks/useSignOut';
@@ -117,10 +123,21 @@ function useAccountActions(role: UserRole) {
   ];
 }
 
-/** "+ Criar Anúncio" do topo (frame 1112-9866): desabilitado até a conta de recebimento ficar pronta. A ação é da CCD084. */
+const goTo = (url: string) => window.location.assign(url);
+
+function NotReadyReason({ id }: { id: string }) {
+  return (
+    <span id={id} className={styles.srOnly}>
+      {NOT_READY_REASON}
+    </span>
+  );
+}
+
 function CreateListingButton() {
   const canPublish = useCanPublishListing();
   const reasonId = useId();
+  const flow = useCreateListingFlow();
+  const onboarding = useStripeOnboarding(goTo);
 
   return (
     <>
@@ -130,15 +147,13 @@ function CreateListingButton() {
         disabled={!canPublish}
         title={canPublish ? undefined : NOT_READY_REASON}
         aria-describedby={canPublish ? undefined : reasonId}
+        onClick={() => flow.start()}
       >
         <Icon name="add" size={18} />
         Criar Anúncio
       </Button>
-      {!canPublish && (
-        <span id={reasonId} className={styles.srOnly}>
-          {NOT_READY_REASON}
-        </span>
-      )}
+      {!canPublish && <NotReadyReason id={reasonId} />}
+      <CreateListingFlow flow={flow} onConnectAccount={() => onboarding.mutate()} />
     </>
   );
 }

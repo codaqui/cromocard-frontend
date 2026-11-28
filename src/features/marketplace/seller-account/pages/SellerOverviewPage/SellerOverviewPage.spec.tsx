@@ -10,8 +10,20 @@ import { sellerAccountApi } from '../../seller-account.api';
 import type { StripeAccount } from '../../seller-account.types';
 import { SellerOverviewPage } from './SellerOverviewPage';
 
+const getEligibility = vi.hoisted(() => vi.fn());
+
 vi.mock('../../seller-account.api', () => ({
   sellerAccountApi: { get: vi.fn(), createOnboardingLink: vi.fn(), refresh: vi.fn() },
+}));
+
+vi.mock('@/features/marketplace/listings/listings.api', () => ({
+  listingsApi: {
+    getEligibility,
+    listConditions: vi.fn().mockResolvedValue([]),
+    create: vi.fn(),
+    searchCards: vi.fn(),
+    uploadPhoto: vi.fn(),
+  },
 }));
 
 const assign = vi.fn();
@@ -125,6 +137,38 @@ describe('SellerOverviewPage', () => {
     expect(button).toBeEnabled();
     expect(button).not.toHaveAccessibleDescription();
     expect(screen.queryByRole('region')).not.toBeInTheDocument();
+  });
+
+  it('CCD084 T12: Criar Novo Anúncio abre o formulário de anúncio', async () => {
+    getEligibility.mockResolvedValue({
+      canCreate: true,
+      stripeAccountReady: true,
+      hasPrimaryAddress: true,
+    });
+    renderPage({ status: 'READY', pendingReason: null });
+
+    await userEvent.click(await createListing());
+
+    expect(await screen.findByRole('dialog', { name: 'Criar anúncio' })).toBeInTheDocument();
+  });
+
+  it('CCD084 CA7: se a conta deixou de estar pronta, o aviso leva ao cadastro na Stripe', async () => {
+    getEligibility.mockResolvedValue({
+      canCreate: false,
+      stripeAccountReady: false,
+      hasPrimaryAddress: true,
+    });
+    vi.mocked(sellerAccountApi.createOnboardingLink).mockResolvedValue({
+      url: 'https://connect.stripe.com/setup/e/acct_1',
+    });
+    renderPage({ status: 'READY', pendingReason: null });
+
+    await userEvent.click(await createListing());
+    await userEvent.click(await screen.findByRole('button', { name: 'Conectar conta Stripe' }));
+
+    await vi.waitFor(() =>
+      expect(assign).toHaveBeenCalledWith('https://connect.stripe.com/setup/e/acct_1'),
+    );
   });
 
   it('Ver Loja Pública leva à loja pública do vendedor (CCD080)', async () => {
