@@ -29,4 +29,12 @@ export const chatTexts = {
   startError: 'Não foi possível abrir a conversa. Tente de novo.',
   noResults: 'Nenhum colecionador encontrado.',
   selectConversation: 'Selecione uma conversa para ver as mensagens.',
+  reply: 'Responder',
+  messageActions: 'Ações da mensagem',
+  cancelReply: 'Cancelar resposta',
+  blankMessage: 'Digite uma mensagem antes de enviar',
+  replyUnavailable: 'A mensagem que você está respondendo não está mais disponível.',
+  quoteUnavailable: 'Mensagem indisponível',
 } as const;
+
+export const replyingTo = (handle: string) => `Respondendo a ${handle}`;

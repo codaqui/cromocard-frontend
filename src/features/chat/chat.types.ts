@@ -19,6 +19,10 @@ export interface ConversationSummary {
   createdAt: string;
 }
 
+export type QuotedMessage =
+  | { id: string; authorUsername: string | null; content: string; unavailable: false }
+  | { id: string; authorUsername: string | null; unavailable: true };
+
 export interface ChatMessage {
   id: string;
   conversationId: string;
@@ -26,6 +30,7 @@ export interface ChatMessage {
   content: string;
   isRead: boolean;
   createdAt: string;
+  replyTo: QuotedMessage | null;
 }
 
 export type ConversationFilter = 'all' | 'unread';

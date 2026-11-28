@@ -7,7 +7,7 @@ import { chatKeys } from '../chat.queries';
 import type { MessagesPage } from '../chat.types';
 import { message } from '@/test/chat/chat-fixtures';
 import { createFakeSocket, type FakeSocket } from '@/test/chat/fake-socket';
-import { useSendMessage } from './useSendMessage';
+import { SendMessageError, useSendMessage } from './useSendMessage';
 
 let socket: FakeSocket;
 vi.mock('@/lib/socket', () => ({ connectSocket: () => socket }));
@@ -53,5 +53,31 @@ describe('useSendMessage (R18)', () => {
     const { send } = setup();
 
     await expect(send('c-elisa', 'Oi')).rejects.toThrow('Conversa não encontrada');
+  });
+
+  it('CCD045 CA1: envia a resposta com a mensagem citada', async () => {
+    socket.emitWithAck.mockResolvedValue({ data: message({ id: 'm9' }) });
+    const { send } = setup();
+
+    await send('c-elisa', 'Quero sim', 'm1');
+
+    expect(socket.emitWithAck).toHaveBeenCalledWith('message:send', {
+      conversationId: 'c-elisa',
+      content: 'Quero sim',
+      replyToId: 'm1',
+    });
+  });
+
+  it('CCD045 CA4: a recusa leva o código do servidor', async () => {
+    socket.emitWithAck.mockResolvedValue({
+      error: 'REPLY_TARGET_UNAVAILABLE',
+      message: 'A mensagem que você está respondendo não está mais disponível.',
+    });
+    const { send } = setup();
+
+    const failure = await send('c-elisa', 'Oi', 'm1').catch((error: unknown) => error);
+
+    expect(failure).toBeInstanceOf(SendMessageError);
+    expect(failure).toMatchObject({ code: 'REPLY_TARGET_UNAVAILABLE' });
   });
 });
