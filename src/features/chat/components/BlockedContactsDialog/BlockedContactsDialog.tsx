@@ -1,7 +1,11 @@
+import { useState } from 'react';
+
 import { Button } from '@/components/Button/Button';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
+import { FormError } from '@/components/FormError/FormError';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { Modal } from '@/components/Modal/Modal';
+import { Pagination } from '@/components/Pagination/Pagination';
 
 import { handleOf } from '../../chat.format';
 import { moderationTexts } from '../../moderation/contact-moderation.labels';
@@ -31,12 +35,14 @@ function BlockedRow({ contact }: { contact: BlockedContact }) {
       >
         {moderationTexts.unblock}
       </Button>
+      {unblock.isError && <FormError message={moderationTexts.failure} />}
     </li>
   );
 }
 
 function BlockedList() {
-  const query = useBlockedContacts(1);
+  const [page, setPage] = useState(1);
+  const query = useBlockedContacts(page);
   if (query.isError) return <ErrorState message={moderationTexts.blockedContactsError} />;
   if (!query.data) return <LoadingState />;
   const { data, meta } = query.data;
@@ -49,6 +55,9 @@ function BlockedList() {
           <BlockedRow key={contact.userId} contact={contact} />
         ))}
       </ul>
+      {meta.totalPages > 1 && (
+        <Pagination page={page} totalPages={meta.totalPages} onPageChange={setPage} />
+      )}
     </>
   );
 }
@@ -64,7 +73,7 @@ export function BlockedContactsDialog({ onClose }: BlockedContactsDialogProps) {
       onClose={onClose}
       footer={
         <Button variant="secondary" onClick={onClose}>
-          Fechar
+          {moderationTexts.close}
         </Button>
       }
     >

@@ -60,6 +60,35 @@ describe('BlockedContactsDialog', () => {
     expect(await screen.findByText('2 contatos bloqueados')).toBeInTheDocument();
   });
 
+  it('avisa na linha quando o desbloqueio falha e mantém o contato', async () => {
+    vi.mocked(contactModerationApi.listBlocks).mockResolvedValue({ data: [caio], meta: meta(1) });
+    vi.mocked(contactModerationApi.unblock).mockRejectedValue(new Error('offline'));
+    renderDialog();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Desbloquear Caio Mendes' }));
+
+    expect(
+      await screen.findByText('Não foi possível concluir. Tente de novo.'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Caio Mendes')).toBeInTheDocument();
+  });
+
+  it('pagina a lista quando há mais bloqueados que uma página', async () => {
+    vi.mocked(contactModerationApi.listBlocks).mockImplementation((page) =>
+      Promise.resolve({
+        data: [{ ...caio, userId: `p${page}`, name: `Contato da página ${page}` }],
+        meta: { page, pageSize: 20, total: 21, totalPages: 2 },
+      }),
+    );
+    renderDialog();
+
+    expect(await screen.findByText('Contato da página 1')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: '2' }));
+
+    expect(await screen.findByText('Contato da página 2')).toBeInTheDocument();
+    expect(contactModerationApi.listBlocks).toHaveBeenLastCalledWith(2);
+  });
+
   it('avisa quando não consegue carregar e fecha pelo botão', async () => {
     vi.mocked(contactModerationApi.listBlocks).mockRejectedValue(new Error('offline'));
     const onClose = renderDialog();

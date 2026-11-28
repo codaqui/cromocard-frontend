@@ -54,4 +54,29 @@ describe('useSendMessage (R18)', () => {
 
     await expect(send('c-elisa', 'Oi')).rejects.toThrow('Conversa não encontrada');
   });
+
+  it('R7 e R17: com o contato bloqueado, recarrega as conversas para trocar o campo pelo aviso', async () => {
+    socket.emitWithAck.mockResolvedValue({
+      error: 'CONTACT_BLOCKED',
+      message: 'Contato bloqueado',
+    });
+    const { send, queryClient } = setup();
+    const refresh = vi.spyOn(queryClient, 'invalidateQueries');
+
+    await expect(send('c-elisa', 'Oi')).rejects.toThrow('Contato bloqueado');
+
+    expect(refresh).toHaveBeenCalledWith(
+      expect.objectContaining({ queryKey: chatKeys.conversations() }),
+    );
+  });
+
+  it('não recarrega as conversas por outro erro de envio', async () => {
+    socket.emitWithAck.mockResolvedValue({ error: 'CONVERSATION_NOT_FOUND', message: 'x' });
+    const { send, queryClient } = setup();
+    const refresh = vi.spyOn(queryClient, 'invalidateQueries');
+
+    await expect(send('c-elisa', 'Oi')).rejects.toThrow();
+
+    expect(refresh).not.toHaveBeenCalled();
+  });
 });
