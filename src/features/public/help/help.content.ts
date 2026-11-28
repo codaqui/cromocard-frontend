@@ -121,8 +121,7 @@ export const helpTopics: HelpTopic[] = [
       {
         id: 'share-progress',
         question: 'Posso compartilhar meu progresso?',
-        answer:
-          'Pode. No álbum, use "Compartilhar" para gerar um link que mostra o seu progresso.',
+        answer: 'Pode. No álbum, use "Compartilhar" para gerar um link que mostra o seu progresso.',
       },
     ],
   },

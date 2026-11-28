@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { PageIntro } from '@/components/PageIntro/PageIntro';
 import { FaqList } from '../../components/FaqList/FaqList';
 import { HelpSearchField } from '../../components/HelpSearchField/HelpSearchField';
 import { HelpTopics } from '../../components/HelpTopics/HelpTopics';
@@ -8,16 +9,6 @@ import { helpTopics } from '../../help.content';
 import { questionsOf, searchQuestions } from '../../help.search';
 import type { HelpTopicId } from '../../help.types';
 import styles from './HelpCenterPage.module.css';
-
-function HelpHeader() {
-  return (
-    <header className={styles.header}>
-      <p className={styles.eyebrow}>Central de ajuda</p>
-      <h1 className={styles.title}>Como podemos ajudar?</h1>
-      <p className={styles.description}>Busque uma dúvida ou escolha um tópico.</p>
-    </header>
-  );
-}
 
 function useHelpFilter() {
   const [topicId, setTopicId] = useState<HelpTopicId>('first-steps');
@@ -40,7 +31,11 @@ export function HelpCenterPage() {
 
   return (
     <div className={styles.page}>
-      <HelpHeader />
+      <PageIntro
+        eyebrow="Central de ajuda"
+        title="Como podemos ajudar?"
+        description="Busque uma dúvida ou escolha um tópico."
+      />
       <HelpSearchField value={term} onChange={setTerm} />
       <HelpTopics topics={helpTopics} activeId={activeTopic} onSelect={selectTopic} />
       <div className={styles.content}>
