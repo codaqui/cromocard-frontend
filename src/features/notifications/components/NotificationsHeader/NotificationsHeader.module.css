@@ -1,0 +1,131 @@
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-top: var(--space-6);
+}
+
+.intro {
+  flex: 1 1 28rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-eyebrow);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-caps);
+  text-transform: uppercase;
+}
+
+.title {
+  font-size: var(--font-size-page-title);
+  font-weight: 800;
+  line-height: var(--line-height-title);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.description {
+  max-width: var(--size-intro-text);
+  color: var(--color-label);
+  font-size: var(--font-size-md);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: var(--space-4) 0 0;
+  margin: 0;
+  list-style: none;
+}
+
+.chip,
+.unreadChip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-raised);
+  font-size: var(--font-size-sm);
+}
+
+.unreadChip {
+  color: var(--color-info);
+  font-weight: 700;
+}
+
+.chip {
+  color: var(--color-label);
+}
+
+.chip svg {
+  color: var(--color-warning);
+}
+
+.dot {
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-highlight);
+}
+
+.actions {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  max-width: 11rem;
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.action:disabled {
+  cursor: default;
+}
+
+.action svg {
+  flex: none;
+  color: var(--color-info);
+}
+
+@media (max-width: 47.99rem) {
+  .title {
+    font-size: var(--font-size-xl);
+  }
+
+  .actions {
+    flex: 1 1 100%;
+  }
+
+  .action {
+    flex: 1 1 0;
+    gap: var(--space-2);
+    max-width: none;
+    min-width: 0;
+  }
+}

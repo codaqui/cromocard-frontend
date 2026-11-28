@@ -1,0 +1,112 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding-top: var(--space-4);
+}
+
+.breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-label);
+  font-size: var(--font-size-sm);
+}
+
+.breadcrumb a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: inherit;
+  text-decoration: none;
+}
+
+.breadcrumb [aria-current] {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.hero {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: var(--space-6);
+  border-radius: var(--radius-md);
+  background: linear-gradient(110deg, var(--color-surface) 40%, var(--color-surface-glow));
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip,
+.activeChip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+}
+
+.chip {
+  background: var(--color-surface-high);
+  color: var(--color-label);
+  letter-spacing: var(--letter-spacing-caps);
+}
+
+.activeChip {
+  background: var(--color-info-soft);
+  color: var(--color-info);
+}
+
+.dot {
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-highlight);
+}
+
+.title {
+  font-size: var(--font-size-section-title);
+  font-weight: 800;
+  line-height: var(--line-height-title);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.description {
+  color: var(--color-label);
+  font-size: var(--font-size-md);
+}
+
+.restore {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-high);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.restore:disabled {
+  opacity: var(--opacity-disabled-cta);
+}

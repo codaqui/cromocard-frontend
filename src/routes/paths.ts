@@ -18,6 +18,7 @@ export const paths = {
   help: '/ajuda',
   settings: '/configuracoes',
   notifications: '/notificacoes',
+  favorites: '/favoritos',
   suggestions: '/sugestoes',
   messages: '/mensagens',
   publicProfile: '/usuarios/:id',

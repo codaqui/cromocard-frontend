@@ -1,0 +1,217 @@
+.wrapper {
+  position: relative;
+}
+
+.badge {
+  position: absolute;
+  top: -0.375rem;
+  right: -0.375rem;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-pill);
+  background: var(--color-warning);
+  color: var(--color-primary-contrast);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  line-height: 1.25rem;
+  text-align: center;
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + var(--space-3));
+  right: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: min(27.5rem, calc(100vw - var(--space-8)));
+  max-height: calc(100vh - var(--size-topbar) - var(--space-8));
+  overflow-y: auto;
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+}
+
+.panelHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.panelTitle {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+}
+
+.newBadge {
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-info-soft);
+  color: var(--color-info);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.markAll {
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-primary);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.filter {
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-high);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-caption);
+  cursor: pointer;
+}
+
+.activeFilter {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  font-weight: 600;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+}
+
+.unread {
+  background: var(--color-surface-raised);
+}
+
+.avatar {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-info-soft);
+  color: var(--color-eyebrow);
+}
+
+.itemBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.itemTitle {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.itemMessage {
+  color: var(--color-label);
+  font-size: var(--font-size-caption);
+  overflow-wrap: anywhere;
+}
+
+.itemTime {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.itemAction {
+  margin-top: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-high);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-caption);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.unreadDot {
+  flex: none;
+  width: var(--space-2);
+  height: var(--space-2);
+  margin-top: var(--space-1);
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+}
+
+.empty {
+  padding: var(--space-4) 0;
+  color: var(--color-label);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+
+.panelFooter {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
+}
+
+.seeAll {
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.configure {
+  color: var(--color-label);
+  text-decoration: none;
+}
+
+@media (max-width: 47.99rem) {
+  .panel {
+    position: fixed;
+    top: calc(var(--size-topbar) + var(--space-2));
+    right: var(--space-4);
+    left: var(--space-4);
+    width: auto;
+  }
+}
