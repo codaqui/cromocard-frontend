@@ -32,4 +32,6 @@ export const communityAdminApi = {
     api.post<ReportResolution>(`${REPORTS}/${id}/remove-and-warn`, { reason }),
   dismissReport: ({ id, reason }: ModerationAction) =>
     api.post<ReportResolution>(`${REPORTS}/${id}/dismiss`, { reason }),
+  getReportEvidence: (reportId: string, evidenceId: string) =>
+    api.getBlob(`${REPORTS}/${reportId}/evidences/${evidenceId}`),
 };

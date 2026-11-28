@@ -44,9 +44,10 @@ function useSubmitSanction(target: SanctionTarget, onSaved: (kind: SanctionSaved
     if (type === 'WARN') {
       warn.mutate({ id, input: { reason, reportId } }, { onSuccess: () => onSaved('warn') });
     } else if (type === 'SUSPEND') {
-      suspend.mutate({ id, input: { reason, days } }, { onSuccess: () => onSaved('suspend') });
+      const input = { reason, days, reportId };
+      suspend.mutate({ id, input }, { onSuccess: () => onSaved('suspend') });
     } else {
-      block.mutate({ id, input: { reason } }, { onSuccess: () => onSaved('block') });
+      block.mutate({ id, input: { reason, reportId } }, { onSuccess: () => onSaved('block') });
     }
   };
 

@@ -12,6 +12,7 @@ interface ConversationHeaderProps {
   contact: Contact;
   online: boolean;
   onBack?: () => void;
+  onModerate: () => void;
 }
 
 function Identity({ contact }: { contact: Contact }) {
@@ -29,21 +30,31 @@ function Identity({ contact }: { contact: Contact }) {
   );
 }
 
-function Actions({ contactId }: { contactId: string }) {
+function Actions({ contactId, onModerate }: { contactId: string; onModerate: () => void }) {
   return (
     <>
       <Link to={publicProfilePathFor(contactId)} className={styles.profile}>
         <Icon name="person" size={16} />
         Ver Perfil
       </Link>
-      <button type="button" className={styles.shield} aria-label="Bloquear ou denunciar" disabled>
+      <button
+        type="button"
+        className={styles.shield}
+        aria-label="Bloquear ou denunciar"
+        onClick={onModerate}
+      >
         <Icon name="shield" size={18} />
       </button>
     </>
   );
 }
 
-export function ConversationHeader({ contact, online, onBack }: ConversationHeaderProps) {
+export function ConversationHeader({
+  contact,
+  online,
+  onBack,
+  onModerate,
+}: ConversationHeaderProps) {
   return (
     <header className={styles.header}>
       {onBack && (
@@ -58,7 +69,7 @@ export function ConversationHeader({ contact, online, onBack }: ConversationHead
       )}
       <ContactAvatar name={contact.name} avatarUrl={contact.avatarUrl} online={online} />
       <Identity contact={contact} />
-      <Actions contactId={contact.id} />
+      <Actions contactId={contact.id} onModerate={onModerate} />
     </header>
   );
 }

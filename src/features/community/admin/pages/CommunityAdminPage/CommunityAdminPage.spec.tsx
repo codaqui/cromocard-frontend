@@ -67,6 +67,10 @@ const report: GroupMessageReport = {
   reason: 'Link malicioso',
   description: 'Tentativa de roubar credenciais',
   reporterName: 'Carla',
+  origin: 'GROUP',
+  reporterUsername: null,
+  reportedUser: null,
+  evidences: [],
   message: {
     id: 'message-1',
     content: 'Resgate boosters grátis neste link',

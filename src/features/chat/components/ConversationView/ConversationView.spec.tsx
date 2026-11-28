@@ -12,6 +12,9 @@ vi.mock('../../chat.api', () => ({
   chatApi: { messages: vi.fn(), markAsRead: vi.fn().mockResolvedValue(undefined), list: vi.fn() },
 }));
 const sendMessage = vi.hoisted(() => vi.fn());
+vi.mock('../../moderation/contact-moderation.api', () => ({
+  contactModerationApi: { block: vi.fn().mockResolvedValue({}), unblock: vi.fn(), report: vi.fn() },
+}));
 vi.mock('../../hooks/useSendMessage', () => ({ useSendMessage: () => sendMessage }));
 
 const today = (hour: number) => new Date(new Date().setHours(hour, 0, 0, 0)).toISOString();
@@ -155,5 +158,43 @@ describe('ConversationView sem @', () => {
       'Digite sua mensagem para Bruno...',
     );
     expect(screen.queryByText('Verificado')).not.toBeInTheDocument();
+  });
+});
+
+describe('ConversationView com bloqueio e moderação (CCD047)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(chatApi.messages).mockResolvedValue(page([message()]));
+  });
+
+  it('R8: quem bloqueou vê o aviso com Desbloquear no lugar do campo', async () => {
+    renderView(undefined, conversation({ block: 'BY_ME' }));
+
+    expect(await screen.findByText(/Você bloqueou @elisa\.raras/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Desbloquear' })).toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: 'Mensagem' })).not.toBeInTheDocument();
+  });
+
+  it('CA16: quem foi bloqueado vê que não pode mais trocar mensagens', async () => {
+    renderView(undefined, conversation({ block: 'BY_CONTACT' }));
+
+    expect(
+      await screen.findByText('@elisa.raras bloqueou você. Vocês não podem mais trocar mensagens.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: 'Mensagem' })).not.toBeInTheDocument();
+  });
+
+  it('R2 e R10: o escudo abre o modal, e ao bloquear ele fecha e o aviso confirma', async () => {
+    renderView();
+    fireEvent.click(await screen.findByRole('button', { name: 'Bloquear ou denunciar' }));
+    expect(
+      screen.getByRole('dialog', { name: 'Bloquear ou denunciar @elisa.raras' }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('radio', { name: /Somente bloquear/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Bloquear$/ }));
+
+    expect(await screen.findByText('Contato bloqueado')).toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });

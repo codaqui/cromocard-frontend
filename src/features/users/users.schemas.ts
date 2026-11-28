@@ -78,16 +78,21 @@ export const reasonBodySchema = z.object({
 
 const suspensionDaysSchema = z.union(SUSPENSION_DAY_OPTIONS.map((days) => z.literal(days)));
 
+const reportIdSchema = z.uuid().optional();
+
 export const warnUserSchema = z.object({
   reason: warningReasonSchema,
-  reportId: z.uuid().optional(),
+  reportId: reportIdSchema,
 });
 
 export const suspendUserSchema = reasonBodySchema.extend({
   days: suspensionDaysSchema,
+  reportId: reportIdSchema,
 });
 
-export const blockUserSchema = reasonBodySchema;
+export const blockUserSchema = reasonBodySchema.extend({
+  reportId: reportIdSchema,
+});
 
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 export type CreateUserInput = z.infer<typeof createUserSchema>;

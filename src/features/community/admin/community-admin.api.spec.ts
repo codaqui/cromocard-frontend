@@ -2,7 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { communityAdminApi } from './community-admin.api';
 
-const api = vi.hoisted(() => ({ get: vi.fn(), getPage: vi.fn(), post: vi.fn(), delete: vi.fn() }));
+const api = vi.hoisted(() => ({
+  get: vi.fn(),
+  getBlob: vi.fn(),
+  getPage: vi.fn(),
+  post: vi.fn(),
+  delete: vi.fn(),
+}));
 
 vi.mock('@/lib/http', () => ({ api }));
 
@@ -52,5 +58,11 @@ describe('communityAdminApi', () => {
     expect(api.delete).toHaveBeenCalledWith('/admin/community/groups/group-1', {
       reason: 'Spam no grupo',
     });
+  });
+
+  it('L13: baixa o print da denúncia do chat como arquivo, pela rota do admin', async () => {
+    await communityAdminApi.getReportEvidence('report-1', 'print-1');
+
+    expect(api.getBlob).toHaveBeenCalledWith('/admin/community/reports/report-1/evidences/print-1');
   });
 });

@@ -96,7 +96,7 @@ function QueueTitle({ total, titleId }: { total?: number; titleId: string }) {
         {total !== undefined && <span className={styles.pending}>{formatPendingCases(total)}</span>}
       </h2>
       <p className={styles.subtitle}>
-        Mensagens de grupos denunciadas pelos membros, das mais antigas para as mais recentes.
+        Mensagens dos grupos e do chat pessoal denunciadas pelos membros.
       </p>
     </div>
   );

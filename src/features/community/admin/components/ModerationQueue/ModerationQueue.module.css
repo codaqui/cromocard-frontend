@@ -101,6 +101,7 @@
 
 .cardHeader {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: var(--space-3);
 }
@@ -188,7 +189,7 @@
 
 .reason {
   flex-shrink: 0;
-  max-width: var(--size-card-min);
+  max-width: min(100%, var(--size-card-min));
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-pill);
   background: var(--color-info-soft);
@@ -269,6 +270,47 @@
 }
 
 .cardActions button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.evidences {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.evidence {
+  display: block;
+  width: var(--size-report-evidence);
+  height: var(--size-report-evidence);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.evidence img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.evidence[aria-busy='true'] {
+  background: var(--color-surface-sunken);
+}
+
+.evidenceStatus {
+  display: grid;
+  height: 100%;
+  place-items: center;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.evidence:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
