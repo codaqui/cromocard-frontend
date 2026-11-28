@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from 'react-router';
 
-import { pathAfterLogin } from '@/routes/guards/loginRedirect';
+import { forgetRedirectAfterLogin, pathAfterLogin } from '@/routes/guards/loginRedirect';
 
 import type { SessionUser } from '../auth.types';
 
@@ -9,6 +9,8 @@ export function useLoginRedirect() {
   const { search } = useLocation();
 
   return ({ role }: Pick<SessionUser, 'role'>) => {
-    void navigate(pathAfterLogin(search, role), { replace: true });
+    const target = pathAfterLogin(search, role);
+    forgetRedirectAfterLogin();
+    void navigate(target, { replace: true });
   };
 }

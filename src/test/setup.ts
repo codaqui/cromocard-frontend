@@ -7,4 +7,15 @@ import { afterEach } from 'vitest';
 // (e com cobertura), isso passa de 1 s e o findBy* padrão estourava, deixando testes instáveis (AdminLayout).
 configure({ asyncUtilTimeout: 3000 });
 
-afterEach(() => cleanup());
+// O jsdom não implementa o scrollIntoView: o polyfill fica aqui, e cada teste só espiona com vi.spyOn.
+if (!('scrollIntoView' in Element.prototype)) {
+  Object.defineProperty(Element.prototype, 'scrollIntoView', {
+    value: () => undefined,
+    writable: true,
+  });
+}
+
+afterEach(() => {
+  cleanup();
+  sessionStorage.clear();
+});

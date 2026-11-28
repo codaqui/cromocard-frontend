@@ -1,4 +1,6 @@
-import { albumStatusLabels, EMPTY_VALUE_LABEL } from '../../catalog.labels';
+import { EMPTY_VALUE } from '@/utils/emptyValue';
+
+import { albumStatusLabels } from '../../catalog.labels';
 import type { AlbumStatus } from '../../catalog.types';
 import { formatAlbumNumber } from '../../catalog.format';
 import { CatalogIcon } from '../CatalogIcon/CatalogIcon';
@@ -53,7 +55,7 @@ export function TitleCell({ title, detail, tags = [], badge }: TitleCellProps) {
 }
 
 export function EditionCell({ title, edition }: { title?: string; edition?: string | null }) {
-  if (!title) return EMPTY_VALUE_LABEL;
+  if (!title) return EMPTY_VALUE;
 
   return (
     <div className={styles.edition}>
@@ -64,11 +66,11 @@ export function EditionCell({ title, edition }: { title?: string; edition?: stri
 }
 
 export function FranchiseBadge({ name }: { name?: string }) {
-  return name ? <span className={styles.franchise}>{name}</span> : EMPTY_VALUE_LABEL;
+  return name ? <span className={styles.franchise}>{name}</span> : EMPTY_VALUE;
 }
 
 export function AlbumNumberCell({ number, total }: { number: string | null; total?: number }) {
-  if (!number) return EMPTY_VALUE_LABEL;
+  if (!number) return EMPTY_VALUE;
 
   return (
     <span className={styles.albumNumber}>
