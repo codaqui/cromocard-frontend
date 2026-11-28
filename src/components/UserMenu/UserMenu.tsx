@@ -10,6 +10,7 @@ import {
 
 import { Icon } from '@/components/Icon/Icon';
 import type { IconName } from '@/components/Icon/icon-paths';
+import { useDismiss } from '@/hooks/useDismiss';
 import { cn } from '@/utils/cn';
 
 import styles from './UserMenu.module.css';
@@ -29,27 +30,6 @@ interface UserMenuIdentity {
 
 interface UserMenuProps extends UserMenuIdentity {
   actions: UserMenuAction[];
-}
-
-function useDismiss(isOpen: boolean, close: () => void) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const onPointerDown = (event: PointerEvent) => {
-      if (event.target instanceof Node && ref.current?.contains(event.target)) return;
-      close();
-    };
-    const onKeyDown = (event: globalThis.KeyboardEvent) => event.key === 'Escape' && close();
-    document.addEventListener('pointerdown', onPointerDown);
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.removeEventListener('pointerdown', onPointerDown);
-      document.removeEventListener('keydown', onKeyDown);
-    };
-  }, [isOpen, close]);
-
-  return ref;
 }
 
 const ARROW_STEPS: Record<string, number> = { ArrowDown: 1, ArrowUp: -1 };
