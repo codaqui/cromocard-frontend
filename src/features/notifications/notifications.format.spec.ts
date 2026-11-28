@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { groupByDay, groupOf, relativeTime } from './notifications.format';
+import { compactTime, groupByDay, groupOf, relativeTime } from './notifications.format';
 
 const NOW = new Date(2026, 10, 28, 15, 0);
 const at = (day: number, hour: number, minute = 0) =>
@@ -48,5 +48,16 @@ describe('groupByDay', () => {
 
   it('com todas lidas, tudo fica em ANTERIORES', () => {
     expect(groupByDay(items, { allRead: true, now: NOW })).toEqual([{ group: 'EARLIER', items }]);
+  });
+});
+
+describe('compactTime', () => {
+  it.each([
+    { iso: new Date(NOW.getTime() - 20_000).toISOString(), text: 'agora' },
+    { iso: at(28, 14, 57), text: '3 min' },
+    { iso: at(28, 12), text: 'Há 3 h' },
+    { iso: at(27, 18, 40), text: 'Ontem' },
+  ])('no aviso flutuante, $text', ({ iso, text }) => {
+    expect(compactTime(iso, NOW)).toBe(text);
   });
 });
