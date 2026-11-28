@@ -16,6 +16,7 @@ export const paths = {
   albums: '/albuns',
   communities: '/comunidades',
   help: '/ajuda',
+  howItWorks: '/como-funciona',
   settings: '/configuracoes',
   notifications: '/notificacoes',
   suggestions: '/sugestoes',
