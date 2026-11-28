@@ -88,7 +88,8 @@ function useInitialOnboardingError() {
 
 function AccountOverview({ account }: { account: StripeAccount }) {
   const helpId = useId();
-  const [error, setError] = useState(useInitialOnboardingError);
+  const initialError = useInitialOnboardingError();
+  const [error, setError] = useState(initialError);
   const onboarding = useStripeOnboarding(goTo);
   const notice = noticeFor(account);
 
