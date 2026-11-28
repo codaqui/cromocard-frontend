@@ -14,7 +14,7 @@ export interface HowItWorksGuide {
   reasons: HowItWorksItem[];
 }
 
-export const howItWorksGuides: HowItWorksGuide[] = [
+export const howItWorksGuides: [HowItWorksGuide, HowItWorksGuide] = [
   {
     id: 'buy',
     tab: 'Quero comprar',

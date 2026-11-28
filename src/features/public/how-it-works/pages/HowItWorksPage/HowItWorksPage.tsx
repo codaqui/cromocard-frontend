@@ -5,15 +5,11 @@ import { AudienceSwitch } from '../../components/AudienceSwitch/AudienceSwitch';
 import { GuaranteeList } from '../../components/GuaranteeList/GuaranteeList';
 import { HowItWorksSteps } from '../../components/HowItWorksSteps/HowItWorksSteps';
 import { PricingCard } from '../../components/PricingCard/PricingCard';
-import { type HowItWorksAudience, howItWorksGuides } from '../../how-it-works.content';
+import { type HowItWorksGuide, howItWorksGuides } from '../../how-it-works.content';
 import styles from './HowItWorksPage.module.css';
 
-const guideFor = (id: HowItWorksAudience) =>
-  howItWorksGuides.find((guide) => guide.id === id) ?? howItWorksGuides[0]!;
-
 export function HowItWorksPage() {
-  const [audience, setAudience] = useState<HowItWorksAudience>('buy');
-  const guide = guideFor(audience);
+  const [guide, setGuide] = useState<HowItWorksGuide>(howItWorksGuides[0]);
 
   return (
     <div className={styles.page}>
@@ -22,7 +18,7 @@ export function HowItWorksPage() {
         title="Como a CromoCard funciona"
         description={guide.intro}
       />
-      <AudienceSwitch guides={howItWorksGuides} activeId={audience} onChange={setAudience} />
+      <AudienceSwitch guides={howItWorksGuides} activeId={guide.id} onChange={setGuide} />
       <div role="tabpanel" aria-label={guide.tab} className={styles.page}>
         <HowItWorksSteps steps={guide.steps} />
         <GuaranteeList title={guide.reasonsTitle} items={guide.reasons} />

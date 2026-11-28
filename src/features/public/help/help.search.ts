@@ -16,5 +16,5 @@ export function searchQuestions(topics: HelpTopic[], term: string): HelpQuestion
 }
 
 export function questionsOf(topics: HelpTopic[], topicId: HelpTopicId): HelpQuestion[] {
-  return topics.find((topic) => topic.id === topicId)?.questions ?? [];
+  return topics.filter((topic) => topic.id === topicId).flatMap((topic) => topic.questions);
 }

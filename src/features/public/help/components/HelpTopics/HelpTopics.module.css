@@ -8,7 +8,7 @@
 }
 
 .topic {
-  padding: var(--space-2) var(--space-4);
+  padding: calc(var(--space-1) + var(--space-1) / 2) var(--space-3);
   border: none;
   border-radius: var(--radius-pill);
   background: var(--color-surface-raised);
