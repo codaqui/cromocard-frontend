@@ -19,6 +19,8 @@ export const paths = {
   settings: '/configuracoes',
   notifications: '/notificacoes',
   suggestions: '/sugestoes',
+  messages: '/mensagens',
+  publicProfile: '/usuarios/:id',
   cardProfile: '/cartas/:id',
   listingDetail: '/anuncios/:id',
   newListing: '/anuncios/novo',
@@ -75,4 +77,8 @@ export function cardProfilePathFor(id: string): string {
 
 export function listingDetailPathFor(id: string): string {
   return paths.listingDetail.replace(':id', id);
+}
+
+export function publicProfilePathFor(userId: string): string {
+  return paths.publicProfile.replace(':id', userId);
 }

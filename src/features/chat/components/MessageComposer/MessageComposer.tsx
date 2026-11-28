@@ -1,0 +1,101 @@
+import { type FormEvent, type KeyboardEvent, useState } from 'react';
+
+import { FormError } from '@/components/FormError/FormError';
+import { Icon } from '@/components/Icon/Icon';
+
+import { chatTexts } from '../../chat.labels';
+import { MESSAGE_MAX_LENGTH, messageContentSchema } from '../../chat.schemas';
+import styles from './MessageComposer.module.css';
+
+interface MessageComposerProps {
+  recipient: string;
+  onSend: (content: string) => Promise<unknown>;
+}
+
+function useComposer(onSend: MessageComposerProps['onSend']) {
+  const [text, setText] = useState('');
+  const [failed, setFailed] = useState(false);
+  const [sending, setSending] = useState(false);
+
+  const send = async () => {
+    const parsed = messageContentSchema.safeParse(text);
+    if (!parsed.success || sending) return;
+    const content = parsed.data;
+    setSending(true);
+    setFailed(false);
+    try {
+      await onSend(content);
+      setText('');
+    } catch {
+      setFailed(true);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return { text, setText, failed, sending, send };
+}
+
+function ComposerFooter() {
+  return (
+    <p className={styles.footer}>
+      <span className={styles.notice}>
+        <Icon name="lock" size={12} />
+        {chatTexts.marketplaceNotice}
+      </span>
+      <span className={styles.hint}>
+        {chatTexts.sendHintBefore} <kbd className={styles.kbd}>Enter</kbd> {chatTexts.sendHintAfter}
+      </span>
+    </p>
+  );
+}
+
+interface MessageFieldProps {
+  recipient: string;
+  value: string;
+  onChange: (value: string) => void;
+  onEnter: (event: KeyboardEvent<HTMLTextAreaElement>) => void;
+}
+
+function MessageField({ recipient, value, onChange, onEnter }: MessageFieldProps) {
+  return (
+    <textarea
+      className={styles.input}
+      rows={1}
+      maxLength={MESSAGE_MAX_LENGTH}
+      aria-label="Mensagem"
+      placeholder={`Digite sua mensagem para ${recipient}...`}
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' && !event.shiftKey) onEnter(event);
+      }}
+    />
+  );
+}
+
+export function MessageComposer({ recipient, onSend }: MessageComposerProps) {
+  const { text, setText, failed, sending, send } = useComposer(onSend);
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    void send();
+  };
+
+  return (
+    <form className={styles.composer} onSubmit={submit}>
+      {failed && <FormError message={chatTexts.sendError} />}
+      <div className={styles.row}>
+        <MessageField recipient={recipient} value={text} onChange={setText} onEnter={submit} />
+        <button
+          type="submit"
+          className={styles.send}
+          disabled={sending || !messageContentSchema.safeParse(text).success}
+        >
+          Enviar
+          <Icon name="send" size={16} />
+        </button>
+      </div>
+      <ComposerFooter />
+    </form>
+  );
+}

@@ -51,4 +51,32 @@ describe('RequireRole', () => {
 
     expect(screen.getByRole('status')).toHaveTextContent('Carregando sessão…');
   });
+
+  it('libera a rota para qualquer um dos papéis da lista', async () => {
+    const shared = [
+      { path: paths.profile, element: <p>Perfil</p> },
+      {
+        element: <RequireRole role={['CUSTOMER', 'SELLER']} />,
+        children: [{ path: '/mensagens', element: <p>Mensagens</p> }],
+      },
+    ];
+    renderWithProviders({
+      routes: shared,
+      initialPath: '/mensagens',
+      user: { id: '1', role: 'SELLER' },
+    });
+
+    expect(await screen.findByText('Mensagens')).toBeInTheDocument();
+  });
+
+  it('manda para a home quem acabou de sair, sem pedir login de novo', async () => {
+    const router = renderWithProviders({
+      routes: [...routes, { path: paths.home, element: <p>Home</p> }],
+      initialPath: paths.backoffice.users,
+      hasSignedOut: true,
+    });
+
+    expect(await screen.findByText('Home')).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe(paths.home);
+  });
 });
