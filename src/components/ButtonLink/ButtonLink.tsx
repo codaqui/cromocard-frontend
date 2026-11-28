@@ -11,5 +11,11 @@ interface ButtonLinkProps extends LinkProps {
 }
 
 export function ButtonLink({ variant = 'primary', className, ...props }: ButtonLinkProps) {
-  return <Link className={buttonClassName(variant, cn(styles.link, className))} {...props} />;
+  return (
+    <Link
+      className={buttonClassName(variant, cn(styles.link, className))}
+      data-variant={variant}
+      {...props}
+    />
+  );
 }

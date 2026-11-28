@@ -13,7 +13,7 @@ describe('Badge', () => {
   it('usa o canto menor no formato de etiqueta', () => {
     render(<Badge shape="tag">Lendária</Badge>);
 
-    expect(screen.getByText('Lendária').className).toMatch(/tag/);
+    expect(screen.getByText('Lendária')).toHaveAttribute('data-shape', 'tag');
   });
 
   it('usa o tom neutro por padrão', () => {

@@ -15,7 +15,11 @@ interface BadgeProps {
 
 export function Badge({ tone = 'neutral', shape = 'pill', children }: BadgeProps) {
   return (
-    <span className={cn(styles.badge, styles[tone], styles[shape])} data-tone={tone}>
+    <span
+      className={cn(styles.badge, styles[tone], styles[shape])}
+      data-tone={tone}
+      data-shape={shape}
+    >
       {children}
     </span>
   );

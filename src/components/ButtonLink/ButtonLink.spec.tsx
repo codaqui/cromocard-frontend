@@ -20,10 +20,10 @@ describe('ButtonLink', () => {
     const link = renderLink();
 
     expect(link).toHaveAttribute('href', '/destino');
-    expect(link.className).toMatch(/primary/);
+    expect(link).toHaveAttribute('data-variant', 'primary');
   });
 
   it('usa a variante pedida', () => {
-    expect(renderLink('secondary').className).toMatch(/secondary/);
+    expect(renderLink('secondary')).toHaveAttribute('data-variant', 'secondary');
   });
 });
