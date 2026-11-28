@@ -24,6 +24,8 @@ export interface OverlayDialogProps {
   subtitle?: string;
   /**
    * `wide` para formulários de duas colunas (48rem), como o cadastro de usuário no Figma;
+   * `form` para formulários de uma coluna larga (42rem), como o Criar anúncio;
+   * `form` para formulários de uma coluna larga (42rem), como o Criar anúncio;
    * `large` para formulários com dois painéis (64rem), como o cadastro de carta.
    */
   size?: DialogSize;
@@ -38,7 +40,7 @@ interface OverlayDialogWithPlacementProps extends OverlayDialogProps {
   placement: 'center' | 'right';
 }
 
-type DialogSize = 'default' | 'medium' | 'wide' | 'large';
+type DialogSize = 'default' | 'medium' | 'form' | 'wide' | 'large';
 
 type DialogVariant = 'default' | 'framed' | 'compact';
 
@@ -132,6 +134,7 @@ interface DialogPanelProps extends Omit<OverlayDialogWithPlacementProps, 'open'>
 const sizeClassName: Record<DialogSize, string | undefined> = {
   default: undefined,
   medium: styles.mediumDialog,
+  form: styles.formDialog,
   wide: styles.wideDialog,
   large: styles.largeDialog,
 };

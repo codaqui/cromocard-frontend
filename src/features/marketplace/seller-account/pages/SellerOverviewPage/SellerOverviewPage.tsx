@@ -8,6 +8,8 @@ import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { Toast } from '@/components/Toast/Toast';
 import { paths } from '@/routes/paths';
 
+import { CreateListingFlow, useCreateListingFlow } from '@/features/marketplace';
+
 import { StripeAccountNotice } from '../../components/StripeAccountNotice/StripeAccountNotice';
 import { NOT_READY_REASON, noticeFor, ONBOARDING_ERROR } from '../../seller-account.labels';
 import { useStripeAccount, useStripeOnboarding } from '../../seller-account.queries';
@@ -28,7 +30,28 @@ interface OverviewHeaderProps {
   reasonId?: string;
 }
 
-function HeaderActions({ isReady, reasonId }: OverviewHeaderProps) {
+function CreateListingAction({ isReady, reasonId }: OverviewHeaderProps) {
+  const flow = useCreateListingFlow();
+  const onboarding = useStripeOnboarding(goTo);
+
+  return (
+    <>
+      <Button
+        className={styles.createListing}
+        disabled={!isReady}
+        title={isReady ? undefined : NOT_READY_REASON}
+        aria-describedby={isReady ? undefined : reasonId}
+        onClick={() => flow.start()}
+      >
+        <Icon name="addBox" size={18} />
+        Criar Novo Anúncio
+      </Button>
+      <CreateListingFlow flow={flow} onConnectAccount={() => onboarding.mutate()} />
+    </>
+  );
+}
+
+function HeaderActions(props: OverviewHeaderProps) {
   const navigate = useNavigate();
 
   return (
@@ -37,15 +60,7 @@ function HeaderActions({ isReady, reasonId }: OverviewHeaderProps) {
         <Icon name="storefront" size={18} />
         Ver Loja Pública
       </Button>
-      <Button
-        className={styles.createListing}
-        disabled={!isReady}
-        title={isReady ? undefined : NOT_READY_REASON}
-        aria-describedby={isReady ? undefined : reasonId}
-      >
-        <Icon name="addBox" size={18} />
-        Criar Novo Anúncio
-      </Button>
+      <CreateListingAction {...props} />
     </div>
   );
 }
@@ -73,7 +88,8 @@ function useInitialOnboardingError() {
 
 function AccountOverview({ account }: { account: StripeAccount }) {
   const helpId = useId();
-  const [error, setError] = useState(useInitialOnboardingError);
+  const initialError = useInitialOnboardingError();
+  const [error, setError] = useState(initialError);
   const onboarding = useStripeOnboarding(goTo);
   const notice = noticeFor(account);
 

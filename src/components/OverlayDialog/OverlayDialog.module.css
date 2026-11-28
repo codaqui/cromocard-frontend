@@ -228,6 +228,10 @@
   width: min(var(--size-dialog-medium), 100%);
 }
 
+.formDialog {
+  width: min(var(--size-dialog-form), 100%);
+}
+
 @media (max-width: 48rem) {
   .framedDialog .header,
   .framedDialog .body,

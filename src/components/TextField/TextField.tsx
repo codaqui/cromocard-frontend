@@ -48,13 +48,14 @@ export function TextField({
   id,
   hideLabel,
   labelAside,
+  plainLabel,
   ...controlProps
 }: TextFieldProps) {
   const generatedId = useId();
   const inputId = id ?? generatedId;
 
   return (
-    <FormField inputId={inputId} {...{ label, hint, error, hideLabel, labelAside }}>
+    <FormField inputId={inputId} {...{ label, hint, error, hideLabel, labelAside, plainLabel }}>
       <InputControl
         id={inputId}
         aria-invalid={Boolean(error)}
