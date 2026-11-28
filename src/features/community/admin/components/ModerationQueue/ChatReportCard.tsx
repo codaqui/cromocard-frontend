@@ -6,6 +6,7 @@ import type {
   OnCommunityAction,
   ReportedUser,
 } from '../../community-admin.types';
+import { EvidenceThumbnail } from './EvidenceThumbnail';
 import styles from './ModerationQueue.module.css';
 import { AuthorPills, OriginItem } from './ReportParts';
 
@@ -51,14 +52,12 @@ function ChatReportHeader({ report, reportedUser }: HeaderProps) {
   );
 }
 
-function Evidences({ urls }: { urls: string[] }) {
+function Evidences({ report }: { report: GroupMessageReport }) {
   return (
     <ul className={styles.evidences} aria-label="Prints da conversa">
-      {urls.map((url, index) => (
-        <li key={url}>
-          <a href={url} target="_blank" rel="noreferrer" className={styles.evidence}>
-            <img src={url} alt={`Print ${index + 1} da conversa`} loading="lazy" />
-          </a>
+      {report.evidences.map(({ id }, index) => (
+        <li key={id}>
+          <EvidenceThumbnail reportId={report.id} evidenceId={id} position={index + 1} />
         </li>
       ))}
     </ul>
@@ -102,7 +101,7 @@ export function ChatReportCard(props: ChatReportCardProps) {
           {report.description}
         </p>
       )}
-      <Evidences urls={report.evidences} />
+      <Evidences report={report} />
       <ChatReportActions {...props} />
     </article>
   );

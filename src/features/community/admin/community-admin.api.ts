@@ -32,4 +32,7 @@ export const communityAdminApi = {
     api.post<ReportResolution>(`${REPORTS}/${id}/remove-and-warn`, { reason }),
   dismissReport: ({ id, reason }: ModerationAction) =>
     api.post<ReportResolution>(`${REPORTS}/${id}/dismiss`, { reason }),
+  /** O print fica no storage privado: só sai por esta rota, com o token do admin. */
+  getReportEvidence: (reportId: string, evidenceId: string) =>
+    api.getBlob(`${REPORTS}/${reportId}/evidences/${evidenceId}`),
 };

@@ -1,9 +1,17 @@
-import { render, screen, within } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { communityAdminApi } from '../../community-admin.api';
 import type { GroupMessageReport } from '../../community-admin.types';
 import { ReportCard } from './ReportCard';
+
+vi.mock('../../community-admin.api', () => ({
+  communityAdminApi: { getReportEvidence: vi.fn() },
+}));
+
+const getReportEvidence = vi.mocked(communityAdminApi.getReportEvidence);
 
 const chatReport: GroupMessageReport = {
   id: 'report-chat',
@@ -20,20 +28,33 @@ const chatReport: GroupMessageReport = {
     accountAgeDays: 3,
     warnings: 1,
   },
-  evidences: [
-    'http://localhost/uploads/report-evidences/1.png',
-    'http://localhost/uploads/report-evidences/2.png',
-  ],
+  evidences: [{ id: 'print-1' }, { id: 'print-2' }],
 };
+
+beforeEach(() => {
+  let created = 0;
+  vi.spyOn(URL, 'createObjectURL').mockImplementation(() => {
+    created += 1;
+    return `blob:print-${created}`;
+  });
+  vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
+  getReportEvidence.mockReset();
+  getReportEvidence.mockResolvedValue(new Blob(['png'], { type: 'image/png' }));
+});
 
 function renderCard(report = chatReport) {
   const props = { report, onAction: vi.fn(), onSanctionAuthor: vi.fn() };
-  render(<ReportCard {...props} />);
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  render(
+    <QueryClientProvider client={queryClient}>
+      <ReportCard {...props} />
+    </QueryClientProvider>,
+  );
   return props;
 }
 
 describe('ReportCard da denúncia do chat pessoal (CCD047)', () => {
-  it('CA18: mostra o contato, a origem, quem denunciou, o motivo, a descrição e os prints', () => {
+  it('CA18: mostra o contato, a origem, quem denunciou, o motivo, a descrição e os prints', async () => {
     renderCard();
 
     const card = screen.getByRole('article', { name: 'Denúncia contra Marcos Vinicius' });
@@ -41,9 +62,10 @@ describe('ReportCard da denúncia do chat pessoal (CCD047)', () => {
     expect(within(card).getByText('@gabriel')).toBeInTheDocument();
     expect(within(card).getByText('Golpe / pagamento externo')).toBeInTheDocument();
     expect(within(card).getByText('Pediu Pix fora da plataforma.')).toBeInTheDocument();
-    const prints = within(card).getAllByRole('img', { name: /Print \d da conversa/ });
-    expect(prints).toHaveLength(2);
-    expect(within(card).getAllByRole('link')[0]).toHaveAttribute('href', chatReport.evidences[0]);
+    await waitFor(() =>
+      expect(within(card).getAllByRole('img', { name: /Print \d da conversa/ })).toHaveLength(2),
+    );
+    expect(within(card).getAllByRole('link')[0]).toHaveAttribute('href', 'blob:print-1');
     expect(within(card).queryByText(/Remover Mensagem/)).not.toBeInTheDocument();
   });
 
@@ -71,5 +93,34 @@ describe('ReportCard da denúncia do chat pessoal (CCD047)', () => {
       warningsCount: 1,
       reportId: 'report-chat',
     });
+  });
+
+  it('L13: baixa cada print pela rota do admin, com o id da denúncia, nunca por uma URL pública', async () => {
+    renderCard();
+
+    await waitFor(() =>
+      expect(screen.getAllByRole('img', { name: /Print \d da conversa/ })).toHaveLength(2),
+    );
+    expect(getReportEvidence).toHaveBeenCalledWith('report-chat', 'print-1');
+    expect(getReportEvidence).toHaveBeenCalledWith('report-chat', 'print-2');
+  });
+
+  it('mostra o lugar do print enquanto ele carrega', () => {
+    getReportEvidence.mockReturnValue(new Promise(() => undefined));
+    renderCard();
+
+    expect(screen.getByLabelText('Carregando Print 1 da conversa')).toHaveAttribute(
+      'aria-busy',
+      'true',
+    );
+  });
+
+  it('avisa quando o print não pôde ser baixado', async () => {
+    getReportEvidence.mockRejectedValue(new Error('404'));
+    renderCard();
+
+    expect(
+      await screen.findByRole('img', { name: 'Print 1 da conversa indisponível' }),
+    ).toHaveTextContent('Indisponível');
   });
 });

@@ -13,6 +13,8 @@ export const communityAdminKeys = {
   reports: () => [...communityAdminKeys.all, 'reports'] as const,
   reportList: (params: ListGroupMessageReportsParams) =>
     [...communityAdminKeys.reports(), 'list', params] as const,
+  evidence: (reportId: string, evidenceId: string) =>
+    [...communityAdminKeys.reports(), reportId, 'evidences', evidenceId] as const,
 };
 
 type ModerationRequest = (action: ModerationAction) => Promise<unknown>;
@@ -27,6 +29,15 @@ function useModeration(request: ModerationRequest, affected: () => readonly stri
         queryClient.invalidateQueries({ queryKey: affected() }),
         queryClient.invalidateQueries({ queryKey: communityAdminKeys.summary() }),
       ]),
+  });
+}
+
+/** O print não muda depois de enviado: fica em cache enquanto a fila está aberta. */
+export function useReportEvidence(reportId: string, evidenceId: string) {
+  return useQuery({
+    queryKey: communityAdminKeys.evidence(reportId, evidenceId),
+    queryFn: () => communityAdminApi.getReportEvidence(reportId, evidenceId),
+    staleTime: Infinity,
   });
 }
 
