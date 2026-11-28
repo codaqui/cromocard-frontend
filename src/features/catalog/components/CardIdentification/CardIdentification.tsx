@@ -1,4 +1,4 @@
-import { EMPTY_VALUE_LABEL } from '../../catalog.labels';
+import { EMPTY_VALUE } from '@/utils/emptyValue';
 import type { CardProfile } from '../../card-profile.types';
 import styles from './CardIdentification.module.css';
 
@@ -20,7 +20,7 @@ export function CardIdentification({ identification }: CardIdentificationProps) 
       {fields.map(({ label, value }) => (
         <div key={label} className={styles.field}>
           <dt className={styles.label}>{label}</dt>
-          <dd className={styles.value}>{value ?? EMPTY_VALUE_LABEL}</dd>
+          <dd className={styles.value}>{value ?? EMPTY_VALUE}</dd>
         </div>
       ))}
     </dl>

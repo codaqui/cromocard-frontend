@@ -1,6 +1,6 @@
 import { Button } from '@/components/Button/Button';
 import { cn } from '@/utils/cn';
-import { formatCurrency } from '@/utils/formatCurrency';
+import { formatReais } from '@/utils/formatReais';
 
 import type { CardProfile } from '../../card-profile.types';
 import styles from './CardMarketStats.module.css';
@@ -35,10 +35,10 @@ export function CardMarketStats({ market, isGuest, ...actions }: CardMarketStats
   return (
     <section className={styles.market} aria-label="Mercado">
       <dl className={styles.stats}>
-        <Stat label="Preço médio de mercado" value={formatCurrency(market.averagePrice)} />
+        <Stat label="Preço médio de mercado" value={formatReais(market.averagePrice)} />
         <Stat
           label="Menor anúncio"
-          value={formatCurrency(market.lowestListingPrice)}
+          value={formatReais(market.lowestListingPrice)}
           tone="highlight"
         />
         <Stat label="Anúncios ativos" value={String(market.activeListingsCount)} />

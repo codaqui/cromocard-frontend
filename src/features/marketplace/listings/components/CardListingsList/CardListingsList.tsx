@@ -6,7 +6,8 @@ import { ButtonLink } from '@/components/ButtonLink/ButtonLink';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { listingDetailPathFor, paths } from '@/routes/paths';
-import { EMPTY_VALUE, formatCurrency } from '@/utils/formatCurrency';
+import { EMPTY_VALUE } from '@/utils/emptyValue';
+import { formatReais } from '@/utils/formatReais';
 
 import { initialsOf } from '../../listings.format';
 import { useCardListings } from '../../listings.queries';
@@ -54,7 +55,7 @@ function ListingRow({ listing, highlighted }: { listing: ListingSummary; highlig
       <ConditionCell condition={listing.condition} />
       <span className={styles.price}>
         <span className={styles.cellLabel}>Preço</span>
-        <span>{formatCurrency(listing.price)}</span>
+        <span>{formatReais(listing.price)}</span>
       </span>
       <ButtonLink
         to={listingDetailPathFor(listing.id)}

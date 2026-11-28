@@ -1,4 +1,4 @@
-import { EMPTY_VALUE_LABEL } from '../../catalog.labels';
+import { EMPTY_VALUE } from '@/utils/emptyValue';
 import { filtersStateOf, listSummary, selectChips } from '../../catalog.filter-chips';
 import { useAlbumsList } from '../../catalog.queries';
 import type { Album, CatalogTabProps } from '../../catalog.types';
@@ -40,7 +40,7 @@ const albumsTable: CatalogTable<Album> = {
     {
       key: 'year',
       header: 'Ano',
-      render: (album) => album.year ?? EMPTY_VALUE_LABEL,
+      render: (album) => album.year ?? EMPTY_VALUE,
     },
     {
       key: 'category',
