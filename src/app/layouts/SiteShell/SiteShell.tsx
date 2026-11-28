@@ -1,10 +1,13 @@
+import { useId } from 'react';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router';
 
+import { Button } from '@/components/Button/Button';
 import { Header } from '@/components/Header/Header';
 import { Icon } from '@/components/Icon/Icon';
 import { NavItem } from '@/components/NavItem/NavItem';
 import { SearchBar, type SearchQuery } from '@/components/SearchBar/SearchBar';
 import { UserMenu } from '@/components/UserMenu/UserMenu';
+import { NOT_READY_REASON, useCanPublishListing } from '@/features/marketplace';
 import { roleLabels, useMe } from '@/features/users';
 import { useAuth } from '@/hooks/useAuth';
 import { useSignOut } from '@/hooks/useSignOut';
@@ -13,7 +16,7 @@ import type { UserRole } from '@/types/authenticated-user';
 import { cn } from '@/utils/cn';
 
 import styles from './SiteShell.module.css';
-import { mainMenuFor, searchScopes, siteLinks, siteSecondaryMenu } from './siteMenu';
+import { mainMenuFor, menuGroupsFor, searchScopes, siteLinks, siteSecondaryMenu } from './siteMenu';
 
 function useAccountName(role: UserRole) {
   const { data } = useMe();
@@ -45,6 +48,24 @@ function ProfileItem() {
   );
 }
 
+function MenuGroups({ role }: { role?: UserRole }) {
+  const labelId = useId();
+
+  return menuGroupsFor(role).map((group) => (
+    <div key={group.label} className={styles.group} role="group" aria-labelledby={labelId}>
+      <hr className={styles.divider} />
+      <p id={labelId} className={styles.menuGroup}>
+        {group.label}
+      </p>
+      {group.items.map((item) => (
+        <NavItem key={item.to} to={item.to} icon={item.icon} end={item.end}>
+          {item.label}
+        </NavItem>
+      ))}
+    </div>
+  ));
+}
+
 function SiteMenu() {
   const { user } = useAuth();
 
@@ -55,6 +76,7 @@ function SiteMenu() {
           {item.label}
         </NavItem>
       ))}
+      <MenuGroups role={user?.role} />
       <ProfileItem />
       <hr className={styles.divider} />
       {siteSecondaryMenu.map((item) => (
@@ -95,12 +117,39 @@ function useAccountActions(role: UserRole) {
   ];
 }
 
+/** "+ Criar Anúncio" do topo (frame 1112-9866): desabilitado até a conta de recebimento ficar pronta. A ação é da CCD084. */
+function CreateListingButton() {
+  const canPublish = useCanPublishListing();
+  const reasonId = useId();
+
+  return (
+    <>
+      <Button
+        variant="secondary"
+        className={styles.createListing}
+        disabled={!canPublish}
+        title={canPublish ? undefined : NOT_READY_REASON}
+        aria-describedby={canPublish ? undefined : reasonId}
+      >
+        <Icon name="add" size={18} />
+        Criar Anúncio
+      </Button>
+      {!canPublish && (
+        <span id={reasonId} className={styles.srOnly}>
+          {NOT_READY_REASON}
+        </span>
+      )}
+    </>
+  );
+}
+
 function AccountArea({ role }: { role: UserRole }) {
   const actions = useAccountActions(role);
   const { name, initial } = useAccountName(role);
 
   return (
     <>
+      {role === 'SELLER' && <CreateListingButton />}
       <Link to={paths.notifications} className={styles.iconButton} aria-label="Notificações">
         <Icon name="notifications" size={20} />
       </Link>

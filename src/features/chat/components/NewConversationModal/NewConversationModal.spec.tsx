@@ -83,6 +83,24 @@ describe('NewConversationModal', () => {
     ).toBeInTheDocument();
   });
 
+  it('L17: o contato com foto aparece com a foto, e o sem foto com as iniciais', async () => {
+    vi.mocked(chatApi.contacts).mockResolvedValue([
+      { ...renan, avatarUrl: 'https://cdn.cromocard.dev/avatars/renan.png' },
+      renata,
+    ]);
+    renderModal();
+
+    const row = (name: string) =>
+      within(section('Resultados')).getByText(name).closest('li') as HTMLElement;
+    await screen.findByText('Renan Souza (@renan_slabs)');
+
+    expect(row('Renan Souza (@renan_slabs)').querySelector('img')).toHaveAttribute(
+      'src',
+      'https://cdn.cromocard.dev/avatars/renan.png',
+    );
+    expect(within(row('Renata Valente (@valente_cards)')).getByText('RV')).toBeInTheDocument();
+  });
+
   it('CA13 e CA14: busca pelo texto e pela aba escolhida', async () => {
     renderModal();
 
@@ -96,8 +114,9 @@ describe('NewConversationModal', () => {
     );
   });
 
-  it('CA13: Conversar abre a conversa e avisa o id', async () => {
-    vi.mocked(chatApi.start).mockResolvedValue(conversation({ id: 'c-renan' }));
+  it('CA13: Conversar abre a conversa e avisa qual foi', async () => {
+    const started = conversation({ id: 'c-renan' });
+    vi.mocked(chatApi.start).mockResolvedValue(started);
     const props = renderModal();
 
     const row = (await screen.findByText('Renan Souza (@renan_slabs)')).closest(
@@ -105,7 +124,7 @@ describe('NewConversationModal', () => {
     ) as HTMLElement;
     await userEvent.click(within(row).getByRole('button', { name: 'Conversar' }));
 
-    await vi.waitFor(() => expect(props.onStarted).toHaveBeenCalledWith('c-renan'));
+    await vi.waitFor(() => expect(props.onStarted).toHaveBeenCalledWith(started));
     expect(vi.mocked(chatApi.start).mock.calls[0]?.[0]).toBe('renan');
   });
 

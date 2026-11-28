@@ -1,12 +1,18 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { paths } from '@/routes/paths';
 import { renderWithProviders } from '@/test/renderWithProviders';
 import type { AuthenticatedUser } from '@/types/authenticated-user';
 
 import { SiteShell } from './SiteShell';
+
+const getStripeAccount = vi.hoisted(() => vi.fn());
+
+vi.mock('@/features/marketplace/seller-account/seller-account.api', () => ({
+  sellerAccountApi: { get: getStripeAccount, createOnboardingLink: vi.fn(), refresh: vi.fn() },
+}));
 
 const routes = [
   {
@@ -25,6 +31,13 @@ function renderShell(user: AuthenticatedUser | null = null, signOut = vi.fn()) {
 }
 
 describe('SiteShell', () => {
+  beforeEach(() => {
+    getStripeAccount.mockResolvedValue({
+      status: 'NOT_CONNECTED',
+      pendingReason: null,
+    });
+  });
+
   it('mostra a logo e o menu lateral do protótipo', () => {
     renderShell();
 
@@ -66,6 +79,51 @@ describe('SiteShell', () => {
       expect(within(menu).queryByRole('link', { name: 'Mensagens' }) !== null).toBe(shown);
     },
   );
+
+  it.each([
+    ['SELLER', true],
+    ['CUSTOMER', false],
+    ['ADMIN', false],
+  ] as const)(
+    'CCD108 R2: o grupo Vendedor com a Visão geral para %s aparece = %s',
+    (role, shown) => {
+      renderShell({ id: '1', role });
+
+      const menu = screen.getByRole('navigation', { name: 'Menu principal' });
+      expect(within(menu).queryByRole('group', { name: 'Vendedor' }) !== null).toBe(shown);
+      expect(within(menu).queryByRole('link', { name: 'Visão geral' })?.getAttribute('href')).toBe(
+        shown ? paths.seller.overview : undefined,
+      );
+    },
+  );
+
+  it.each([
+    ['NOT_CONNECTED', false],
+    ['VERIFYING', false],
+    ['READY', true],
+  ] as const)(
+    'CCD108 R2: o Criar Anúncio do topo do vendedor com a conta %s fica habilitado = %s',
+    async (status, enabled) => {
+      getStripeAccount.mockResolvedValue({ status, pendingReason: null });
+      renderShell({ id: '1', role: 'SELLER' });
+
+      const button = screen.getByRole('button', { name: 'Criar Anúncio' });
+      await vi.waitFor(() => expect(getStripeAccount).toHaveBeenCalled());
+      await vi.waitFor(() => expect(button.hasAttribute('disabled')).toBe(!enabled));
+      if (!enabled) {
+        expect(button).toHaveAccessibleDescription(
+          'Conecte sua conta de recebimento para publicar anúncios',
+        );
+      }
+    },
+  );
+
+  it.each(['CUSTOMER', 'ADMIN'] as const)('o Criar Anúncio do topo não aparece para %s', (role) => {
+    renderShell({ id: '1', role });
+
+    expect(screen.queryByRole('button', { name: 'Criar Anúncio' })).not.toBeInTheDocument();
+    expect(getStripeAccount).not.toHaveBeenCalled();
+  });
 
   it('para o visitante, oferece Login, Cadastrar e os atalhos', () => {
     renderShell();

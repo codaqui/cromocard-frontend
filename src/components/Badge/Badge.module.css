@@ -9,6 +9,13 @@
   white-space: nowrap;
 }
 
+.tag {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
 .neutral {
   background: var(--color-neutral-soft);
   color: var(--color-neutral);

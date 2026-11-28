@@ -12,6 +12,7 @@ import { chatApi } from './chat.api';
 import type {
   ChatMessage,
   ContactsParams,
+  ConversationsPage,
   ListConversationsParams,
   MessagesPage,
 } from './chat.types';
@@ -26,9 +27,12 @@ export const chatKeys = {
 };
 
 export function useConversations(params: ListConversationsParams) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: chatKeys.conversationList(params),
-    queryFn: () => chatApi.list(params),
+    queryFn: ({ pageParam }) => chatApi.list(params, pageParam),
+    initialPageParam: 1,
+    getNextPageParam: ({ meta }: ConversationsPage) =>
+      meta.page < meta.totalPages ? meta.page + 1 : undefined,
     placeholderData: keepPreviousData,
   });
 }
@@ -81,6 +85,9 @@ export function appendMessage(queryClient: QueryClient, message: ChatMessage) {
     (data) => (data ? { ...data, pages: withMessage(data.pages, message) } : data),
   );
 }
+
+export const conversationsOf = (pages: ConversationsPage[] = []) =>
+  pages.flatMap(({ data }) => data);
 
 export const messagesInOrder = (pages: MessagesPage[] = []) =>
   pages.toReversed().flatMap(({ data }) => data);

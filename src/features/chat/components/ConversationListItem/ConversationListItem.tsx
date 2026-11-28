@@ -1,4 +1,5 @@
 import { Icon } from '@/components/Icon/Icon';
+import { VisuallyHidden } from '@/components/VisuallyHidden/VisuallyHidden';
 import { cn } from '@/utils/cn';
 
 import { handleOf, isToday, previewTime } from '../../chat.format';
@@ -29,7 +30,7 @@ function VerifiedSeal() {
   return (
     <span className={styles.verified} title={chatTexts.verified}>
       <Icon name="verifiedUser" size={14} />
-      <span className={styles.srOnly}>{chatTexts.verified}</span>
+      <VisuallyHidden>{chatTexts.verified}</VisuallyHidden>
     </span>
   );
 }

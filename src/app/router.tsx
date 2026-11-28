@@ -4,10 +4,12 @@ import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { NotFoundPage } from '@/components/NotFoundPage/NotFoundPage';
 import { adminBackofficeRoutes } from '@/features/admin';
 import { authRoutes, tokenLinkRoutes } from '@/features/auth';
-import { chatPublicRoutes, chatRoutes } from '@/features/chat';
+import { chatRoutes } from '@/features/chat';
 import { catalogBackofficeRoutes, catalogCustomerRoutes, catalogRoutes } from '@/features/catalog';
 import { collectionRoutes } from '@/features/collection';
+import { marketplaceCustomerRoutes, marketplaceRoutes } from '@/features/marketplace';
 import { communityBackofficeRoutes, communityRoutes } from '@/features/community';
+import { sellerRoutes } from '@/features/marketplace';
 import { notificationsRoutes } from '@/features/notifications';
 import { usersBackofficeRoutes, usersPublicRoutes, usersRoutes } from '@/features/users';
 import { RedirectIfAuthenticated } from '@/routes/guards/RedirectIfAuthenticated';
@@ -31,9 +33,9 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <RoleHomeRedirect /> },
           ...catalogRoutes,
+          ...marketplaceRoutes,
           ...communityRoutes,
           ...usersPublicRoutes,
-          ...chatPublicRoutes,
           { path: '*', element: <NotFoundPage /> },
         ],
       },
@@ -47,10 +49,15 @@ export const router = createBrowserRouter([
               ...collectionRoutes,
               ...notificationsRoutes,
               ...catalogCustomerRoutes,
+              ...marketplaceCustomerRoutes,
               ...chatRoutes,
             ],
           },
         ],
+      },
+      {
+        element: <RequireRole role="SELLER" />,
+        children: [{ element: <CustomerLayout />, children: sellerRoutes }],
       },
       {
         path: paths.backoffice.root,

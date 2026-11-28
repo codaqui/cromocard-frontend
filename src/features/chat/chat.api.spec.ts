@@ -17,11 +17,13 @@ describe('chatApi', () => {
   });
 
   it('lista as conversas com a busca e a aba', async () => {
-    await chatApi.list({ q: 'ren', filter: 'unread' });
+    await chatApi.list({ q: 'ren', filter: 'unread' }, 2);
 
     expect(api.getWithMeta).toHaveBeenCalledWith('/me/conversations', {
       q: 'ren',
       filter: 'unread',
+      page: 2,
+      pageSize: 50,
     });
   });
 

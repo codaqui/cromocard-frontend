@@ -40,6 +40,11 @@ export interface ConversationsMeta extends PaginationMeta {
   totals: { all: number; unread: number };
 }
 
+export interface ConversationsPage {
+  data: ConversationSummary[];
+  meta: ConversationsMeta;
+}
+
 export interface MessagesPage {
   data: ChatMessage[];
   meta: { nextCursor: string | null };

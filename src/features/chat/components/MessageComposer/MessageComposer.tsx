@@ -4,6 +4,7 @@ import { FormError } from '@/components/FormError/FormError';
 import { Icon } from '@/components/Icon/Icon';
 
 import { chatTexts } from '../../chat.labels';
+import { MESSAGE_MAX_LENGTH, messageContentSchema } from '../../chat.schemas';
 import styles from './MessageComposer.module.css';
 
 interface MessageComposerProps {
@@ -17,8 +18,9 @@ function useComposer(onSend: MessageComposerProps['onSend']) {
   const [sending, setSending] = useState(false);
 
   const send = async () => {
-    const content = text.trim();
-    if (!content || sending) return;
+    const parsed = messageContentSchema.safeParse(text);
+    if (!parsed.success || sending) return;
+    const content = parsed.data;
     setSending(true);
     setFailed(false);
     try {
@@ -42,7 +44,7 @@ function ComposerFooter() {
         {chatTexts.marketplaceNotice}
       </span>
       <span className={styles.hint}>
-        Pressione <kbd className={styles.kbd}>Enter</kbd> para enviar
+        {chatTexts.sendHintBefore} <kbd className={styles.kbd}>Enter</kbd> {chatTexts.sendHintAfter}
       </span>
     </p>
   );
@@ -60,7 +62,7 @@ function MessageField({ recipient, value, onChange, onEnter }: MessageFieldProps
     <textarea
       className={styles.input}
       rows={1}
-      maxLength={2000}
+      maxLength={MESSAGE_MAX_LENGTH}
       aria-label="Mensagem"
       placeholder={`Digite sua mensagem para ${recipient}...`}
       value={value}
@@ -84,7 +86,11 @@ export function MessageComposer({ recipient, onSend }: MessageComposerProps) {
       {failed && <FormError message={chatTexts.sendError} />}
       <div className={styles.row}>
         <MessageField recipient={recipient} value={text} onChange={setText} onEnter={submit} />
-        <button type="submit" className={styles.send} disabled={sending || !text.trim()}>
+        <button
+          type="submit"
+          className={styles.send}
+          disabled={sending || !messageContentSchema.safeParse(text).success}
+        >
           Enviar
           <Icon name="send" size={16} />
         </button>

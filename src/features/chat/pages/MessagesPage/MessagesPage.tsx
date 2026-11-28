@@ -6,6 +6,7 @@ import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { cn } from '@/utils/cn';
 
 import { chatTexts } from '../../chat.labels';
+import type { ConversationSummary } from '../../chat.types';
 import {
   ConversationList,
   type ConversationListProps,
@@ -45,7 +46,7 @@ function Placeholder({ empty }: { empty: boolean }) {
 
 function OpenPanel({ page }: { page: MessagesPageState }) {
   const { opened, user } = page;
-  const empty = page.conversations.data?.meta.totals.all === 0;
+  const empty = page.totals?.all === 0;
   if (!opened || !user) return <Placeholder empty={empty} />;
   return (
     <ConversationView
@@ -64,7 +65,7 @@ function listPropsOf(
 ): ConversationListProps {
   return {
     conversations: page.items,
-    totals: page.conversations.data?.meta.totals ?? { all: 0, unread: 0 },
+    totals: page.totals ?? { all: 0, unread: 0 },
     filter: page.filter,
     search: page.search,
     activeId: page.openId,
@@ -73,6 +74,7 @@ function listPropsOf(
     onSearchChange: page.setSearch,
     onSelect: page.open,
     onNewConversation,
+    onEndReached: page.loadMore,
   };
 }
 
@@ -106,17 +108,17 @@ function Content({
 export function MessagesPage() {
   const page = useMessagesPage();
   const [creating, setCreating] = useState(false);
-  const started = (conversationId: string) => {
+  const started = (conversation: ConversationSummary) => {
     setCreating(false);
-    page.open(conversationId);
+    page.openStarted(conversation);
   };
   return (
-    <div className={styles.page}>
+    <div className={cn(styles.page, page.opened && styles.reading)}>
       <PageTitle />
       <Content page={page} onNewConversation={() => setCreating(true)} />
       {creating && (
         <NewConversationModal
-          recent={page.items.map(({ contact }) => contact)}
+          recent={page.recent}
           onStarted={started}
           onClose={() => setCreating(false)}
         />

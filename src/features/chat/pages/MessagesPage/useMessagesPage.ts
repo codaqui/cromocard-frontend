@@ -3,8 +3,8 @@ import { useSearchParams } from 'react-router';
 
 import { useAuth } from '@/hooks/useAuth';
 
-import { useConversations } from '../../chat.queries';
-import type { ConversationFilter } from '../../chat.types';
+import { conversationsOf, useConversations } from '../../chat.queries';
+import type { ConversationFilter, ConversationSummary } from '../../chat.types';
 import { useChatSocket } from '../../hooks/useChatSocket';
 import { usePresence } from '../../hooks/usePresence';
 
@@ -22,30 +22,43 @@ function useOpenConversation() {
   return { openId, open };
 }
 
-export function useMessagesPage() {
-  const { user } = useAuth();
+function useOpenedConversation(items: ConversationSummary[]) {
+  const { openId, open } = useOpenConversation();
+  const [kept, keep] = useState<ConversationSummary | null>(null);
+  const listed = items.find(({ id }) => id === openId);
+  if (listed && listed !== kept) keep(listed);
+  const opened = listed ?? (kept?.id === openId ? kept : null);
+  const openStarted = (conversation: ConversationSummary) => {
+    keep(conversation);
+    open(conversation.id);
+  };
+  return { openId, open, opened, openStarted };
+}
+
+function useConversationList() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<ConversationFilter>('all');
   const q = useDeferredValue(search.trim());
   const conversations = useConversations({ q: q || undefined, filter });
-  const { openId, open } = useOpenConversation();
-  const items = conversations.data?.data ?? [];
-  const online = usePresence(items.map(({ contact }) => contact.id));
-  useChatSocket(openId);
-  const opened = items.find(({ id }) => id === openId) ?? null;
-  return {
-    user,
-    search,
-    setSearch,
-    filter,
-    setFilter,
-    conversations,
-    items,
-    online,
-    openId,
-    open,
-    opened,
+  const unfiltered = useConversations({ filter: 'all' });
+  const items = conversationsOf(conversations.data?.pages);
+  const recent = conversationsOf(unfiltered.data?.pages).map(({ contact }) => contact);
+  const totals = conversations.data?.pages[0]?.meta.totals;
+  const loadMore = () => {
+    if (conversations.hasNextPage && !conversations.isFetchingNextPage)
+      void conversations.fetchNextPage();
   };
+  return { search, setSearch, filter, setFilter, conversations, items, recent, totals, loadMore };
+}
+
+export function useMessagesPage() {
+  const { user } = useAuth();
+  const list = useConversationList();
+  const { items } = list;
+  const online = usePresence(items.map(({ contact }) => contact.id));
+  const { openId, open, opened, openStarted } = useOpenedConversation(items);
+  useChatSocket(openId);
+  return { ...list, user, online, openId, open, opened, openStarted };
 }
 
 export type MessagesPageState = ReturnType<typeof useMessagesPage>;

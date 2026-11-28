@@ -2,48 +2,27 @@ import { useDeferredValue, useState } from 'react';
 
 import { Button } from '@/components/Button/Button';
 import { FormError } from '@/components/FormError/FormError';
-import { Icon } from '@/components/Icon/Icon';
 import { Modal } from '@/components/Modal/Modal';
-import { cn } from '@/utils/cn';
 
 import { chatTexts, scopeLabels } from '../../chat.labels';
 import { useContacts, useStartConversation } from '../../chat.queries';
-import type { Contact, ContactResult, ContactScope } from '../../chat.types';
-import { ContactRow } from './ContactRow';
+import type { Contact, ContactResult, ContactScope, ConversationSummary } from '../../chat.types';
+import { ContactRow } from '../ContactRow/ContactRow';
+import { FilterPills } from '../FilterPills/FilterPills';
+import { SearchField } from '../SearchField/SearchField';
 import styles from './NewConversationModal.module.css';
 
 export interface NewConversationModalProps {
   recent: Contact[];
-  onStarted: (conversationId: string) => void;
+  onStarted: (conversation: ConversationSummary) => void;
   onClose: () => void;
 }
 
-const scopes = Object.keys(scopeLabels) as ContactScope[];
+const scopes = (Object.keys(scopeLabels) as ContactScope[]).map((id) => ({
+  id,
+  label: scopeLabels[id],
+}));
 const RECENT_LIMIT = 3;
-
-function ScopeTabs({
-  active,
-  onChange,
-}: {
-  active: ContactScope;
-  onChange: (scope: ContactScope) => void;
-}) {
-  return (
-    <div className={styles.scopes} role="group" aria-label="Filtrar colecionadores">
-      {scopes.map((scope) => (
-        <button
-          key={scope}
-          type="button"
-          className={cn(styles.scope, scope === active && styles.scopeActive)}
-          aria-pressed={scope === active}
-          onClick={() => onChange(scope)}
-        >
-          {scopeLabels[scope]}
-        </button>
-      ))}
-    </div>
-  );
-}
 
 interface ContactSectionProps {
   title: string;
@@ -72,7 +51,7 @@ function useNewConversation(onStarted: NewConversationModalProps['onStarted']) {
   const contacts = useContacts({ q: q || undefined, scope }, true);
   const start = useStartConversation();
   const startWith = (userId: string) =>
-    start.mutate(userId, { onSuccess: ({ id }) => onStarted(id) });
+    start.mutate(userId, { onSuccess: (conversation) => onStarted(conversation) });
   return { search, setSearch, scope, setScope, contacts, start, startWith };
 }
 
@@ -96,19 +75,26 @@ function Results({ flow, recent }: { flow: Flow; recent: Contact[] }) {
   );
 }
 
-function SearchField({ flow }: { flow: Flow }) {
+function ContactFilters({ flow }: { flow: Flow }) {
   return (
-    <label className={styles.search}>
-      <Icon name="search" size={16} />
-      <input
-        type="search"
-        className={styles.searchInput}
-        aria-label="Buscar colecionador"
+    <>
+      <SearchField
+        label="Buscar colecionador"
         placeholder="Buscar por nome ou @"
         value={flow.search}
-        onChange={(event) => flow.setSearch(event.target.value)}
+        onChange={flow.setSearch}
+        outlined
       />
-    </label>
+      <div className={styles.scopes}>
+        <FilterPills
+          label="Filtrar colecionadores"
+          items={scopes}
+          active={flow.scope}
+          onChange={flow.setScope}
+          compact
+        />
+      </div>
+    </>
   );
 }
 
@@ -129,8 +115,7 @@ export function NewConversationModal({ recent, onStarted, onClose }: NewConversa
         </Button>
       }
     >
-      <SearchField flow={flow} />
-      <ScopeTabs active={flow.scope} onChange={flow.setScope} />
+      <ContactFilters flow={flow} />
       {flow.start.isError && <FormError message={chatTexts.startError} />}
       <Results flow={flow} recent={recent} />
     </Modal>
