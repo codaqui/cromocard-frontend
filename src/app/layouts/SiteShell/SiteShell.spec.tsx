@@ -57,13 +57,45 @@ describe('SiteShell', () => {
       'Sugestões',
       'Perfil',
       'Configurações',
-      'Suporte',
+      'Como funciona',
+      'Central de ajuda',
     ]);
     expect(within(menu).getByRole('link', { name: 'Início' })).toHaveAttribute(
       'aria-current',
       'page',
     );
   });
+
+  it.each([
+    ['Central de ajuda', paths.help],
+    ['Como funciona', paths.howItWorks],
+  ])(
+    'CCD005 CA1 e CA5: o visitante abre %s pelo menu, com o item destacado',
+    async (label, path) => {
+      renderWithProviders({
+        routes: [
+          {
+            element: <SiteShell />,
+            children: [
+              { path: paths.home, element: <h1>Início</h1> },
+              { path, element: <h1>{label}</h1> },
+            ],
+          },
+        ],
+        initialPath: paths.home,
+        user: null,
+      });
+      const menu = screen.getByRole('navigation', { name: 'Menu principal' });
+
+      await userEvent.click(within(menu).getByRole('link', { name: label }));
+
+      expect(await screen.findByRole('heading', { name: label })).toBeInTheDocument();
+      expect(within(menu).getByRole('link', { name: label })).toHaveAttribute(
+        'aria-current',
+        'page',
+      );
+    },
+  );
 
   it.each([
     ['CUSTOMER', true],

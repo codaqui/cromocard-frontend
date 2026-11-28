@@ -11,6 +11,7 @@ import { marketplaceCustomerRoutes, marketplaceRoutes } from '@/features/marketp
 import { communityBackofficeRoutes, communityRoutes } from '@/features/community';
 import { sellerRoutes } from '@/features/marketplace';
 import { notificationsRoutes } from '@/features/notifications';
+import { publicRoutes } from '@/features/public';
 import { usersBackofficeRoutes, usersPublicRoutes, usersRoutes } from '@/features/users';
 import { RedirectIfAuthenticated } from '@/routes/guards/RedirectIfAuthenticated';
 import { RequireAuth } from '@/routes/guards/RequireAuth';
@@ -36,6 +37,7 @@ export const router = createBrowserRouter([
           ...marketplaceRoutes,
           ...communityRoutes,
           ...usersPublicRoutes,
+          ...publicRoutes,
           { path: '*', element: <NotFoundPage /> },
         ],
       },

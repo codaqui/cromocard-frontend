@@ -48,7 +48,8 @@ export const menuGroupsFor = (role?: UserRole) =>
 
 export const siteSecondaryMenu: SiteMenuItem[] = [
   { to: paths.settings, label: 'Configurações', icon: 'settingsOutline' },
-  { to: paths.help, label: 'Suporte', icon: 'infoOutline' },
+  { to: paths.howItWorks, label: 'Como funciona', icon: 'gridView' },
+  { to: paths.help, label: 'Central de ajuda', icon: 'infoOutline' },
 ];
 
 export const siteLinks: SiteLink[] = [

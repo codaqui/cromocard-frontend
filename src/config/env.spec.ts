@@ -16,7 +16,11 @@ describe('env', () => {
 
     const { env } = await loadEnv();
 
-    expect(env).toEqual({ API_URL: 'http://localhost:3000', WS_URL: 'http://localhost:3001' });
+    expect(env).toEqual({
+      API_URL: 'http://localhost:3000',
+      WS_URL: 'http://localhost:3001',
+      SUPPORT_EMAIL: 'suporte@cromocard.dev',
+    });
   });
 
   it('recusa subir sem a URL do ws, nem no env.js nem na VITE_WS_URL', async () => {
@@ -38,7 +42,22 @@ describe('env', () => {
       API_URL: 'https://api.cromocard.com.br',
       WS_URL: 'wss://ws.cromocard.com.br',
       GOOGLE_CLIENT_ID: 'cliente.apps.googleusercontent.com',
+      SUPPORT_EMAIL: 'suporte@cromocard.dev',
     });
+  });
+
+  it('CA4: usa o e-mail do suporte do env.js', async () => {
+    window.__ENV__ = { SUPPORT_EMAIL: 'ajuda@cromocard.com.br' };
+
+    const { env } = await loadEnv();
+
+    expect(env.SUPPORT_EMAIL).toBe('ajuda@cromocard.com.br');
+  });
+
+  it('recusa um e-mail do suporte inválido', async () => {
+    window.__ENV__ = { SUPPORT_EMAIL: 'não é e-mail' };
+
+    await expect(loadEnv()).rejects.toThrow(/SUPPORT_EMAIL/);
   });
 
   it('usa a VITE_WS_URL e a VITE_GOOGLE_CLIENT_ID quando o env.js não traz', async () => {
