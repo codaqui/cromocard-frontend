@@ -56,3 +56,9 @@ export function compactTime(isoDate: string, now = new Date()): string {
   if (elapsed < HOUR_IN_MS) return `${Math.floor(elapsed / MINUTE_IN_MS)} min`;
   return relativeTime(isoDate, now, true);
 }
+
+const QUOTED_TYPES = new Set(['NEW_MESSAGE']);
+
+export function displayMessage({ type, message }: { type: string; message: string }): string {
+  return QUOTED_TYPES.has(type) ? `“${message}”` : message;
+}

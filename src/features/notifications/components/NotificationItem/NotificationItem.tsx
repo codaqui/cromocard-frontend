@@ -3,7 +3,7 @@ import { useId } from 'react';
 import { Icon } from '@/components/Icon/Icon';
 import { cn } from '@/utils/cn';
 
-import { relativeTime } from '../../notifications.format';
+import { displayMessage, relativeTime } from '../../notifications.format';
 import { categoryIcons } from '../../notifications.icons';
 import { notificationsTexts, typeLabelOf } from '../../notifications.labels';
 import type { Notification } from '../../notifications.types';
@@ -45,7 +45,7 @@ function NotificationBody({
           {notification.title}
         </button>
       </h3>
-      <p className={styles.message}>{notification.message}</p>
+      <p className={styles.message}>{displayMessage(notification)}</p>
       {notification.referenceLink && (
         <button type="button" className={styles.action} onClick={() => onOpen(notification)}>
           <Icon name="openInNew" size={16} />

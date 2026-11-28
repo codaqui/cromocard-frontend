@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { compactTime, groupByDay, groupOf, relativeTime } from './notifications.format';
+import {
+  compactTime,
+  displayMessage,
+  groupByDay,
+  groupOf,
+  relativeTime,
+} from './notifications.format';
 
 const NOW = new Date(2026, 10, 28, 15, 0);
 const at = (day: number, hour: number, minute = 0) =>
@@ -59,5 +65,15 @@ describe('compactTime', () => {
     { iso: at(27, 18, 40), text: 'Ontem' },
   ])('no aviso flutuante, $text', ({ iso, text }) => {
     expect(compactTime(iso, NOW)).toBe(text);
+  });
+});
+
+describe('displayMessage', () => {
+  it('põe o trecho da mensagem nova entre aspas, como no Figma', () => {
+    expect(displayMessage({ type: 'NEW_MESSAGE', message: 'Oi!' })).toBe('“Oi!”');
+  });
+
+  it('os outros tipos ficam como vieram', () => {
+    expect(displayMessage({ type: 'GLOBAL', message: 'Manutenção' })).toBe('Manutenção');
   });
 });

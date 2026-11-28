@@ -5,7 +5,7 @@ import { cn } from '@/utils/cn';
 
 import { useNotificationsSocket } from '../../hooks/useNotificationsSocket';
 import { useOpenNotification } from '../../hooks/useOpenNotification';
-import { compactTime } from '../../notifications.format';
+import { compactTime, displayMessage } from '../../notifications.format';
 import { categoryIcons } from '../../notifications.icons';
 import { notificationsTexts as t, typeLabelOf } from '../../notifications.labels';
 import type { Notification } from '../../notifications.types';
@@ -69,7 +69,7 @@ function NotificationToast({ notification, onClose, ...actions }: ToastProps) {
     >
       <ToastHeader notification={notification} onClose={onClose} />
       <p className={styles.title}>{notification.title}</p>
-      <p className={styles.message}>{notification.message}</p>
+      <p className={styles.message}>{displayMessage(notification)}</p>
       <ToastButtons notification={notification} {...actions} />
     </article>
   );

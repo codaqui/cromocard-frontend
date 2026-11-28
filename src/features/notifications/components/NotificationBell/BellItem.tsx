@@ -1,7 +1,7 @@
 import { Icon } from '@/components/Icon/Icon';
 import { cn } from '@/utils/cn';
 
-import { relativeTime } from '../../notifications.format';
+import { displayMessage, relativeTime } from '../../notifications.format';
 import { categoryIcons } from '../../notifications.icons';
 import { typeLabelOf } from '../../notifications.labels';
 import type { Notification } from '../../notifications.types';
@@ -19,7 +19,7 @@ function BellItemBody({ notification, onOpen }: BellItemProps) {
       <button type="button" className={styles.itemTitle} onClick={open}>
         {notification.title}
       </button>
-      <p className={styles.itemMessage}>{notification.message}</p>
+      <p className={styles.itemMessage}>{displayMessage(notification)}</p>
       <time className={styles.itemTime} dateTime={notification.createdAt}>
         {relativeTime(notification.createdAt, new Date(), true)}
       </time>

@@ -76,7 +76,7 @@ describe('NotificationToasts', () => {
     const toast = screen.getByRole('article', { name: '@lucas_trader' });
     expect(toast).toHaveTextContent('Nova mensagem');
     expect(toast).toHaveTextContent('agora');
-    expect(toast).toHaveTextContent('Oi! A carta chegou certinho.');
+    expect(toast).toHaveTextContent('“Oi! A carta chegou certinho.”');
   });
 
   it('o botão de ação marca como lida e leva ao destino', async () => {
