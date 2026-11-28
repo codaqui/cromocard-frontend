@@ -17,6 +17,7 @@ export const paths = {
   help: '/ajuda',
   settings: '/configuracoes',
   notifications: '/notificacoes',
+  favorites: '/favoritos',
   suggestions: '/sugestoes',
   seller: {
     overview: '/vendedor',

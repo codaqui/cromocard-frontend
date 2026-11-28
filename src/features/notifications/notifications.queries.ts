@@ -27,7 +27,7 @@ export function useNotifications(filter: NotificationFilter, limit = NOTIFICATIO
 export function useMarkAsRead() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: notificationsApi.markAsRead,
+    mutationFn: (id: string) => notificationsApi.markAsRead(id),
     onSuccess: () => refreshLists(queryClient),
   });
 }
@@ -53,7 +53,7 @@ export function useSaveNotificationPreferences() {
 export function useRestoreNotificationPreferences() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: notificationsApi.restorePreferences,
+    mutationFn: () => notificationsApi.restorePreferences(),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: notificationsKeys.preferences() }),
   });
 }

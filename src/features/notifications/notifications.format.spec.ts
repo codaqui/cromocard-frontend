@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { groupOf, relativeTime } from './notifications.format';
+import { groupByDay, groupOf, relativeTime } from './notifications.format';
 
 const NOW = new Date(2026, 10, 28, 15, 0);
 const at = (day: number, hour: number, minute = 0) =>
@@ -30,5 +30,23 @@ describe('groupOf', () => {
   it('separa as de hoje das anteriores pela data local', () => {
     expect(groupOf(at(28, 0, 5), NOW)).toBe('TODAY');
     expect(groupOf(at(27, 23, 55), NOW)).toBe('EARLIER');
+  });
+});
+
+describe('groupByDay', () => {
+  const items = [{ createdAt: at(28, 14) }, { createdAt: at(27, 10) }];
+
+  it('separa HOJE de ANTERIORES e omite o grupo vazio', () => {
+    expect(groupByDay(items, { allRead: false, now: NOW }).map(({ group }) => group)).toEqual([
+      'TODAY',
+      'EARLIER',
+    ]);
+    expect(
+      groupByDay(items.slice(1), { allRead: false, now: NOW }).map(({ group }) => group),
+    ).toEqual(['EARLIER']);
+  });
+
+  it('com todas lidas, tudo fica em ANTERIORES', () => {
+    expect(groupByDay(items, { allRead: true, now: NOW })).toEqual([{ group: 'EARLIER', items }]);
   });
 });

@@ -29,3 +29,23 @@ export function relativeTime(isoDate: string, now = new Date(), short = false): 
   if (days === 1) return short ? 'Ontem' : `Ontem, às ${timeFormatter.format(date)}`;
   return `${days} dias atrás`;
 }
+
+interface DatedItem {
+  createdAt: string;
+}
+
+export interface GroupedItems<T> {
+  group: NotificationGroup;
+  items: T[];
+}
+
+export function groupByDay<T extends DatedItem>(
+  items: readonly T[],
+  { allRead, now = new Date() }: { allRead: boolean; now?: Date },
+): GroupedItems<T>[] {
+  const groupFor = (item: T): NotificationGroup =>
+    allRead ? 'EARLIER' : groupOf(item.createdAt, now);
+  return (['TODAY', 'EARLIER'] as const)
+    .map((group) => ({ group, items: items.filter((item) => groupFor(item) === group) }))
+    .filter(({ items: grouped }) => grouped.length > 0);
+}
