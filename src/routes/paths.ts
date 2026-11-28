@@ -18,6 +18,12 @@ export const paths = {
   settings: '/configuracoes',
   notifications: '/notificacoes',
   suggestions: '/sugestoes',
+  seller: {
+    overview: '/vendedor',
+    stripeReturn: '/vendedor/stripe/retorno',
+    stripeRefresh: '/vendedor/stripe/renovar',
+    store: '/vendedor/loja',
+  },
   backoffice: {
     root: '/backoffice',
     dashboard: '/backoffice/dashboard',
