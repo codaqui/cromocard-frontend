@@ -1,4 +1,3 @@
-/* Aviso de contato bloqueado no lugar do campo de envio (Figma 1160-37184). */
 .area {
   padding: var(--space-3);
   border-radius: 0 0 var(--radius-md) var(--radius-md);
@@ -9,7 +8,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-2-5);
   padding: 14px var(--space-4);
   border-radius: var(--radius-md);
   background: var(--color-surface-sunken);
@@ -22,7 +21,7 @@
 
 .text {
   flex: 1;
-  min-width: 12rem;
+  min-width: var(--size-card-min);
   font-size: var(--font-size-option);
 }
 
@@ -34,7 +33,7 @@
   font: inherit;
   font-size: var(--font-size-label);
   font-weight: 600;
-  line-height: 1rem;
+  line-height: var(--line-height-icon);
   cursor: pointer;
 }
 

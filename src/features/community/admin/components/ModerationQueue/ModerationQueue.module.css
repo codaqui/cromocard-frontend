@@ -274,7 +274,6 @@
   outline-offset: 2px;
 }
 
-/* Prints da denúncia do chat pessoal (CCD047): miniaturas que abrem em tamanho real. */
 .evidences {
   display: flex;
   flex-wrap: wrap;

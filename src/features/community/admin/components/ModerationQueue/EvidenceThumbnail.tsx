@@ -9,7 +9,6 @@ interface EvidenceThumbnailProps {
   position: number;
 }
 
-/** O print vem do storage privado com o token do admin (ADR-073) e abre em tamanho real numa aba nova. */
 export function EvidenceThumbnail({ reportId, evidenceId, position }: EvidenceThumbnailProps) {
   const { data, isError } = useReportEvidence(reportId, evidenceId);
   const url = useObjectUrl(data);

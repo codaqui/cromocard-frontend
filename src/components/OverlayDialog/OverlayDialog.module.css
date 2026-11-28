@@ -228,7 +228,6 @@
   width: min(var(--size-dialog-compact), 100%);
 }
 
-/* Modais do chat no Figma (1160-34298): faixas de 16/24 px, título de 18 px e corpo de 24 px. */
 .denseDialog {
   border: 1px solid var(--color-primary-border);
   border-radius: var(--radius-md);
@@ -268,8 +267,8 @@
 }
 
 .denseDialog .titles {
-  gap: 2px;
-  line-height: 1.25;
+  gap: var(--space-0-5);
+  line-height: var(--line-height-tight);
 }
 
 .denseDialog .footer {
@@ -283,7 +282,7 @@
   width: min(var(--size-dialog-medium), 100%);
 }
 
-@media (max-width: 30rem) {
+@media (max-width: 48rem) {
   .denseDialog .footer {
     flex-wrap: wrap;
   }

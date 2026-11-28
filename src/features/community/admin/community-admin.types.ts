@@ -60,7 +60,6 @@ export interface GroupMessageReport {
   reporterUsername: string | null;
   message: ReportedMessage | null;
   reportedUser: ReportedUser | null;
-  /** Prints da denúncia do chat: cada um é baixado com o token pela rota do admin (ADR-073). */
   evidences: ReportEvidence[];
 }
 

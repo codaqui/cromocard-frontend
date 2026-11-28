@@ -32,7 +32,6 @@ function useModeration(request: ModerationRequest, affected: () => readonly stri
   });
 }
 
-/** O print não muda depois de enviado: fica em cache enquanto a fila está aberta. */
 export function useReportEvidence(reportId: string, evidenceId: string) {
   return useQuery({
     queryKey: communityAdminKeys.evidence(reportId, evidenceId),
