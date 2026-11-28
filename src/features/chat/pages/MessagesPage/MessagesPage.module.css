@@ -89,4 +89,12 @@
   .conversationOpen > :first-child {
     display: none;
   }
+
+  .reading > .title {
+    display: none;
+  }
+
+  .reading .columns {
+    min-height: calc(100dvh - var(--size-topbar));
+  }
 }

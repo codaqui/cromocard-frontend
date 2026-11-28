@@ -113,7 +113,7 @@ export function MessagesPage() {
     page.openStarted(conversation);
   };
   return (
-    <div className={styles.page}>
+    <div className={cn(styles.page, page.opened && styles.reading)}>
       <PageTitle />
       <Content page={page} onNewConversation={() => setCreating(true)} />
       {creating && (
