@@ -8,6 +8,7 @@ import { NavItem } from '@/components/NavItem/NavItem';
 import { SearchBar, type SearchQuery } from '@/components/SearchBar/SearchBar';
 import { UserMenu } from '@/components/UserMenu/UserMenu';
 import { NOT_READY_REASON, useCanPublishListing } from '@/features/marketplace';
+import { NotificationToasts } from '@/features/notifications';
 import { roleLabels, useMe } from '@/features/users';
 import { useAuth } from '@/hooks/useAuth';
 import { useSignOut } from '@/hooks/useSignOut';
@@ -184,6 +185,13 @@ function SiteTopbar() {
   );
 }
 
+const hasNotifications = (role?: UserRole) => role === 'CUSTOMER' || role === 'SELLER';
+
+function RealtimeNotifications() {
+  const { user } = useAuth();
+  return hasNotifications(user?.role) ? <NotificationToasts /> : null;
+}
+
 export function SiteShell() {
   return (
     <div className={styles.shell} data-theme="site">
@@ -194,6 +202,7 @@ export function SiteShell() {
           <Outlet />
         </main>
       </div>
+      <RealtimeNotifications />
     </div>
   );
 }

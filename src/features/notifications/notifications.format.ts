@@ -49,3 +49,10 @@ export function groupByDay<T extends DatedItem>(
     .map((group) => ({ group, items: items.filter((item) => groupFor(item) === group) }))
     .filter(({ items: grouped }) => grouped.length > 0);
 }
+
+export function compactTime(isoDate: string, now = new Date()): string {
+  const elapsed = now.getTime() - new Date(isoDate).getTime();
+  if (elapsed < MINUTE_IN_MS) return 'agora';
+  if (elapsed < HOUR_IN_MS) return `${Math.floor(elapsed / MINUTE_IN_MS)} min`;
+  return relativeTime(isoDate, now, true);
+}
