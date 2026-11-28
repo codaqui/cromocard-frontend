@@ -1,6 +1,6 @@
 import { useLocation } from 'react-router';
 
-import { ButtonLink } from '@/components/Button/ButtonLink';
+import { ButtonLink } from '@/components/ButtonLink/ButtonLink';
 import { Modal } from '@/components/Modal/Modal';
 import { loginPathFor, rememberRedirectAfterLogin } from '@/routes/guards/loginRedirect';
 import { paths } from '@/routes/paths';

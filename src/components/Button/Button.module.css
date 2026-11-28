@@ -15,10 +15,6 @@
     box-shadow 0.15s;
 }
 
-.link {
-  text-decoration: none;
-}
-
 .button:disabled {
   opacity: 0.6;
   cursor: not-allowed;

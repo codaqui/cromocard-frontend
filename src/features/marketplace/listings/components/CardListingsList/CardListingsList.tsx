@@ -2,7 +2,7 @@ import { useId } from 'react';
 
 import { Badge } from '@/components/Badge/Badge';
 import { Button } from '@/components/Button/Button';
-import { ButtonLink } from '@/components/Button/ButtonLink';
+import { ButtonLink } from '@/components/ButtonLink/ButtonLink';
 import { ErrorState } from '@/components/ErrorState/ErrorState';
 import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { listingDetailPathFor, paths } from '@/routes/paths';

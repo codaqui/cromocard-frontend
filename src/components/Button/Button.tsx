@@ -1,16 +1,13 @@
 import type { ComponentProps } from 'react';
 
-import { cn } from '@/utils/cn';
+import { buttonClassName } from './buttonClassName';
 
-import styles from './Button.module.css';
-import type { ButtonVariant } from './ButtonLink';
+export type ButtonVariant = 'primary' | 'secondary' | 'danger';
 
 interface ButtonProps extends ComponentProps<'button'> {
   variant?: ButtonVariant;
 }
 
 export function Button({ variant = 'primary', type = 'button', className, ...props }: ButtonProps) {
-  return (
-    <button type={type} className={cn(styles.button, styles[variant], className)} {...props} />
-  );
+  return <button type={type} className={buttonClassName(variant, className)} {...props} />;
 }
