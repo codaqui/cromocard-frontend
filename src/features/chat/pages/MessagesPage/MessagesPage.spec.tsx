@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { fireEvent, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -93,7 +93,7 @@ describe('MessagesPage', () => {
     await userEvent.type(await screen.findByRole('searchbox', { name: 'Buscar conversa' }), 'ren');
     await userEvent.click(screen.getByRole('button', { name: /Não Lidas/ }));
 
-    expect(chatApi.list).toHaveBeenLastCalledWith({ q: 'ren', filter: 'unread' });
+    expect(chatApi.list).toHaveBeenLastCalledWith({ q: 'ren', filter: 'unread' }, 1);
   });
 
   it('CA3: na aba Não Lidas, a conversa aberta continua aberta depois de marcada como lida', async () => {
@@ -142,6 +142,36 @@ describe('MessagesPage', () => {
     expect(
       await screen.findByRole('region', { name: 'Conversa com Renan Souza' }),
     ).toBeInTheDocument();
+  });
+
+  it('R3: ao rolar até o fim, traz a próxima página e o rodapé conta as duas', async () => {
+    const page = (items: ConversationSummary[], number: number) => ({
+      data: items,
+      meta: { page: number, pageSize: 50, total: 2, totalPages: 2, totals: { all: 2, unread: 1 } },
+    });
+    vi.mocked(chatApi.list).mockImplementation((_params, number = 1) =>
+      Promise.resolve(number === 1 ? page([conversation()], 1) : page([bruno], 2)),
+    );
+    renderPage();
+
+    expect(await screen.findByText('1 de 2 conversas listadas')).toBeInTheDocument();
+    fireEvent.scroll(screen.getAllByRole('list')[0] as HTMLElement);
+
+    expect(await screen.findByText('2 de 2 conversas listadas')).toBeInTheDocument();
+    expect(screen.getByText('Bruno Figurinhas')).toBeInTheDocument();
+  });
+
+  it('CA13: as conversas recentes do modal não dependem da busca da lista', async () => {
+    vi.mocked(chatApi.list).mockImplementation(({ q }) =>
+      Promise.resolve(q ? listed([], 0) : listed([conversation(), bruno])),
+    );
+    renderPage();
+    await userEvent.type(await screen.findByRole('searchbox', { name: 'Buscar conversa' }), 'zzz');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Nova conversa' }));
+
+    const recent = await screen.findByRole('region', { name: 'Conversas recentes' });
+    expect(within(recent).getByText('Bruno Figurinhas')).toBeInTheDocument();
   });
 
   it('CA4: sem conversas, mostra "Nenhuma conversa ainda" e a dica', async () => {

@@ -17,6 +17,7 @@ function renderList(changes: Partial<ConversationListProps> = {}) {
     onSearchChange: vi.fn(),
     onSelect: vi.fn(),
     onNewConversation: vi.fn(),
+    onEndReached: vi.fn(),
     ...changes,
   };
   render(<ConversationList {...props} />);
@@ -78,5 +79,20 @@ describe('ConversationList', () => {
     expect(screen.getByText('Nenhuma conversa')).toBeInTheDocument();
     expect(screen.queryByText('0 ativas')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Todas' })).toBeInTheDocument();
+  });
+
+  it('R3: rolar até o fim da lista pede a próxima página; antes do fim, não', () => {
+    const props = renderList();
+    const list = screen.getAllByRole('list')[0] as HTMLElement;
+    Object.defineProperties(list, {
+      scrollHeight: { value: 1000 },
+      clientHeight: { value: 400 },
+    });
+
+    fireEvent.scroll(list, { target: { scrollTop: 100 } });
+    expect(props.onEndReached).not.toHaveBeenCalled();
+
+    fireEvent.scroll(list, { target: { scrollTop: 580 } });
+    expect(props.onEndReached).toHaveBeenCalledTimes(1);
   });
 });

@@ -10,10 +10,15 @@ import type {
 } from './chat.types';
 
 const BASE = '/me/conversations';
+export const CONVERSATIONS_PAGE_SIZE = 50;
 
 export const chatApi = {
-  list: (params: ListConversationsParams) =>
-    api.getWithMeta<ConversationSummary[], ConversationsMeta>(BASE, params),
+  list: (params: ListConversationsParams, page = 1) =>
+    api.getWithMeta<ConversationSummary[], ConversationsMeta>(BASE, {
+      ...params,
+      page,
+      pageSize: CONVERSATIONS_PAGE_SIZE,
+    }),
   start: (userId: string) => api.post<ConversationSummary>(BASE, { userId }),
   messages: (conversationId: string, cursor?: string) =>
     api.getWithMeta<ChatMessage[], { nextCursor: string | null }>(

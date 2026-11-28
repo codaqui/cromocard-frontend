@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { type UIEvent, useEffect, useRef } from 'react';
 
 import { Icon } from '@/components/Icon/Icon';
 
@@ -21,6 +21,7 @@ export interface ConversationListProps {
   onSearchChange: (search: string) => void;
   onSelect: (id: string) => void;
   onNewConversation: () => void;
+  onEndReached: () => void;
 }
 
 function useSlashShortcut() {
@@ -92,10 +93,20 @@ function filterPillsOf(totals: Record<ConversationFilter, number>) {
   }));
 }
 
+const END_DISTANCE_PX = 48;
+
+const nearEnd = ({ currentTarget: list }: UIEvent<HTMLElement>) =>
+  list.scrollHeight - list.scrollTop - list.clientHeight <= END_DISTANCE_PX;
+
 function ConversationItems(props: ConversationListProps) {
   const { conversations, activeId, online } = props;
   return (
-    <ul className={styles.list}>
+    <ul
+      className={styles.list}
+      onScroll={(event) => {
+        if (nearEnd(event)) props.onEndReached();
+      }}
+    >
       {conversations.map((conversation) => (
         <ConversationListItem
           key={conversation.id}
