@@ -1,3 +1,4 @@
+import { VisuallyHidden } from '@/components/VisuallyHidden/VisuallyHidden';
 import { cn } from '@/utils/cn';
 
 import { timeOf } from '../../chat.format';
@@ -16,7 +17,7 @@ export function MessageBubble({ message, mine, unread }: MessageBubbleProps) {
     <li className={cn(styles.row, mine && styles.mine)}>
       <ContactAvatar name={message.author.name} avatarUrl={null} size="small" />
       <div className={cn(styles.bubble, unread && styles.unread)}>
-        {unread && <span className={styles.srOnly}>Não lida</span>}
+        {unread && <VisuallyHidden>Não lida</VisuallyHidden>}
         <p className={styles.text}>{message.content}</p>
         <time className={styles.time} dateTime={message.createdAt}>
           {timeOf(message.createdAt)}

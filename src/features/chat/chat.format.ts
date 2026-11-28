@@ -1,23 +1,14 @@
-const MONTHS = [
-  'Janeiro',
-  'Fevereiro',
-  'Março',
-  'Abril',
-  'Maio',
-  'Junho',
-  'Julho',
-  'Agosto',
-  'Setembro',
-  'Outubro',
-  'Novembro',
-  'Dezembro',
-];
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
+const monthFormat = new Intl.DateTimeFormat('pt-BR', { month: 'long' });
+
+const capitalized = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
+const monthOf = (date: Date) => capitalized(monthFormat.format(date));
 
 const dayKey = (date: Date) => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 
 function daysBetween(date: Date, now: Date): number {
   const start = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-  return Math.round((start(now) - start(date)) / 86_400_000);
+  return Math.round((start(now) - start(date)) / DAY_IN_MS);
 }
 
 export function timeOf(iso: string): string {
@@ -32,12 +23,12 @@ export function previewTime(iso: string, now = new Date()): string {
   const days = daysBetween(date, now);
   if (days === 0) return timeOf(iso);
   if (days === 1) return 'Ontem';
-  return `${date.getDate()} ${MONTHS[date.getMonth()]?.slice(0, 3)}`;
+  return `${date.getDate()} ${monthOf(date).slice(0, 3)}`;
 }
 
 export function dayLabel(iso: string, now = new Date()): string {
   const date = new Date(iso);
-  const full = `${date.getDate()} de ${MONTHS[date.getMonth()]}`;
+  const full = `${date.getDate()} de ${monthOf(date)}`;
   const days = daysBetween(date, now);
   if (days === 0) return `Hoje, ${full}`;
   return days === 1 ? `Ontem, ${full}` : full;

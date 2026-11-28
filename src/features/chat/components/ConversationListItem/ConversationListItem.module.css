@@ -109,11 +109,3 @@
   font-size: var(--font-size-xs);
   font-weight: 700;
 }
-
-.srOnly {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-}
