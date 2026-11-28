@@ -16,6 +16,12 @@ export const catalogBackofficeRoutes: RouteObject[] = [
 ];
 
 export const catalogRoutes: RouteObject[] = [
+  {
+    path: paths.cardProfile,
+    lazy: async () => ({
+      Component: (await import('./pages/CardProfilePage/CardProfilePage')).CardProfilePage,
+    }),
+  },
   underConstructionRoute({ path: paths.highlights, title: 'Destaques', story: 'CCD001' }),
   underConstructionRoute({ path: paths.search, title: 'Pesquisar', story: 'CCD002' }),
   underConstructionRoute({ path: paths.categories, title: 'Categorias', story: 'CCD027' }),

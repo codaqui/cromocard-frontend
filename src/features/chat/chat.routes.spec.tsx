@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { paths } from '@/routes/paths';
 import { renderWithProviders } from '@/test/renderWithProviders';
 
-import { chatPublicRoutes, chatRoutes } from './chat.routes';
+import { chatRoutes } from './chat.routes';
 
 vi.mock('./pages/MessagesPage/MessagesPage', () => ({
   MessagesPage: () => <p>Página de mensagens</p>,
@@ -14,7 +14,6 @@ const routes = [
   { path: paths.profile, element: <p>Perfil</p> },
   { path: paths.backoffice.dashboard, element: <p>Painel</p> },
   ...chatRoutes,
-  ...chatPublicRoutes,
 ];
 
 describe('chatRoutes', () => {
@@ -33,9 +32,5 @@ describe('chatRoutes', () => {
 
     expect(await screen.findByText('Painel')).toBeInTheDocument();
     expect(router.state.location.pathname).toBe(paths.backoffice.dashboard);
-  });
-
-  it('R16: o perfil público fica em construção até a CCD080', () => {
-    expect(chatPublicRoutes.map(({ path }) => path)).toEqual([paths.publicProfile]);
   });
 });

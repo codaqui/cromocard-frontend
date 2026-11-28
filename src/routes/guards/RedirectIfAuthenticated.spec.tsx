@@ -1,6 +1,7 @@
 import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
+import { PENDING_REDIRECT_KEY, rememberRedirectAfterLogin } from '@/routes/guards/loginRedirect';
 import { RedirectIfAuthenticated } from '@/routes/guards/RedirectIfAuthenticated';
 import { paths } from '@/routes/paths';
 import { renderWithProviders } from '@/test/renderWithProviders';
@@ -36,5 +37,21 @@ describe('RedirectIfAuthenticated', () => {
     });
 
     expect(await screen.findByText('Usuários')).toBeInTheDocument();
+  });
+
+  it('espera a sessão sem apagar a página guardada', () => {
+    rememberRedirectAfterLogin(paths.backoffice.users);
+    renderWithProviders({ routes, initialPath: paths.login, isRestoringSession: true });
+
+    expect(screen.getByRole('status')).toHaveTextContent('Carregando sessão…');
+    expect(sessionStorage.getItem(PENDING_REDIRECT_KEY)).not.toBeNull();
+  });
+
+  it('L16: leva quem já está logado à página guardada e a esquece', async () => {
+    rememberRedirectAfterLogin(paths.backoffice.users);
+    renderWithProviders({ routes, initialPath: paths.login, user: { id: '1', role: 'ADMIN' } });
+
+    expect(await screen.findByText('Usuários')).toBeInTheDocument();
+    expect(sessionStorage.getItem(PENDING_REDIRECT_KEY)).toBeNull();
   });
 });

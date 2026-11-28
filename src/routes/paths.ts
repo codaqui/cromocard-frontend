@@ -3,6 +3,7 @@ import type { UserRole } from '@/types/authenticated-user';
 export const paths = {
   home: '/',
   login: '/login',
+  googleLogin: '/login/google',
   register: '/cadastro',
   forgotPassword: '/esqueci-senha',
   resetPassword: '/redefinir-senha',
@@ -20,6 +21,15 @@ export const paths = {
   suggestions: '/sugestoes',
   messages: '/mensagens',
   publicProfile: '/usuarios/:id',
+  cardProfile: '/cartas/:id',
+  listingDetail: '/anuncios/:id',
+  newListing: '/anuncios/novo',
+  seller: {
+    overview: '/vendedor',
+    stripeReturn: '/vendedor/stripe/retorno',
+    stripeRefresh: '/vendedor/stripe/renovar',
+    store: '/vendedor/loja',
+  },
   backoffice: {
     root: '/backoffice',
     dashboard: '/backoffice/dashboard',
@@ -61,6 +71,14 @@ export function userDetailPathFor(id: string): string {
   return `${paths.backoffice.users}/${id}`;
 }
 
+export function cardProfilePathFor(id: string): string {
+  return paths.cardProfile.replace(':id', id);
+}
+
+export function listingDetailPathFor(id: string): string {
+  return paths.listingDetail.replace(':id', id);
+}
+
 export function publicProfilePathFor(userId: string): string {
-  return `/usuarios/${userId}`;
+  return paths.publicProfile.replace(':id', userId);
 }

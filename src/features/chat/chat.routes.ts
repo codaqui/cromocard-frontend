@@ -1,7 +1,6 @@
 import { createElement } from 'react';
 import type { RouteObject } from 'react-router';
 
-import { underConstructionRoute } from '@/components/UnderConstructionPage/underConstructionRoute';
 import { RequireRole } from '@/routes/guards/RequireRole';
 import { paths } from '@/routes/paths';
 
@@ -17,12 +16,4 @@ export const chatRoutes: RouteObject[] = [
       },
     ],
   },
-];
-
-export const chatPublicRoutes: RouteObject[] = [
-  underConstructionRoute({
-    path: paths.publicProfile,
-    title: 'Perfil do colecionador',
-    story: 'CCD080',
-  }),
 ];

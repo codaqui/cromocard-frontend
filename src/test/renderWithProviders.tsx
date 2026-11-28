@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render } from '@testing-library/react';
+import { Fragment, StrictMode } from 'react';
 import { createMemoryRouter, type RouteObject } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
 import { vi } from 'vitest';
@@ -14,6 +15,8 @@ interface RenderWithProvidersOptions {
   isRestoringSession?: boolean;
   hasSignedOut?: boolean;
   signOut?: () => void;
+  /** Renderiza dentro do `StrictMode`, que roda os efeitos duas vezes como no `npm run dev`. */
+  strict?: boolean;
 }
 
 export function renderWithProviders({
@@ -23,16 +26,21 @@ export function renderWithProviders({
   isRestoringSession = false,
   hasSignedOut = false,
   signOut = vi.fn(),
+  strict = false,
 }: RenderWithProvidersOptions) {
   const router = createMemoryRouter(routes, { initialEntries: [initialPath] });
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 
+  const Mode = strict ? StrictMode : Fragment;
+
   render(
-    <QueryClientProvider client={queryClient}>
-      <AuthContext value={{ user, isRestoringSession, hasSignedOut, signIn: vi.fn(), signOut }}>
-        <RouterProvider router={router} />
-      </AuthContext>
-    </QueryClientProvider>,
+    <Mode>
+      <QueryClientProvider client={queryClient}>
+        <AuthContext value={{ user, isRestoringSession, hasSignedOut, signIn: vi.fn(), signOut }}>
+          <RouterProvider router={router} />
+        </AuthContext>
+      </QueryClientProvider>
+    </Mode>,
   );
 
   return router;
