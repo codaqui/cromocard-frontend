@@ -1,0 +1,34 @@
+import { describe, expect, it } from 'vitest';
+
+import { groupOf, relativeTime } from './notifications.format';
+
+const NOW = new Date(2026, 10, 28, 15, 0);
+const at = (day: number, hour: number, minute = 0) =>
+  new Date(2026, 10, day, hour, minute).toISOString();
+
+describe('relativeTime', () => {
+  it.each([
+    { iso: at(28, 14, 59), text: 'Há 1 min' },
+    { iso: at(28, 14, 45), text: 'Há 15 min' },
+    { iso: at(28, 12, 30), text: 'Há 2 h' },
+    { iso: at(27, 18, 40), text: 'Ontem, às 18:40' },
+    { iso: at(26, 9), text: '2 dias atrás' },
+  ])('$text', ({ iso, text }) => {
+    expect(relativeTime(iso, NOW)).toBe(text);
+  });
+
+  it('menos de um minuto é "Agora"', () => {
+    expect(relativeTime(new Date(NOW.getTime() - 20_000).toISOString(), NOW)).toBe('Agora');
+  });
+
+  it('no popup do sino, ontem aparece sem a hora', () => {
+    expect(relativeTime(at(27, 18, 40), NOW, true)).toBe('Ontem');
+  });
+});
+
+describe('groupOf', () => {
+  it('separa as de hoje das anteriores pela data local', () => {
+    expect(groupOf(at(28, 0, 5), NOW)).toBe('TODAY');
+    expect(groupOf(at(27, 23, 55), NOW)).toBe('EARLIER');
+  });
+});
