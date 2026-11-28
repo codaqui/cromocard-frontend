@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { type QueryClient, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
 import { connectSocket } from '@/lib/socket';
@@ -11,6 +11,11 @@ const CONTACT_BLOCKED = 'CONTACT_BLOCKED';
 
 type SendAck = { data: ChatMessage } | { error: string; message: string };
 
+function refusalOf(ack: { error: string; message: string }, queryClient: QueryClient) {
+  if (ack.error === CONTACT_BLOCKED) void refreshConversations(queryClient);
+  return new Error(ack.message);
+}
+
 export function useSendMessage() {
   const queryClient = useQueryClient();
 
@@ -19,10 +24,7 @@ export function useSendMessage() {
       const ack = (await connectSocket()
         .timeout(SEND_TIMEOUT_MS)
         .emitWithAck('message:send', { conversationId, content })) as SendAck;
-      if ('error' in ack) {
-        if (ack.error === CONTACT_BLOCKED) void refreshConversations(queryClient);
-        throw new Error(ack.message);
-      }
+      if ('error' in ack) throw refusalOf(ack, queryClient);
       appendMessage(queryClient, ack.data);
       void refreshConversations(queryClient);
       return ack.data;
