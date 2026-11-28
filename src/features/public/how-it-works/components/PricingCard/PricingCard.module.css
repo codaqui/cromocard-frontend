@@ -1,0 +1,66 @@
+.card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-6);
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.copy {
+  display: flex;
+  flex: 1 1 var(--size-search);
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+}
+
+.text {
+  max-width: var(--size-intro-text);
+  margin: 0;
+  color: var(--color-label);
+  font-size: var(--font-size-sm);
+}
+
+.rates {
+  display: flex;
+  gap: var(--space-6);
+  margin: 0;
+}
+
+.rate {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.rateLabel {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-caps);
+  text-transform: uppercase;
+}
+
+.rateValue {
+  margin: 0;
+  font-size: var(--font-size-section-title);
+  font-weight: 800;
+  line-height: var(--line-height-title);
+}
+
+.buy {
+  color: var(--color-positive);
+}
+
+.sell {
+  color: var(--color-accent);
+}
