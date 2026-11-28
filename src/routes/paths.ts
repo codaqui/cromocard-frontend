@@ -22,6 +22,12 @@ export const paths = {
   cardProfile: '/cartas/:id',
   listingDetail: '/anuncios/:id',
   newListing: '/anuncios/novo',
+  seller: {
+    overview: '/vendedor',
+    stripeReturn: '/vendedor/stripe/retorno',
+    stripeRefresh: '/vendedor/stripe/renovar',
+    store: '/vendedor/loja',
+  },
   backoffice: {
     root: '/backoffice',
     dashboard: '/backoffice/dashboard',
