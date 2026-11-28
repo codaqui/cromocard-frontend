@@ -1,8 +1,9 @@
 import { Button } from '@/components/Button/Button';
 
-import { commonGroupsLabel, initialsOf } from '../../chat.format';
+import { commonGroupsLabel } from '../../chat.format';
 import type { Contact, ContactResult } from '../../chat.types';
-import styles from './NewConversationModal.module.css';
+import { ContactAvatar } from '../ContactAvatar/ContactAvatar';
+import styles from './ContactRow.module.css';
 
 interface ContactRowProps {
   contact: Contact | ContactResult;
@@ -26,9 +27,7 @@ export function ContactRow({ contact, disabled, onStart }: ContactRowProps) {
   const handle = contact.username ? ` (@${contact.username})` : '';
   return (
     <li className={styles.row}>
-      <span className={styles.initials} aria-hidden="true">
-        {initialsOf(contact.name)}
-      </span>
+      <ContactAvatar name={contact.name} avatarUrl={contact.avatarUrl} size="round" />
       <span className={styles.who}>
         <span className={styles.name}>{`${contact.name}${handle}`}</span>
         {subtitle && <span className={styles.subtitle}>{subtitle}</span>}

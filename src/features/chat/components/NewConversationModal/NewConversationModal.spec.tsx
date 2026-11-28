@@ -83,6 +83,24 @@ describe('NewConversationModal', () => {
     ).toBeInTheDocument();
   });
 
+  it('L17: o contato com foto aparece com a foto, e o sem foto com as iniciais', async () => {
+    vi.mocked(chatApi.contacts).mockResolvedValue([
+      { ...renan, avatarUrl: 'https://cdn.cromocard.dev/avatars/renan.png' },
+      renata,
+    ]);
+    renderModal();
+
+    const row = (name: string) =>
+      within(section('Resultados')).getByText(name).closest('li') as HTMLElement;
+    await screen.findByText('Renan Souza (@renan_slabs)');
+
+    expect(row('Renan Souza (@renan_slabs)').querySelector('img')).toHaveAttribute(
+      'src',
+      'https://cdn.cromocard.dev/avatars/renan.png',
+    );
+    expect(within(row('Renata Valente (@valente_cards)')).getByText('RV')).toBeInTheDocument();
+  });
+
   it('CA13 e CA14: busca pelo texto e pela aba escolhida', async () => {
     renderModal();
 

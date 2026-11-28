@@ -19,4 +19,14 @@ describe('ContactAvatar', () => {
     expect(container.querySelector('img')).toHaveAttribute('src', '/uploads/m.png');
     expect(screen.queryByText('M')).not.toBeInTheDocument();
   });
+
+  it('L17: no modal, a linha do contato mostra a foto e, sem ela, as iniciais do nome e sobrenome', () => {
+    const { container, rerender } = render(
+      <ContactAvatar name="Renata Valente" avatarUrl="/uploads/r.png" size="round" />,
+    );
+    expect(container.querySelector('img')).toHaveAttribute('src', '/uploads/r.png');
+
+    rerender(<ContactAvatar name="Renata Valente" avatarUrl={null} size="round" />);
+    expect(screen.getByText('RV')).toBeInTheDocument();
+  });
 });

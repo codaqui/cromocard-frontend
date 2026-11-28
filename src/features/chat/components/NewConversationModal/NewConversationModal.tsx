@@ -9,7 +9,7 @@ import { cn } from '@/utils/cn';
 import { chatTexts, scopeLabels } from '../../chat.labels';
 import { useContacts, useStartConversation } from '../../chat.queries';
 import type { Contact, ContactResult, ContactScope, ConversationSummary } from '../../chat.types';
-import { ContactRow } from './ContactRow';
+import { ContactRow } from '../ContactRow/ContactRow';
 import styles from './NewConversationModal.module.css';
 
 export interface NewConversationModalProps {

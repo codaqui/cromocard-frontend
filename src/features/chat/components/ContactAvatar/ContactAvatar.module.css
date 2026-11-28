@@ -22,6 +22,16 @@
   font-size: var(--font-size-xs);
 }
 
+.round {
+  width: var(--size-chat-avatar-small);
+  height: var(--size-chat-avatar-small);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-high);
+  color: var(--color-highlight);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+
 .photo {
   width: 100%;
   height: 100%;
