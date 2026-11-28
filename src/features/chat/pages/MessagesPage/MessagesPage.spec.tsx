@@ -96,6 +96,54 @@ describe('MessagesPage', () => {
     expect(chatApi.list).toHaveBeenLastCalledWith({ q: 'ren', filter: 'unread' });
   });
 
+  it('CA3: na aba Não Lidas, a conversa aberta continua aberta depois de marcada como lida', async () => {
+    const read = () => vi.mocked(chatApi.markAsRead).mock.calls.length > 0;
+    vi.mocked(chatApi.list).mockImplementation(({ filter }) =>
+      Promise.resolve(filter === 'unread' && !read() ? listed([bruno]) : listed([], 0)),
+    );
+    vi.mocked(chatApi.messages).mockResolvedValue({
+      data: [
+        message({
+          conversationId: 'c-bruno',
+          isRead: false,
+          author: { id: 'bruno', name: 'Bruno Figurinhas', username: null },
+        }),
+      ],
+      meta: { nextCursor: null },
+    });
+    renderPage();
+    await userEvent.click(await screen.findByRole('button', { name: /Não Lidas/ }));
+    await userEvent.click(await screen.findByText('Bruno Figurinhas'));
+
+    await vi.waitFor(() =>
+      expect(vi.mocked(chatApi.markAsRead).mock.calls[0]?.[0]).toBe('c-bruno'),
+    );
+    expect(await screen.findByText('Nenhuma conversa')).toBeInTheDocument();
+    expect(
+      screen.getByRole('region', { name: 'Conversa com Bruno Figurinhas' }),
+    ).toBeInTheDocument();
+  });
+
+  it('CA13: a conversa nova abre mesmo quando a busca ativa não a mostra na lista', async () => {
+    const renan = conversation({ id: 'c-renan' });
+    renan.contact = { ...renan.contact, id: 'renan', name: 'Renan Souza' };
+    vi.mocked(chatApi.start).mockResolvedValue(renan);
+    vi.mocked(chatApi.contacts).mockResolvedValue([
+      { ...renan.contact, role: 'CUSTOMER', commonGroups: [] },
+    ]);
+    renderPage();
+    await userEvent.type(await screen.findByRole('searchbox', { name: 'Buscar conversa' }), 'zzz');
+    vi.mocked(chatApi.list).mockResolvedValue(listed([], 0));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Nova conversa' }));
+    const results = await screen.findByRole('region', { name: 'Resultados' });
+    await userEvent.click(await within(results).findByRole('button', { name: 'Conversar' }));
+
+    expect(
+      await screen.findByRole('region', { name: 'Conversa com Renan Souza' }),
+    ).toBeInTheDocument();
+  });
+
   it('CA4: sem conversas, mostra "Nenhuma conversa ainda" e a dica', async () => {
     vi.mocked(chatApi.list).mockResolvedValue(listed([], 0));
     renderPage();

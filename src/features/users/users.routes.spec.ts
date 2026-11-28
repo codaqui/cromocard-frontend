@@ -16,10 +16,7 @@ async function componentNameOf(route: { lazy?: unknown }) {
 describe('users.routes', () => {
   it('carrega o perfil e as telas do BackOffice sob demanda, cada uma no seu caminho', async () => {
     expect(usersRoutes.map((route) => route.path)).toEqual([paths.profile, paths.settings]);
-    expect(usersPublicRoutes.map((route) => route.path)).toEqual([
-      paths.help,
-      paths.publicProfile,
-    ]);
+    expect(usersPublicRoutes.map((route) => route.path)).toEqual([paths.help, paths.publicProfile]);
     expect(usersBackofficeRoutes.map((route) => route.path)).toEqual([
       paths.backoffice.users,
       paths.backoffice.userDetail,

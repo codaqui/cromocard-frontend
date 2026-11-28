@@ -6,6 +6,7 @@ import { LoadingState } from '@/components/LoadingState/LoadingState';
 import { cn } from '@/utils/cn';
 
 import { chatTexts } from '../../chat.labels';
+import type { ConversationSummary } from '../../chat.types';
 import {
   ConversationList,
   type ConversationListProps,
@@ -106,9 +107,9 @@ function Content({
 export function MessagesPage() {
   const page = useMessagesPage();
   const [creating, setCreating] = useState(false);
-  const started = (conversationId: string) => {
+  const started = (conversation: ConversationSummary) => {
     setCreating(false);
-    page.open(conversationId);
+    page.openStarted(conversation);
   };
   return (
     <div className={styles.page}>

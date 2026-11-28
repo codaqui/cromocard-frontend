@@ -8,13 +8,13 @@ import { cn } from '@/utils/cn';
 
 import { chatTexts, scopeLabels } from '../../chat.labels';
 import { useContacts, useStartConversation } from '../../chat.queries';
-import type { Contact, ContactResult, ContactScope } from '../../chat.types';
+import type { Contact, ContactResult, ContactScope, ConversationSummary } from '../../chat.types';
 import { ContactRow } from './ContactRow';
 import styles from './NewConversationModal.module.css';
 
 export interface NewConversationModalProps {
   recent: Contact[];
-  onStarted: (conversationId: string) => void;
+  onStarted: (conversation: ConversationSummary) => void;
   onClose: () => void;
 }
 
@@ -72,7 +72,7 @@ function useNewConversation(onStarted: NewConversationModalProps['onStarted']) {
   const contacts = useContacts({ q: q || undefined, scope }, true);
   const start = useStartConversation();
   const startWith = (userId: string) =>
-    start.mutate(userId, { onSuccess: ({ id }) => onStarted(id) });
+    start.mutate(userId, { onSuccess: (conversation) => onStarted(conversation) });
   return { search, setSearch, scope, setScope, contacts, start, startWith };
 }
 

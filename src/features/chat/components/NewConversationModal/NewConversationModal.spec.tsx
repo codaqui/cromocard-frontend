@@ -96,8 +96,9 @@ describe('NewConversationModal', () => {
     );
   });
 
-  it('CA13: Conversar abre a conversa e avisa o id', async () => {
-    vi.mocked(chatApi.start).mockResolvedValue(conversation({ id: 'c-renan' }));
+  it('CA13: Conversar abre a conversa e avisa qual foi', async () => {
+    const started = conversation({ id: 'c-renan' });
+    vi.mocked(chatApi.start).mockResolvedValue(started);
     const props = renderModal();
 
     const row = (await screen.findByText('Renan Souza (@renan_slabs)')).closest(
@@ -105,7 +106,7 @@ describe('NewConversationModal', () => {
     ) as HTMLElement;
     await userEvent.click(within(row).getByRole('button', { name: 'Conversar' }));
 
-    await vi.waitFor(() => expect(props.onStarted).toHaveBeenCalledWith('c-renan'));
+    await vi.waitFor(() => expect(props.onStarted).toHaveBeenCalledWith(started));
     expect(vi.mocked(chatApi.start).mock.calls[0]?.[0]).toBe('renan');
   });
 

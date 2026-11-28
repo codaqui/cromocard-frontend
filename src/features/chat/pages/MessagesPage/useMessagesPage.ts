@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router';
 import { useAuth } from '@/hooks/useAuth';
 
 import { useConversations } from '../../chat.queries';
-import type { ConversationFilter } from '../../chat.types';
+import type { ConversationFilter, ConversationSummary } from '../../chat.types';
 import { useChatSocket } from '../../hooks/useChatSocket';
 import { usePresence } from '../../hooks/usePresence';
 
@@ -22,17 +22,29 @@ function useOpenConversation() {
   return { openId, open };
 }
 
+function useOpenedConversation(items: ConversationSummary[]) {
+  const { openId, open } = useOpenConversation();
+  const [kept, keep] = useState<ConversationSummary | null>(null);
+  const listed = items.find(({ id }) => id === openId);
+  if (listed && listed !== kept) keep(listed);
+  const opened = listed ?? (kept?.id === openId ? kept : null);
+  const openStarted = (conversation: ConversationSummary) => {
+    keep(conversation);
+    open(conversation.id);
+  };
+  return { openId, open, opened, openStarted };
+}
+
 export function useMessagesPage() {
   const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<ConversationFilter>('all');
   const q = useDeferredValue(search.trim());
   const conversations = useConversations({ q: q || undefined, filter });
-  const { openId, open } = useOpenConversation();
   const items = conversations.data?.data ?? [];
   const online = usePresence(items.map(({ contact }) => contact.id));
+  const { openId, open, opened, openStarted } = useOpenedConversation(items);
   useChatSocket(openId);
-  const opened = items.find(({ id }) => id === openId) ?? null;
   return {
     user,
     search,
@@ -45,6 +57,7 @@ export function useMessagesPage() {
     openId,
     open,
     opened,
+    openStarted,
   };
 }
 
