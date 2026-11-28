@@ -3,10 +3,11 @@ import { useEffect, useRef } from 'react';
 import { Icon } from '@/components/Icon/Icon';
 
 import { activeLabel, listedLabel } from '../../chat.format';
-import { chatTexts } from '../../chat.labels';
+import { chatTexts, filterLabels } from '../../chat.labels';
 import type { ConversationFilter, ConversationSummary } from '../../chat.types';
-import { ConversationFilters } from '../ConversationFilters/ConversationFilters';
 import { ConversationListItem } from '../ConversationListItem/ConversationListItem';
+import { FilterPills } from '../FilterPills/FilterPills';
+import { SearchField } from '../SearchField/SearchField';
 import styles from './ConversationList.module.css';
 
 export interface ConversationListProps {
@@ -61,43 +62,66 @@ function ListHeader({
   );
 }
 
-function SearchField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+const filters: ConversationFilter[] = ['all', 'unread'];
+
+function ConversationSearch({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
   const input = useSlashShortcut();
   return (
-    <label className={styles.search}>
-      <Icon name="search" size={16} />
-      <input
-        ref={input}
-        type="search"
-        className={styles.searchInput}
-        placeholder="Buscar conversa"
-        aria-label="Buscar conversa"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-      />
-      <kbd className={styles.kbd}>/</kbd>
-    </label>
+    <SearchField
+      label="Buscar conversa"
+      placeholder="Buscar conversa"
+      value={value}
+      onChange={onChange}
+      inputRef={input}
+      hint={<kbd className={styles.kbd}>/</kbd>}
+    />
+  );
+}
+
+function filterPillsOf(totals: Record<ConversationFilter, number>) {
+  return filters.map((id) => ({
+    id,
+    label: filterLabels[id],
+    count: totals.all > 0 ? totals[id] : undefined,
+  }));
+}
+
+function ConversationItems(props: ConversationListProps) {
+  const { conversations, activeId, online } = props;
+  return (
+    <ul className={styles.list}>
+      {conversations.map((conversation) => (
+        <ConversationListItem
+          key={conversation.id}
+          conversation={conversation}
+          active={conversation.id === activeId}
+          online={online.has(conversation.contact.id)}
+          onSelect={props.onSelect}
+        />
+      ))}
+    </ul>
   );
 }
 
 export function ConversationList(props: ConversationListProps) {
-  const { conversations, totals, activeId, online } = props;
+  const { conversations, totals } = props;
   return (
     <section className={styles.column} aria-label="Conversas">
       <ListHeader total={totals.all} onNewConversation={props.onNewConversation} />
-      <SearchField value={props.search} onChange={props.onSearchChange} />
-      <ConversationFilters active={props.filter} totals={totals} onChange={props.onFilterChange} />
-      <ul className={styles.list}>
-        {conversations.map((conversation) => (
-          <ConversationListItem
-            key={conversation.id}
-            conversation={conversation}
-            active={conversation.id === activeId}
-            online={online.has(conversation.contact.id)}
-            onSelect={props.onSelect}
-          />
-        ))}
-      </ul>
+      <ConversationSearch value={props.search} onChange={props.onSearchChange} />
+      <FilterPills
+        label="Filtrar conversas"
+        items={filterPillsOf(totals)}
+        active={props.filter}
+        onChange={props.onFilterChange}
+      />
+      <ConversationItems {...props} />
       <p className={styles.footer}>{listedLabel(conversations.length, totals.all)}</p>
     </section>
   );

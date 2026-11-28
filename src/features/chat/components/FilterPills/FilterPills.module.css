@@ -1,9 +1,10 @@
-.filters {
+.pills {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
 }
 
-.filter {
+.pill {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
@@ -18,7 +19,17 @@
   cursor: pointer;
 }
 
-.active {
+.compact .pill {
+  min-height: 0;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-xs);
+  color: var(--color-text);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+
+.active,
+.compact .active {
   background: var(--color-primary);
   color: var(--color-primary-contrast);
 }
@@ -43,7 +54,7 @@
 }
 
 @media (max-width: 48rem) {
-  .filter {
+  .pill {
     min-height: var(--size-control);
   }
 }
