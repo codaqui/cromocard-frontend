@@ -110,16 +110,24 @@ describe('CardListingsList', () => {
     expect(screen.getByRole('combobox', { name: 'Ordenar:' })).toHaveDisplayValue('Menor preço');
   });
 
-  it('R18: Carregar mais traz a próxima página e some quando acaba', async () => {
+  it('CA15: com 25 anúncios, mostra 20; Carregar mais traz os 25 e some', async () => {
+    const listings = Array.from({ length: 25 }, (_, index) =>
+      listingOf(`l${index + 1}`, `${10 + index}.50`),
+    );
+    const meta = { pageSize: 20, total: 25, totalPages: 2 };
     vi.mocked(listingsApi.listByCard)
-      .mockResolvedValueOnce(pageOf([listingOf('a', '10.00')], 1, 2))
-      .mockResolvedValueOnce(pageOf([listingOf('b', '20.50')], 2, 2));
-    renderList(2);
+      .mockResolvedValueOnce({ data: listings.slice(0, 20), meta: { ...meta, page: 1 } })
+      .mockResolvedValueOnce({ data: listings.slice(20), meta: { ...meta, page: 2 } });
+    renderList(25);
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Carregar mais' }));
+    expect(await screen.findByText('vendedor_l20')).toBeVisible();
+    expect(rows()).toHaveLength(20);
 
-    expect(await screen.findByText('vendedor_b')).toBeVisible();
-    expect(screen.getByText('R$ 20,50')).toBeVisible();
+    await userEvent.click(screen.getByRole('button', { name: 'Carregar mais' }));
+
+    expect(await screen.findByText('vendedor_l25')).toBeVisible();
+    expect(rows()).toHaveLength(25);
+    expect(screen.getByText('R$ 34,50')).toBeVisible();
     expect(screen.queryByRole('button', { name: 'Carregar mais' })).not.toBeInTheDocument();
     expect(listingsApi.listByCard).toHaveBeenLastCalledWith(CARD_ID, { page: 2, pageSize: 20 });
   });
