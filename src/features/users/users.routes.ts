@@ -10,7 +10,12 @@ export const usersRoutes: RouteObject[] = [
       Component: (await import('./pages/ProfilePage/ProfilePage')).ProfilePage,
     }),
   },
-  underConstructionRoute({ path: paths.settings, title: 'Configurações', story: 'CCD051' }),
+  {
+    path: paths.settings,
+    lazy: async () => ({
+      Component: (await import('@/features/notifications')).NotificationSettingsPage,
+    }),
+  },
 ];
 
 export const usersPublicRoutes: RouteObject[] = [

@@ -1,3 +1,5 @@
+import type { IconName } from '@/components/Icon/icon-paths';
+
 import type { NotificationEvent, NotificationFilter } from './notifications.types';
 
 interface TypeLabel {
@@ -68,6 +70,7 @@ export const notificationsTexts = {
 };
 
 interface EventGroup {
+  icon: IconName;
   title: string;
   subtitle: string;
   events: { event: NotificationEvent; label: string; hint: string }[];
@@ -75,6 +78,7 @@ interface EventGroup {
 
 export const eventGroups: EventGroup[] = [
   {
+    icon: 'swapHoriz',
     title: 'Pedidos e marketplace',
     subtitle: 'Compras, vendas e favoritos',
     events: [
@@ -91,6 +95,7 @@ export const eventGroups: EventGroup[] = [
     ],
   },
   {
+    icon: 'peopleOutline',
     title: 'Comunidades',
     subtitle: 'Convites e mensagens dos seus grupos',
     events: [
@@ -107,6 +112,7 @@ export const eventGroups: EventGroup[] = [
     ],
   },
   {
+    icon: 'autoAwesome',
     title: 'Plataforma e coleção',
     subtitle: 'Novos álbuns e o andamento das suas solicitações',
     events: [
@@ -123,3 +129,33 @@ export const eventGroups: EventGroup[] = [
     ],
   },
 ];
+
+export const settingsTexts = {
+  breadcrumb: ['Início', 'Minha conta', 'Configurações'],
+  eyebrow: 'MINHA CONTA',
+  activeChannels: (count: number) => `Canais ativos: ${count}`,
+  title: 'Configurações',
+  description: 'Senha, privacidade e onde receber cada aviso: no site ou por e-mail.',
+  restore: 'Restaurar Padrões',
+  channelsTitle: 'Canais de aviso',
+  inAppTitle: 'In-App (Central & Sino)',
+  inAppHint: 'Avisos em tempo real no sino do topo.',
+  inAppFooter: 'Imediato',
+  inAppBadge: (on: boolean) => `Badge: ${on ? 'Ativo' : 'Inativo'}`,
+  emailTitle: 'E-mail',
+  emailHint: 'Pedidos, segurança da conta e resumos.',
+  emailFooter: 'Tempo Real / Imediato',
+  changeEmail: 'Alterar e-mail',
+  eventsTitle: 'Categorias e Eventos',
+  eventsHint: 'Escolha onde receber cada aviso.',
+  inAppColumn: 'In-App',
+  emailColumn: 'E-mail',
+  footerHint: 'As preferências valem em todos os seus acessos.',
+  cancel: 'Cancelar',
+  save: 'Salvar Preferências',
+  saved: 'Preferências salvas.',
+  restored: 'Padrões restaurados: tudo ligado.',
+  saveError: 'Não foi possível salvar as preferências. Tente de novo.',
+  loading: 'Carregando preferências…',
+  loadError: 'Não foi possível carregar as preferências. Tente de novo.',
+};
