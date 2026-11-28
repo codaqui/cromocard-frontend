@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { connectSocket } from '@/lib/socket';
 
-import { appendMessage, refreshConversations, useMarkAsRead } from '../chat.queries';
+import { appendMessage, chatKeys, refreshConversations, useMarkAsRead } from '../chat.queries';
 import type { ChatMessage } from '../chat.types';
 
 function useJoinConversation(conversationId: string | null) {
@@ -21,11 +21,26 @@ function useJoinConversation(conversationId: string | null) {
   }, [conversationId]);
 }
 
+function useCatchUpOnReconnect() {
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    const socket = connectSocket();
+    const catchUp = () => {
+      void queryClient.invalidateQueries({ queryKey: chatKeys.all });
+    };
+    socket.on('connect', catchUp);
+    return () => {
+      socket.off('connect', catchUp);
+    };
+  }, [queryClient]);
+}
+
 export function useChatSocket(openConversationId: string | null) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { mutate: markAsRead } = useMarkAsRead();
   useJoinConversation(openConversationId);
+  useCatchUpOnReconnect();
 
   useEffect(() => {
     const socket = connectSocket();

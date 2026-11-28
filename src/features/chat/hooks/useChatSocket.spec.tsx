@@ -109,6 +109,14 @@ describe('useChatSocket (R8)', () => {
     expect(socket.listenerCount('connect')).toBe(0);
   });
 
+  it('R8: ao reconectar, busca de novo as mensagens e a lista, para trazer o que chegou com o socket fora', () => {
+    const { invalidate } = setup('c-elisa');
+
+    socket.receive('connect');
+
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: chatKeys.all });
+  });
+
   it('sem conversa aberta, não entra em sala nenhuma', () => {
     setup(null);
 
