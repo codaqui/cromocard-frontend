@@ -22,6 +22,8 @@ interface ApiErrorProps {
   details?: ApiErrorDetail[];
 }
 
+export const HTTP_NOT_FOUND = 404;
+
 export class ApiError extends Error {
   readonly status: number;
   readonly code: string;

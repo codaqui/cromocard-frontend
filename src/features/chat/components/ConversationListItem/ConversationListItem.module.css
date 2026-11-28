@@ -1,0 +1,111 @@
+.item {
+  position: relative;
+  display: flex;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.item:hover {
+  background: var(--color-surface-raised);
+}
+
+.active {
+  background: var(--color-surface-raised);
+}
+
+.active::before {
+  position: absolute;
+  top: var(--space-3);
+  bottom: var(--space-3);
+  left: 0;
+  width: var(--space-1);
+  border-radius: var(--radius-pill);
+  background: var(--color-highlight);
+  content: '';
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.top,
+.bottom {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.name {
+  overflow: hidden;
+  font-size: var(--font-size-md);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.verified {
+  display: inline-flex;
+  color: var(--color-highlight);
+}
+
+.time {
+  margin-left: auto;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.timeHighlight {
+  color: var(--color-highlight);
+}
+
+.handle {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.preview {
+  display: -webkit-box;
+  flex: 1;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: var(--color-label);
+  font-size: var(--font-size-sm);
+}
+
+.unread .preview {
+  color: var(--color-text);
+}
+
+.active .preview {
+  color: var(--color-chat-preview-active);
+}
+
+.badge {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--size-chat-badge);
+  height: var(--size-chat-badge);
+  margin-left: auto;
+  border-radius: var(--radius-pill);
+  background: var(--color-highlight);
+  color: var(--color-primary-contrast);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+}

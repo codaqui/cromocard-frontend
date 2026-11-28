@@ -1,4 +1,6 @@
-import { categoryBadgeLabels, EMPTY_VALUE_LABEL } from '../../catalog.labels';
+import { EMPTY_VALUE } from '@/utils/emptyValue';
+
+import { categoryBadgeLabels } from '../../catalog.labels';
 import { filtersStateOf, listSummary } from '../../catalog.filter-chips';
 import { useCategoriesList } from '../../catalog.queries';
 import type { CatalogTabProps, Category } from '../../catalog.types';
@@ -30,7 +32,7 @@ const categoriesTable: CatalogTable<Category> = {
     {
       key: 'parent',
       header: 'Categoria pai',
-      render: (category) => category.parentCategory?.name ?? EMPTY_VALUE_LABEL,
+      render: (category) => category.parentCategory?.name ?? EMPTY_VALUE,
     },
     {
       key: 'cardsCount',

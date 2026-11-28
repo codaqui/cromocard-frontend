@@ -6,11 +6,11 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 
+import { HTTP_NOT_FOUND } from '@/lib/api-error';
+
 import { settingsApi } from './settings.api';
 import { toGlobalSettings } from './settings.format';
 import type { ListCategoryOptionsParams, UploadFolder } from './settings.types';
-
-const HTTP_NOT_FOUND = 404;
 
 export const settingsKeys = {
   all: ['admin', 'settings'] as const,

@@ -10,8 +10,6 @@ export const albumStatusLabels: Record<AlbumStatus, string> = {
   INACTIVE: 'Inativo',
 };
 
-export const EMPTY_VALUE_LABEL = '—';
-
 const AUDIT_NOTE = 'Alterações registradas no log de auditoria.';
 const SAVE_CHANGES = 'Salvar alterações';
 const editSubtitleOf = (name: string) => `Altere os dados de ${name}.`;

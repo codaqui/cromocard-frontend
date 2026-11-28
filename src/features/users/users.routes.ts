@@ -20,6 +20,11 @@ export const usersRoutes: RouteObject[] = [
 
 export const usersPublicRoutes: RouteObject[] = [
   underConstructionRoute({ path: paths.help, title: 'Central de ajuda', story: 'CCD005' }),
+  underConstructionRoute({
+    path: paths.publicProfile,
+    title: 'Perfil do colecionador',
+    story: 'CCD080',
+  }),
 ];
 
 export const usersBackofficeRoutes: RouteObject[] = [

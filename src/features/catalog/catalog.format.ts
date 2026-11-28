@@ -1,13 +1,13 @@
 import { ApiError } from '@/lib/api-error';
 
-import { EMPTY_VALUE_LABEL } from './catalog.labels';
+import { EMPTY_VALUE } from '@/utils/emptyValue';
 import type { BulkDeleteCardsResult, CatalogNotice, SkippedCard } from './catalog.types';
 
 const countFormatter = new Intl.NumberFormat('pt-BR');
 const ALBUM_NUMBER_DIGITS = 3;
 
 export function formatCount(value?: number): string {
-  return value === undefined ? EMPTY_VALUE_LABEL : countFormatter.format(value);
+  return value === undefined ? EMPTY_VALUE : countFormatter.format(value);
 }
 
 export function formatAlbumNumber(number: string): string {

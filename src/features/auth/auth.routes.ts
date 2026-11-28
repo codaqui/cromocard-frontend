@@ -1,6 +1,7 @@
 import { createElement } from 'react';
 import type { RouteObject } from 'react-router';
 
+import { underConstructionRoute } from '@/components/UnderConstructionPage/underConstructionRoute';
 import { paths } from '@/routes/paths';
 
 import { AuthLayout } from './components/AuthLayout/AuthLayout';
@@ -38,6 +39,7 @@ const verifyEmailRoute: RouteObject = {
 };
 
 export const authRoutes: RouteObject[] = [
+  underConstructionRoute({ path: paths.googleLogin, title: 'Entrar com Google', story: 'CCD004' }),
   {
     element: createElement(AuthLayout),
     children: [

@@ -8,7 +8,7 @@ import type { ApiError } from '@/lib/api-error';
 
 import { formatAlbumNumber } from '../../catalog.format';
 import { CARD_IMAGE_MIN_SIZE, formatImageSize } from '../../catalog.image';
-import { EMPTY_VALUE_LABEL } from '../../catalog.labels';
+import { EMPTY_VALUE } from '@/utils/emptyValue';
 import type { CardFormValues, CardInput } from '../../catalog.schemas';
 import type { Card } from '../../catalog.types';
 import { useCardForm } from '../../hooks/useCardForm';
@@ -45,7 +45,7 @@ interface CardFieldsProps {
 function AlbumTotal({ total }: { total?: number }) {
   return (
     <span className={styles.total} aria-label="Total de cartas do álbum">
-      {total === undefined ? EMPTY_VALUE_LABEL : formatAlbumNumber(String(total))}
+      {total === undefined ? EMPTY_VALUE : formatAlbumNumber(String(total))}
     </span>
   );
 }

@@ -1,0 +1,32 @@
+.tip {
+  display: flex;
+  gap: var(--space-2);
+  max-width: var(--size-chat-bubble);
+  margin: var(--space-4) var(--space-8) 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+}
+
+.tip svg {
+  flex-shrink: 0;
+  color: var(--color-highlight);
+}
+
+.title {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+}
+
+.message {
+  color: var(--color-label);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-chat);
+}
+
+@media (max-width: 48rem) {
+  .tip {
+    margin: var(--space-3) var(--space-3) 0;
+  }
+}
